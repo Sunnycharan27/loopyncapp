@@ -62,141 +62,136 @@ const Wallet = () => {
   const kycColor = walletData?.kycTier === 3 ? "text-yellow-400" : walletData?.kycTier === 2 ? "text-green-400" : "text-gray-400";
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
-      {/* Header */}
-      <div className="sticky top-0 z-10 glass-surface p-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold neon-text">LoopPay</h1>
-          <p className="text-xs text-gray-400">Your digital wallet</p>
-        </div>
+    <div className="min-h-screen pb-24" style={{ background: '#FFFFFF' }}>
+      {/* Header - Starbucks Style */}
+      <div className="sticky top-0 z-10 bg-white shadow-sm px-4 py-3 flex items-center justify-between border-b border-gray-200">
+        <h1 className="text-xl font-bold text-gray-900">LoopPay</h1>
         <button
           data-testid="wallet-settings-btn"
-          className="w-10 h-10 rounded-full flex items-center justify-center bg-cyan-400/10 text-cyan-400 hover:bg-cyan-400/20"
+          className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900"
         >
-          <Settings size={20} />
+          <Plus size={24} />
         </button>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Wallet Card */}
+      <div className="max-w-2xl mx-auto">
+        {/* Wallet Card - Starbucks Style */}
         <div 
-          className="relative overflow-hidden rounded-3xl p-6 mb-6 neon-glow"
+          className="relative overflow-hidden mx-4 mt-6 rounded-2xl shadow-lg"
           style={{
-            background: 'linear-gradient(135deg, #00E0FF 0%, #0099cc 50%, #FF3DB3 100%)',
-            minHeight: '280px'
+            background: 'linear-gradient(135deg, #00704A 0%, #008248 50%, #00704A 100%)',
           }}
         >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 right-4 w-32 h-32 rounded-full border-2 border-white"></div>
-            <div className="absolute bottom-4 left-4 w-24 h-24 rounded-full border-2 border-white"></div>
-          </div>
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-48 h-48 opacity-10" style={{
+            background: 'radial-gradient(circle, white 0%, transparent 70%)'
+          }}></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 opacity-10" style={{
+            background: 'radial-gradient(circle, white 0%, transparent 70%)'
+          }}></div>
 
-          {/* Card Content */}
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">L</span>
-                </div>
-                <div>
-                  <p className="text-white text-sm opacity-90">{currentUser.name}</p>
-                  <p className="text-white text-xs opacity-70">@{currentUser.handle}</p>
-                </div>
+          {/* White Card Content */}
+          <div className="relative z-10 m-4 bg-white rounded-xl p-5 shadow-md">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-gray-900 font-semibold text-base">{currentUser.name} | *{currentUser.id.substring(0, 5).toUpperCase()}</p>
               </div>
-              <div className="text-right">
-                <div className={`text-xs font-semibold px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm ${kycColor}`}>
-                  <Shield size={12} className="inline mr-1" />
-                  {kycTierBadge}
-                </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchWalletData}
+                  className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full"
+                >
+                  <RefreshCw size={16} />
+                </button>
+                <button
+                  data-testid="wallet-settings-btn"
+                  className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full"
+                >
+                  <Settings size={16} />
+                </button>
               </div>
             </div>
 
-            <div className="mb-6">
-              <p className="text-white text-sm opacity-80 mb-1">Available Balance</p>
-              <h2 className="text-5xl font-bold text-white">₹{walletData?.balance?.toFixed(2) || '0.00'}</h2>
-              <p className="text-white text-xs opacity-70 mt-2">
-                Updated {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-
-            <div className="flex gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-4xl font-bold text-gray-900">₹{walletData?.balance?.toFixed(2) || '0.00'}</h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Updated at {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} on {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </p>
+              </div>
               <button
                 data-testid="wallet-topup-btn"
                 onClick={() => setShowTopUp(true)}
-                className="flex-1 py-3 px-4 rounded-full bg-white text-cyan-600 font-semibold flex items-center justify-center gap-2 hover:bg-white/90 transition-all"
+                className="px-6 py-3 rounded-full font-semibold text-white text-sm"
+                style={{ background: '#00704A' }}
               >
-                <Plus size={18} />
-                Load Money
-              </button>
-              <button
-                onClick={fetchWalletData}
-                className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all"
-              >
-                <RefreshCw size={18} />
+                Load Card
               </button>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        {/* Tabs - Starbucks Style */}
+        <div className="flex gap-0 mx-4 mt-6 bg-white rounded-full border-2 border-gray-300 overflow-hidden">
           <button
             onClick={() => setActiveTab("pay")}
-            className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            className={`flex-1 py-3 px-4 font-medium text-sm transition-all ${
               activeTab === "pay"
-                ? 'bg-cyan-400 text-black'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'text-white'
+                : 'bg-white text-gray-700'
             }`}
+            style={activeTab === "pay" ? { background: '#00704A' } : {}}
             data-testid="wallet-pay-tab"
           >
-            Pay at Venue
+            Pay at Store
           </button>
           <button
             onClick={() => setActiveTab("transactions")}
-            className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            className={`flex-1 py-3 px-4 font-medium text-sm transition-all ${
               activeTab === "transactions"
-                ? 'bg-cyan-400 text-black'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'text-white'
+                : 'bg-white text-gray-700'
             }`}
+            style={activeTab === "transactions" ? { background: '#00704A' } : {}}
             data-testid="wallet-transactions-tab"
           >
-            Transactions
+            Past Transactions
           </button>
         </div>
 
         {/* Content */}
         {activeTab === "pay" ? (
-          <div className="glass-card p-8 text-center">
-            <h3 className="text-lg font-bold mb-2">Scan to Pay at Venues</h3>
-            <p className="text-sm text-gray-400 mb-6">Show this barcode to cashier at Loopync partner venues</p>
+          <div className="bg-white mx-4 mt-6 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-center text-gray-900 font-semibold text-base mb-6">
+              Scan the barcode and pay at the store
+            </h3>
             
-            <div className="bg-white p-6 rounded-3xl inline-block mb-6">
-              <Barcode
-                value={currentUser.id.toUpperCase()}
-                format="CODE128"
-                width={2}
-                height={100}
-                displayValue={true}
-                fontSize={14}
-                background="#ffffff"
-                lineColor="#000000"
-              />
-            </div>
-
-            <div className="mb-4">
-              <div className="text-center text-xs text-gray-500 mb-1">Card Number</div>
-              <div className="text-center font-mono text-lg tracking-wider text-gray-300">
-                {currentUser.id.toUpperCase().replace(/-/g, '').substring(0, 16).match(/.{1,4}/g)?.join(' ')}
+            <div className="bg-white flex flex-col items-center justify-center py-8 px-4">
+              <div className="bg-white p-4 rounded-lg">
+                <Barcode
+                  value={currentUser.id.toUpperCase().replace(/-/g, '').substring(0, 16)}
+                  format="CODE128"
+                  width={2.5}
+                  height={80}
+                  displayValue={true}
+                  fontSize={16}
+                  fontOptions="bold"
+                  background="#ffffff"
+                  lineColor="#000000"
+                  margin={0}
+                />
               </div>
             </div>
 
-            <div className="flex gap-3 justify-center">
-              <div className="px-4 py-2 rounded-full bg-cyan-400/10 text-cyan-400 text-xs">
-                <span className="font-semibold">UPI</span> Linked
-              </div>
-              <div className="px-4 py-2 rounded-full bg-green-400/10 text-green-400 text-xs">
-                <span className="font-semibold">RBI</span> Compliant
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-xs text-gray-500 text-center mb-4">Payment Methods</p>
+              <div className="flex gap-3 justify-center">
+                <div className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium">
+                  UPI Linked
+                </div>
+                <div className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium">
+                  RBI Compliant
+                </div>
               </div>
             </div>
           </div>
