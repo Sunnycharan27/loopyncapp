@@ -196,80 +196,75 @@ const Wallet = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="mx-4 mt-6">
             {walletData?.transactions && walletData.transactions.length > 0 ? (
-              walletData.transactions.map((txn) => (
-                <div key={txn.id} className="glass-card p-4" data-testid="transaction-item">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        txn.type === 'topup' ? 'bg-green-400/10 text-green-400' :
-                        txn.type === 'withdraw' ? 'bg-red-400/10 text-red-400' :
-                        'bg-cyan-400/10 text-cyan-400'
-                      }`}>
-                        {txn.type === 'topup' ? <ArrowDownLeft size={18} /> :
-                         txn.type === 'withdraw' ? <ArrowUpRight size={18} /> :
-                         <ArrowUpRight size={18} />}
+              <div className="space-y-3">
+                {walletData.transactions.map((txn) => (
+                  <div key={txn.id} className="bg-white rounded-2xl p-4 shadow-sm" data-testid="transaction-item">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          txn.type === 'topup' ? 'bg-green-100 text-green-600' :
+                          txn.type === 'withdraw' ? 'bg-red-100 text-red-600' :
+                          'bg-blue-100 text-blue-600'
+                        }`}>
+                          {txn.type === 'topup' ? <ArrowDownLeft size={18} /> :
+                           txn.type === 'withdraw' ? <ArrowUpRight size={18} /> :
+                           <ArrowUpRight size={18} />}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm text-gray-900">
+                            {txn.type === 'topup' ? 'Money Added' :
+                             txn.type === 'withdraw' ? 'Withdrawal' :
+                             txn.description || 'Payment'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(txn.createdAt).toLocaleDateString('en-IN')} • {txn.status}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-sm">
-                          {txn.type === 'topup' ? 'Money Added' :
-                           txn.type === 'withdraw' ? 'Withdrawal' :
-                           txn.description || 'Payment'}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(txn.createdAt).toLocaleDateString('en-IN')} • {txn.status}
+                      <div className="text-right">
+                        <p className={`font-bold text-base ${
+                          txn.type === 'topup' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {txn.type === 'topup' ? '+' : '-'}₹{txn.amount.toFixed(2)}
                         </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold ${
-                        txn.type === 'topup' ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {txn.type === 'topup' ? '+' : '-'}₹{txn.amount.toFixed(2)}
-                      </p>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
-              <div className="text-center py-12 glass-card">
-                <p className="text-gray-400">No transactions yet</p>
+              <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
+                <p className="text-gray-500">No transactions yet</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Compliance Badges */}
-        <div className="mt-8 glass-card p-4">
-          <p className="text-xs text-gray-400 text-center mb-3">Powered by</p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <div className="px-3 py-1 rounded-full bg-cyan-400/10 text-cyan-400 text-xs">
-              AWS Mumbai
-            </div>
-            <div className="px-3 py-1 rounded-full bg-green-400/10 text-green-400 text-xs">
-              UPI • RBI PPI
-            </div>
-            <div className="px-3 py-1 rounded-full bg-purple-400/10 text-purple-400 text-xs">
-              DPDP Compliant
-            </div>
-            <div className="px-3 py-1 rounded-full bg-pink-400/10 text-pink-400 text-xs">
-              mTLS/KMS
-            </div>
-          </div>
+        {/* Bottom FAB - Starbucks Order Style */}
+        <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-20">
+          <button
+            className="w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-white"
+            style={{ background: '#00704A' }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 8H20L20 21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21L4 8H7M17 8V5C17 3.89543 16.1046 3 15 3H9C7.89543 3 7 3.89543 7 5V8M17 8H7M7 8V21M17 8V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
       </div>
 
       <BottomNav active="wallet" />
 
-      {/* Top-Up Modal */}
+      {/* Top-Up Modal - Starbucks Style */}
       {showTopUp && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold neon-text mb-4">Add Money to Wallet</h2>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Add Money to Wallet</h2>
             
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Enter Amount</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Enter Amount</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-gray-400">₹</span>
                 <input
@@ -277,7 +272,7 @@ const Wallet = () => {
                   value={topUpAmount}
                   onChange={(e) => setTopUpAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-12 pr-4 py-4 text-3xl font-bold bg-gray-900 border-2 border-cyan-400/30 rounded-2xl focus:border-cyan-400"
+                  className="w-full pl-12 pr-4 py-4 text-3xl font-bold bg-gray-50 border-2 border-gray-300 rounded-xl focus:border-green-600 focus:outline-none text-gray-900"
                   autoFocus
                   data-testid="topup-amount-input"
                 />
@@ -289,7 +284,7 @@ const Wallet = () => {
                 <button
                   key={amt}
                   onClick={() => setTopUpAmount(amt.toString())}
-                  className="py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm font-semibold"
+                  className="py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-semibold text-gray-900"
                 >
                   ₹{amt}
                 </button>
@@ -299,13 +294,14 @@ const Wallet = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowTopUp(false)}
-                className="flex-1 py-3 rounded-full border border-gray-600 text-gray-300 hover:bg-gray-800"
+                className="flex-1 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleTopUp}
-                className="flex-1 btn-primary"
+                className="flex-1 py-3 rounded-full text-white font-semibold"
+                style={{ background: '#00704A' }}
                 data-testid="topup-confirm-btn"
               >
                 Add Money
