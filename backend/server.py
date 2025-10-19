@@ -243,7 +243,8 @@ async def get_reels(limit: int = 50):
 async def create_reel(reel: ReelCreate, authorId: str):
     reel_obj = Reel(authorId=authorId, **reel.model_dump())
     doc = reel_obj.model_dump()
-    await db.reels.insert_one(doc)
+    result = await db.reels.insert_one(doc)
+    doc.pop('_id', None)
     author = await db.users.find_one({"id": authorId}, {"_id": 0})
     doc["author"] = author
     return doc
