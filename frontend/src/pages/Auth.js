@@ -8,6 +8,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [handle, setHandle] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
@@ -19,12 +20,12 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const res = await axios.post(`${API}/auth/login`, { handle, password });
+        const res = await axios.post(`${API}/auth/login`, { email, password });
         login(res.data.token, res.data.user);
         toast.success("Welcome back!");
         navigate("/");
       } else {
-        const res = await axios.post(`${API}/auth/signup`, { handle, name, password });
+        const res = await axios.post(`${API}/auth/signup`, { handle, name, email, password });
         login(res.data.token, res.data.user);
         toast.success("Account created successfully!");
         navigate("/");
@@ -40,7 +41,10 @@ const Auth = () => {
   const demoLogin = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${API}/auth/login`, { handle: "demo", password: "demo" });
+      const res = await axios.post(`${API}/auth/login`, { 
+        email: "demo@loopync.com", 
+        password: "password123" 
+      });
       login(res.data.token, res.data.user);
       toast.success("Logged in as Demo User!");
       navigate("/");
@@ -65,18 +69,20 @@ const Auth = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Handle</label>
-            <input
-              data-testid="auth-handle-input"
-              type="text"
-              value={handle}
-              onChange={(e) => setHandle(e.target.value)}
-              placeholder="@yourhandle"
-              className="w-full"
-              required
-            />
-          </div>
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Handle</label>
+              <input
+                data-testid="auth-handle-input"
+                type="text"
+                value={handle}
+                onChange={(e) => setHandle(e.target.value)}
+                placeholder="@yourhandle"
+                className="w-full"
+                required
+              />
+            </div>
+          )}
 
           {!isLogin && (
             <div>
@@ -94,6 +100,19 @@ const Auth = () => {
           )}
 
           <div>
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <input
+              data-testid="auth-email-input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full"
+              required
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium mb-2">Password</label>
             <input
               data-testid="auth-password-input"
@@ -103,6 +122,7 @@ const Auth = () => {
               placeholder="••••••••"
               className="w-full"
               required
+              minLength={8}
             />
           </div>
 
@@ -134,6 +154,9 @@ const Auth = () => {
             disabled={loading}
           >
             Quick Demo Login
+            <div className="text-xs text-gray-400 mt-1">
+              Email: demo@loopync.com | Password: password123
+            </div>
           </button>
         </div>
       </div>
