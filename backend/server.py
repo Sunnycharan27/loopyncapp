@@ -566,6 +566,16 @@ async def send_message(message: MessageCreate, fromId: str, toId: str):
     
     return doc
 
+@api_router.get("/messages/thread")
+async def get_thread_messages(userId: str, peerId: str):
+    messages = await db.messages.find({
+        "$or": [
+            {"fromId": userId, "toId": peerId},
+            {"fromId": peerId, "toId": userId}
+        ]
+    }, {"_id": 0}).sort("createdAt", 1).to_list(1000)
+    return messages
+
 # ===== NOTIFICATION ROUTES =====
 
 @api_router.get("/notifications")
