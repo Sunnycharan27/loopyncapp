@@ -193,21 +193,109 @@ const Discover = () => {
             </div>
           )}
 
-          {activeTab === "creators" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {activeTab === "marketplace" && (
+            <div className="space-y-4">
               {creators.map(creator => (
-                <div key={creator.id} className="glass-card p-5 text-center" data-testid="creator-card">
-                  <img src={creator.avatar} alt={creator.displayName} className="w-20 h-20 rounded-full mx-auto mb-3" />
-                  <h3 className="font-bold text-lg mb-1">{creator.displayName}</h3>
-                  <p className="text-sm text-gray-400 mb-3">{creator.bio}</p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4">
-                    <Users size={14} />
-                    <span>{creator.followers.toLocaleString()} followers</span>
+                <div key={creator.id} className="glass-card overflow-hidden" data-testid="marketplace-creator">
+                  <div className="p-5 border-b border-gray-800">
+                    <div className="flex items-center gap-4 mb-3">
+                      <img src={creator.avatar} alt={creator.displayName} className="w-16 h-16 rounded-full" />
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg">{creator.displayName}</h3>
+                        <p className="text-sm text-gray-400">{creator.bio}</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                          <Users size={12} />
+                          <span>{creator.followers.toLocaleString()} followers</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <button className="w-full py-2 rounded-full bg-gradient-to-r from-cyan-400 to-pink-400 text-black font-semibold hover:opacity-90">
-                    View Profile
-                  </button>
+
+                  {/* Courses List */}
+                  <div className="p-5 space-y-3">
+                    {creator.items?.map(item => (
+                      <div key={item.id} className="glass-surface p-4 rounded-2xl hover:bg-cyan-400/5 transition-all">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <ShoppingBag size={16} className="text-cyan-400" />
+                              <span className="text-xs font-semibold text-cyan-400 uppercase">{item.type}</span>
+                            </div>
+                            <h4 className="font-bold text-lg mb-1">{item.name}</h4>
+                            <p className="text-sm text-gray-400 mb-2">Learn from expert {creator.displayName}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <DollarSign size={20} className="text-green-400" />
+                            <span className="text-2xl font-bold text-green-400">₹{item.price}</span>
+                          </div>
+                          <button
+                            onClick={() => handlePurchaseCourse(item, creator)}
+                            className="px-6 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-pink-400 text-black font-bold hover:opacity-90 flex items-center gap-2"
+                            data-testid="buy-course-btn"
+                          >
+                            <ShoppingBag size={16} />
+                            Buy Now
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === "tribes" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tribes.map(tribe => {
+                const isMember = tribe.members?.includes(currentUser?.id);
+                return (
+                  <div key={tribe.id} className="glass-card p-5 hover:scale-[1.02] transition-transform" data-testid="tribe-card">
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/tribes/${tribe.id}`)}
+                    >
+                      <img
+                        src={tribe.avatar}
+                        alt={tribe.name}
+                        className="w-16 h-16 rounded-3xl mb-3"
+                      />
+                      <h3 className="font-bold text-lg mb-1">{tribe.name}</h3>
+                      <p className="text-xs text-gray-400 mb-3 line-clamp-2">{tribe.description}</p>
+                      
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                        <Users size={14} />
+                        <span>{tribe.memberCount || 0} members</span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {tribe.tags?.slice(0, 3).map((tag, idx) => (
+                          <span key={idx} className="px-2 py-1 rounded-full text-xs bg-cyan-400/10 text-cyan-400">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleJoinLeave(tribe.id, isMember);
+                      }}
+                      className={`w-full py-2 rounded-full text-sm font-semibold ${
+                        isMember
+                          ? 'bg-gray-700 text-white hover:bg-gray-600'
+                          : 'bg-cyan-400 text-black hover:bg-cyan-300'
+                      }`}
+                      data-testid="tribe-join-btn"
+                    >
+                      {isMember ? 'Leave' : 'Join Tribe'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
