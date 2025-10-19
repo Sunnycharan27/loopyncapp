@@ -288,7 +288,8 @@ async def get_reel_comments(reelId: str):
 async def create_reel_comment(reelId: str, comment: CommentCreate, authorId: str):
     comment_obj = Comment(reelId=reelId, authorId=authorId, text=comment.text)
     doc = comment_obj.model_dump()
-    await db.comments.insert_one(doc)
+    result = await db.comments.insert_one(doc)
+    doc.pop('_id', None)
     
     await db.reels.update_one({"id": reelId}, {"$inc": {"stats.comments": 1}})
     
