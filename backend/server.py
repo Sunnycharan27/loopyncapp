@@ -467,6 +467,43 @@ async def upload_file(file: UploadFile = File(...)):
         "content_type": file.content_type
     }
 
+# ===== WALLET ROUTES =====
+
+@api_router.get("/wallet")
+async def get_wallet(userId: str):
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    transactions = await db.wallet_transactions.find({"userId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    
+    return {
+        "balance": user.get("walletBalance", 0.0),
+        "kycTier": user.get("kycTier", 1),
+        "transactions": transactions
+    }
+
+@api_router.post("/wallet/topup")
+async def topup_wallet(request: TopUpRequest, userId: str):
+    # Mock payment success
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_balance = user.get("walletBalance", 0.0) + request.amount
+    await db.users.update_one({"id": userId}, {"$set": {"walletBalance": new_balance}})
+    
+    # Record transaction
+    transaction = WalletTransaction(
+        userId=userId,
+        type="topup",
+        amount=request.amount,
+        description="Wallet top-up"
+    )
+    await db.wallet_transactions.insert_one(transaction.model_dump())
+    
+    return {"balance": new_balance, "success": True}
+
 # Include router
 app.include_router(api_router)
 
