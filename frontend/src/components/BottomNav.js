@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Film, Users, User as UserIcon } from "lucide-react";
+import { Home, Film, Users, User as UserIcon, Wallet as WalletIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BottomNav = ({ active }) => {
@@ -9,6 +9,7 @@ const BottomNav = ({ active }) => {
     { id: "home", label: "Timeline", icon: Home, path: "/" },
     { id: "vibezone", label: "VibeZone", icon: Film, path: "/vibezone" },
     { id: "tribes", label: "Tribes", icon: Users, path: "/tribes" },
+    { id: "wallet", label: "Wallet", icon: WalletIcon, path: "/wallet" },
     { id: "profile", label: "Profile", icon: UserIcon, path: "/profile" },
   ];
 
