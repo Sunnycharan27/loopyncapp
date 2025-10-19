@@ -47,10 +47,12 @@ const Profile = () => {
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-2xl mx-auto">
         <TopHeader title="Profile" subtitle="Your digital identity" />
+
         {/* Profile Header */}
-        <div className="glass-surface p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-4">
+        <div className="px-4 mb-6">
+          <div className="glass-card p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-4">
               <img
                 src={currentUser.avatar}
                 alt={currentUser.name}
