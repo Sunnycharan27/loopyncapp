@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
-import { MapPin, Calendar, Users, Star, ArrowRight } from "lucide-react";
+import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ const Discover = () => {
   const [venues, setVenues] = useState([]);
   const [events, setEvents] = useState([]);
   const [creators, setCreators] = useState([]);
+  const [tribes, setTribes] = useState([]);
   const [activeTab, setActiveTab] = useState("venues");
   const [loading, setLoading] = useState(true);
 
@@ -21,19 +22,47 @@ const Discover = () => {
 
   const fetchDiscoverData = async () => {
     try {
-      const [venuesRes, eventsRes, creatorsRes] = await Promise.all([
+      const [venuesRes, eventsRes, creatorsRes, tribesRes] = await Promise.all([
         axios.get(`${API}/venues`),
         axios.get(`${API}/events`),
-        axios.get(`${API}/creators`)
+        axios.get(`${API}/creators`),
+        axios.get(`${API}/tribes`)
       ]);
       setVenues(venuesRes.data);
       setEvents(eventsRes.data);
       setCreators(creatorsRes.data);
+      setTribes(tribesRes.data);
     } catch (error) {
       toast.error("Failed to load discover data");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleJoinLeave = async (tribeId, isMember) => {
+    try {
+      const endpoint = isMember ? "leave" : "join";
+      const res = await axios.post(`${API}/tribes/${tribeId}/${endpoint}?userId=${currentUser.id}`);
+      
+      setTribes(tribes.map(t => {
+        if (t.id === tribeId) {
+          const newMembers = isMember
+            ? t.members.filter(m => m !== currentUser.id)
+            : [...t.members, currentUser.id];
+          return { ...t, members: newMembers, memberCount: res.data.memberCount };
+        }
+        return t;
+      }));
+      
+      toast.success(isMember ? "Left tribe" : "Joined tribe!");
+    } catch (error) {
+      toast.error("Action failed");
+    }
+  };
+
+  const handlePurchaseCourse = (course, creator) => {
+    toast.success(`Opening payment for ${course.name}...`);
+    // TODO: Implement Razorpay payment for courses
   };
 
   if (loading) {
@@ -49,14 +78,14 @@ const Discover = () => {
       <div className="max-w-6xl mx-auto">
         <div className="sticky top-0 z-10 glass-surface p-4 mb-6">
           <h1 className="text-2xl font-bold neon-text">Discover</h1>
-          <p className="text-sm text-gray-400">Explore venues, events & creators</p>
+          <p className="text-sm text-gray-400">Explore venues, events, marketplace & tribes</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 px-4 mb-6">
+        <div className="flex gap-2 px-4 mb-6 overflow-x-auto">
           <button
             onClick={() => setActiveTab("venues")}
-            className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
               activeTab === "venues" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
             data-testid="discover-venues-tab"
@@ -65,7 +94,7 @@ const Discover = () => {
           </button>
           <button
             onClick={() => setActiveTab("events")}
-            className={`flex-1 py-3 rounded-full font-semibold transition-all ${
+            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
               activeTab === "events" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
             data-testid="discover-events-tab"
@@ -73,13 +102,22 @@ const Discover = () => {
             Events
           </button>
           <button
-            onClick={() => setActiveTab("creators")}
-            className={`flex-1 py-3 rounded-full font-semibold transition-all ${
-              activeTab === "creators" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            onClick={() => setActiveTab("marketplace")}
+            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+              activeTab === "marketplace" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
-            data-testid="discover-creators-tab"
+            data-testid="discover-marketplace-tab"
           >
-            Creators
+            Marketplace
+          </button>
+          <button
+            onClick={() => setActiveTab("tribes")}
+            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+              activeTab === "tribes" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+            }`}
+            data-testid="discover-tribes-tab"
+          >
+            Tribes
           </button>
         </div>
 
