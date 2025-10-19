@@ -64,11 +64,18 @@ class User(BaseModel):
 class UserCreate(BaseModel):
     handle: str
     name: str
+    email: EmailStr
     password: str
 
 class LoginRequest(BaseModel):
-    handle: str
+    email: EmailStr
     password: str
+
+class UserResponse(BaseModel):
+    user_id: str
+    name: str
+    email: str
+    created_at: str
 
 class Post(BaseModel):
     model_config = ConfigDict(extra="ignore")
