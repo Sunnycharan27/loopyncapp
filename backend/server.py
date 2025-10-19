@@ -326,8 +326,20 @@ async def login(req: LoginRequest):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # Get user data from MongoDB
+    # Get or create user data in MongoDB for app functionality
     mongo_user = await db.users.find_one({"id": user['user_id']}, {"_id": 0})
+    
+    if not mongo_user:
+        # Create user in MongoDB if doesn't exist
+        handle = user['email'].split('@')[0]
+        new_mongo_user = User(
+            id=user['user_id'],
+            handle=handle,
+            name=user['name']
+        )
+        doc = new_mongo_user.model_dump()
+        await db.users.insert_one(doc)
+        mongo_user = doc
     
     # Generate JWT token
     token = create_access_token(user['user_id'])
@@ -336,7 +348,7 @@ async def login(req: LoginRequest):
         "token": token,
         "user": {
             "id": user['user_id'],
-            "handle": mongo_user.get('handle', user['email'].split('@')[0]) if mongo_user else user['email'].split('@')[0],
+            "handle": mongo_user.get('handle', user['email'].split('@')[0]),
             "name": user['name'],
             "email": user['email']
         }
