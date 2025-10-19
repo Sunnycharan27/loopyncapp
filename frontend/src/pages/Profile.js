@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
+import TopHeader from "../components/TopHeader";
 import { LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-2xl mx-auto">
+        <TopHeader title="Profile" subtitle="Your digital identity" />
         {/* Profile Header */}
         <div className="glass-surface p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
