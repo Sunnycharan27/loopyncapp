@@ -220,7 +220,8 @@ async def get_post_comments(postId: str):
 async def create_post_comment(postId: str, comment: CommentCreate, authorId: str):
     comment_obj = Comment(postId=postId, authorId=authorId, text=comment.text)
     doc = comment_obj.model_dump()
-    await db.comments.insert_one(doc)
+    result = await db.comments.insert_one(doc)
+    doc.pop('_id', None)
     
     # Update post reply count
     await db.posts.update_one({"id": postId}, {"$inc": {"stats.replies": 1}})
