@@ -1,17 +1,22 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Body, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, Body, UploadFile, File, Depends
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import shutil
 import razorpay
+import jwt
+
+# Import the Google Sheets database module
+from sheets_db import init_sheets_db
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,6 +25,17 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Initialize Google Sheets Database (in demo mode for now)
+sheets_db = init_sheets_db(demo_mode=True)
+
+# JWT Configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-this-in-production')
+JWT_ALGORITHM = 'HS256'
+JWT_EXPIRATION_HOURS = 24
+
+# Security scheme for auth
+security = HTTPBearer()
 
 # Create the main app
 app = FastAPI()
