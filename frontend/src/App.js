@@ -74,6 +74,18 @@ function App() {
               element={isAuthenticated ? <Wallet /> : <Navigate to="/auth" />}
             />
             <Route
+              path="/discover"
+              element={isAuthenticated ? <Discover /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/messenger"
+              element={isAuthenticated ? <Messenger /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/notifications"
+              element={isAuthenticated ? <Notifications /> : <Navigate to="/auth" />}
+            />
+            <Route
               path="/profile"
               element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />}
             />
