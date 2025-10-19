@@ -4,7 +4,7 @@ import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
 import { Plus, Settings, RefreshCw, ArrowUpRight, ArrowDownLeft, Shield } from "lucide-react";
 import { toast } from "sonner";
-import QRCode from "react-qr-code";
+import Barcode from "react-barcode";
 
 const Wallet = () => {
   const { currentUser } = useContext(AuthContext);
