@@ -67,6 +67,10 @@ function App() {
               element={isAuthenticated ? <TribeDetail /> : <Navigate to="/auth" />}
             />
             <Route
+              path="/wallet"
+              element={isAuthenticated ? <Wallet /> : <Navigate to="/auth" />}
+            />
+            <Route
               path="/profile"
               element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />}
             />
