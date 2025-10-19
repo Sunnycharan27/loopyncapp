@@ -80,11 +80,7 @@ const Home = () => {
   return (
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="sticky top-0 z-10 glass-surface p-4 mb-4">
-          <h1 className="text-2xl font-bold neon-text">Timeline</h1>
-          <p className="text-sm text-gray-400">What's happening now</p>
-        </div>
+        <TopHeader title="Timeline" subtitle="What's happening now" />
 
         {/* Posts Feed */}
         <div className="space-y-4 px-4">
