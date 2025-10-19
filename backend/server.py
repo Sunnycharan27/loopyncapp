@@ -233,32 +233,133 @@ razorpay_key = os.environ.get('RAZORPAY_KEY', 'rzp_test_xxx')
 razorpay_secret = os.environ.get('RAZORPAY_SECRET', 'rzp_secret_xxx')
 razorpay_client = razorpay.Client(auth=(razorpay_key, razorpay_secret))
 
-# ===== AUTH ROUTES (MOCK) =====
+# ===== JWT TOKEN UTILITIES =====
 
-@api_router.post("/auth/login")
-async def login(req: LoginRequest):
-    user = await db.users.find_one({"handle": req.handle}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"token": f"mock_token_{user['id']}", "user": user}
+def create_access_token(user_id: str) -> str:
+    """Create a JWT access token for a user"""
+    expiration = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    payload = {
+        'sub': user_id,
+        'exp': expiration,
+        'iat': datetime.now(timezone.utc)
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return token
 
-@api_router.post("/auth/signup")
-async def signup(req: UserCreate):
-    existing = await db.users.find_one({"handle": req.handle}, {"_id": 0})
-    if existing:
-        raise HTTPException(status_code=400, detail="Handle already taken")
+def verify_token(token: str) -> Optional[str]:
+    """Verify a JWT token and return the user_id if valid"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload.get('sub')
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Dependency to get the current authenticated user"""
+    token = credentials.credentials
+    user_id = verify_token(token)
     
-    user_obj = User(handle=req.handle, name=req.name)
-    doc = user_obj.model_dump()
-    await db.users.insert_one(doc)
-    return {"token": f"mock_token_{user_obj.id}", "user": doc}
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    # Get user from Google Sheets
+    user = sheets_db.find_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return user
+
+# ===== AUTH ROUTES (REAL AUTHENTICATION WITH GOOGLE SHEETS) =====
+
+@api_router.post("/auth/signup", response_model=dict)
+async def signup(req: UserCreate):
+    """
+    Register a new user with email and password.
+    User data is stored in Google Sheets (or demo mode).
+    """
+    try:
+        # Create user in Google Sheets
+        user = sheets_db.create_user(
+            name=req.name,
+            email=req.email,
+            password=req.password
+        )
+        
+        # Also create user in MongoDB for app data (posts, tribes, etc.)
+        mongo_user = User(
+            id=user['user_id'],
+            handle=req.handle,
+            name=req.name
+        )
+        doc = mongo_user.model_dump()
+        await db.users.insert_one(doc)
+        
+        # Generate JWT token
+        token = create_access_token(user['user_id'])
+        
+        return {
+            "token": token,
+            "user": {
+                "id": user['user_id'],
+                "handle": req.handle,
+                "name": user['name'],
+                "email": user['email']
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logging.error(f"Signup error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@api_router.post("/auth/login", response_model=dict)
+async def login(req: LoginRequest):
+    """
+    Login with email and password.
+    Returns a JWT token on successful authentication.
+    """
+    # Verify credentials with Google Sheets
+    user = sheets_db.verify_password(req.email, req.password)
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Get user data from MongoDB
+    mongo_user = await db.users.find_one({"id": user['user_id']}, {"_id": 0})
+    
+    # Generate JWT token
+    token = create_access_token(user['user_id'])
+    
+    return {
+        "token": token,
+        "user": {
+            "id": user['user_id'],
+            "handle": mongo_user.get('handle', user['email'].split('@')[0]) if mongo_user else user['email'].split('@')[0],
+            "name": user['name'],
+            "email": user['email']
+        }
+    }
 
 @api_router.get("/auth/me")
-async def get_me(userId: str):
-    user = await db.users.find_one({"id": userId}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+async def get_me(current_user: dict = Depends(get_current_user)):
+    """
+    Get the current authenticated user's profile.
+    Requires valid JWT token.
+    """
+    # Get additional user data from MongoDB
+    mongo_user = await db.users.find_one({"id": current_user['user_id']}, {"_id": 0})
+    
+    if not mongo_user:
+        # If not in MongoDB, return basic info from Google Sheets
+        return {
+            "id": current_user['user_id'],
+            "name": current_user['name'],
+            "email": current_user['email']
+        }
+    
+    return mongo_user
 
 # ===== USER ROUTES =====
 
