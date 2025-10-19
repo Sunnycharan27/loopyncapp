@@ -449,6 +449,11 @@ async def seed_data():
     await db.tribes.delete_many({})
     await db.comments.delete_many({})
     await db.wallet_transactions.delete_many({})
+    await db.messages.delete_many({})
+    await db.notifications.delete_many({})
+    await db.venues.delete_many({})
+    await db.events.delete_many({})
+    await db.creators.delete_many({})
     
     # Seed users
     users = [
