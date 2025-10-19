@@ -315,7 +315,8 @@ async def get_tribe(tribeId: str):
 async def create_tribe(tribe: TribeCreate, ownerId: str):
     tribe_obj = Tribe(ownerId=ownerId, members=[ownerId], memberCount=1, **tribe.model_dump())
     doc = tribe_obj.model_dump()
-    await db.tribes.insert_one(doc)
+    result = await db.tribes.insert_one(doc)
+    doc.pop('_id', None)
     return doc
 
 @api_router.post("/tribes/{tribeId}/join")
