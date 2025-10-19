@@ -1,0 +1,126 @@
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { API, AuthContext } from "../App";
+import BottomNav from "../components/BottomNav";
+import CreateFAB from "../components/CreateFAB";
+import PostCard from "../components/PostCard";
+import ComposerModal from "../components/ComposerModal";
+import { toast } from "sonner";
+
+const Home = () => {
+  const { currentUser } = useContext(AuthContext);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showComposer, setShowComposer] = useState(false);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const res = await axios.get(`${API}/posts`);
+      setPosts(res.data);
+    } catch (error) {
+      toast.error("Failed to load posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostCreated = (newPost) => {
+    setPosts([newPost, ...posts]);
+    setShowComposer(false);
+  };
+
+  const handleLike = async (postId) => {
+    try {
+      const res = await axios.post(`${API}/posts/${postId}/like?userId=${currentUser.id}`);
+      setPosts(posts.map(p => {
+        if (p.id === postId) {
+          const liked = res.data.action === "liked";
+          return {
+            ...p,
+            stats: { ...p.stats, likes: res.data.likes },
+            likedBy: liked 
+              ? [...(p.likedBy || []), currentUser.id]
+              : (p.likedBy || []).filter(id => id !== currentUser.id)
+          };
+        }
+        return p;
+      }));
+    } catch (error) {
+      toast.error("Failed to like post");
+    }
+  };
+
+  const handleRepost = async (postId) => {
+    try {
+      const res = await axios.post(`${API}/posts/${postId}/repost?userId=${currentUser.id}`);
+      setPosts(posts.map(p => {
+        if (p.id === postId) {
+          const reposted = res.data.action === "reposted";
+          return {
+            ...p,
+            stats: { ...p.stats, reposts: res.data.reposts },
+            repostedBy: reposted
+              ? [...(p.repostedBy || []), currentUser.id]
+              : (p.repostedBy || []).filter(id => id !== currentUser.id)
+          };
+        }
+        return p;
+      }));
+      toast.success(res.data.action === "reposted" ? "Reposted!" : "Unreposted");
+    } catch (error) {
+      toast.error("Failed to repost");
+    }
+  };
+
+  return (
+    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="sticky top-0 z-10 glass-surface p-4 mb-4">
+          <h1 className="text-2xl font-bold neon-text">Timeline</h1>
+          <p className="text-sm text-gray-400">What's happening now</p>
+        </div>
+
+        {/* Posts Feed */}
+        <div className="space-y-4 px-4">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto"></div>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-12 glass-card p-8">
+              <p className="text-gray-400">No posts yet. Be the first to post!</p>
+            </div>
+          ) : (
+            posts.map(post => (
+              <PostCard
+                key={post.id}
+                post={post}
+                currentUser={currentUser}
+                onLike={handleLike}
+                onRepost={handleRepost}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      <CreateFAB onClick={() => setShowComposer(true)} />
+      <BottomNav active="home" />
+
+      {showComposer && (
+        <ComposerModal
+          currentUser={currentUser}
+          onClose={() => setShowComposer(false)}
+          onPostCreated={handlePostCreated}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Home;
