@@ -186,6 +186,30 @@ class WalletTransaction(BaseModel):
 class TopUpRequest(BaseModel):
     amount: float
 
+class Order(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    venueId: str
+    items: List[dict] = Field(default_factory=list)
+    total: float = 0.0
+    split: List[dict] = Field(default_factory=list)
+    status: str = "pending"  # pending, paid, preparing, ready, completed
+    paymentLink: Optional[str] = None
+    razorpayOrderId: Optional[str] = None
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class OrderCreate(BaseModel):
+    venueId: str
+    items: List[dict]
+    total: float
+    split: List[dict] = []
+
+# Initialize Razorpay client
+razorpay_key = os.environ.get('RAZORPAY_KEY', 'rzp_test_xxx')
+razorpay_secret = os.environ.get('RAZORPAY_SECRET', 'rzp_secret_xxx')
+razorpay_client = razorpay.Client(auth=(razorpay_key, razorpay_secret))
+
 # ===== AUTH ROUTES (MOCK) =====
 
 @api_router.post("/auth/login")
