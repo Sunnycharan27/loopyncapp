@@ -117,6 +117,19 @@ class Comment(BaseModel):
 class CommentCreate(BaseModel):
     text: str
 
+class WalletTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    type: str  # topup, withdraw, payment, refund
+    amount: float
+    status: str = "completed"
+    description: str = ""
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class TopUpRequest(BaseModel):
+    amount: float
+
 # ===== AUTH ROUTES (MOCK) =====
 
 @api_router.post("/auth/login")
