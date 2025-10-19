@@ -7,9 +7,17 @@ const TopHeader = ({ title, subtitle, showIcons = true }) => {
 
   return (
     <div className="sticky top-0 z-10 glass-surface p-4 mb-4 flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-bold neon-text">{title}</h1>
-        {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
+      <div className="flex items-center gap-3">
+        <img 
+          src="/loopync-logo.jpg" 
+          alt="Loopync" 
+          className="w-10 h-10 rounded-full cursor-pointer hover:scale-110 transition-transform"
+          onClick={() => navigate('/')}
+        />
+        <div>
+          <h1 className="text-2xl font-bold neon-text">{title}</h1>
+          {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
+        </div>
       </div>
       
       {showIcons && (
