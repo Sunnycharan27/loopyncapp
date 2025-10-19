@@ -169,19 +169,25 @@ const Wallet = () => {
         {activeTab === "pay" ? (
           <div className="glass-card p-8 text-center">
             <h3 className="text-lg font-bold mb-2">Scan to Pay at Venues</h3>
-            <p className="text-sm text-gray-400 mb-6">Show this QR code to pay at Loopync partner venues</p>
+            <p className="text-sm text-gray-400 mb-6">Show this barcode to cashier at Loopync partner venues</p>
             
             <div className="bg-white p-6 rounded-3xl inline-block mb-6">
-              <QRCode
-                value={`looppay://pay/${currentUser.id}`}
-                size={200}
-                level="H"
+              <Barcode
+                value={currentUser.id.toUpperCase()}
+                format="CODE128"
+                width={2}
+                height={100}
+                displayValue={true}
+                fontSize={14}
+                background="#ffffff"
+                lineColor="#000000"
               />
             </div>
 
             <div className="mb-4">
-              <div className="text-center font-mono text-xl tracking-wider text-gray-300">
-                {currentUser.id.toUpperCase().substring(0, 16)}
+              <div className="text-center text-xs text-gray-500 mb-1">Card Number</div>
+              <div className="text-center font-mono text-lg tracking-wider text-gray-300">
+                {currentUser.id.toUpperCase().replace(/-/g, '').substring(0, 16).match(/.{1,4}/g)?.join(' ')}
               </div>
             </div>
 
