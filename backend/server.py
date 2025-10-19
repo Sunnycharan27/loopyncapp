@@ -41,6 +41,7 @@ class User(BaseModel):
     avatar: str = "https://api.dicebear.com/7.x/avataaars/svg?seed=default"
     bio: str = ""
     kycTier: int = 1
+    walletBalance: float = 0.0
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class UserCreate(BaseModel):
