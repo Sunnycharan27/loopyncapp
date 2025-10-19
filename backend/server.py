@@ -534,6 +534,92 @@ async def upload_file(file: UploadFile = File(...)):
         "content_type": file.content_type
     }
 
+# ===== MESSAGE ROUTES =====
+
+@api_router.get("/messages")
+async def get_messages(userId: str):
+    messages = await db.messages.find({
+        "$or": [{"fromId": userId}, {"toId": userId}]
+    }, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    
+    # Enrich with user data
+    for message in messages:
+        from_user = await db.users.find_one({"id": message["fromId"]}, {"_id": 0})
+        to_user = await db.users.find_one({"id": message["toId"]}, {"_id": 0})
+        message["fromUser"] = from_user
+        message["toUser"] = to_user
+    
+    return messages
+
+@api_router.post("/messages")
+async def send_message(message: MessageCreate, fromId: str, toId: str):
+    message_obj = Message(fromId=fromId, toId=toId, **message.model_dump())
+    doc = message_obj.model_dump()
+    await db.messages.insert_one(doc)
+    doc.pop('_id', None)
+    
+    # Enrich with user data
+    from_user = await db.users.find_one({"id": fromId}, {"_id": 0})
+    to_user = await db.users.find_one({"id": toId}, {"_id": 0})
+    doc["fromUser"] = from_user
+    doc["toUser"] = to_user
+    
+    return doc
+
+# ===== NOTIFICATION ROUTES =====
+
+@api_router.get("/notifications")
+async def get_notifications(userId: str):
+    notifications = await db.notifications.find({"userId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    return notifications
+
+@api_router.post("/notifications/{notificationId}/read")
+async def mark_notification_read(notificationId: str):
+    await db.notifications.update_one({"id": notificationId}, {"$set": {"read": True}})
+    return {"success": True}
+
+# ===== VENUE ROUTES =====
+
+@api_router.get("/venues")
+async def get_venues(limit: int = 50):
+    venues = await db.venues.find({}, {"_id": 0}).sort("rating", -1).to_list(limit)
+    return venues
+
+@api_router.get("/venues/{venueId}")
+async def get_venue(venueId: str):
+    venue = await db.venues.find_one({"id": venueId}, {"_id": 0})
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    return venue
+
+# ===== EVENT ROUTES =====
+
+@api_router.get("/events")
+async def get_events(limit: int = 50):
+    events = await db.events.find({}, {"_id": 0}).sort("date", 1).to_list(limit)
+    return events
+
+@api_router.get("/events/{eventId}")
+async def get_event(eventId: str):
+    event = await db.events.find_one({"id": eventId}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
+
+# ===== CREATOR ROUTES =====
+
+@api_router.get("/creators")
+async def get_creators(limit: int = 50):
+    creators = await db.creators.find({}, {"_id": 0}).sort("followers", -1).to_list(limit)
+    return creators
+
+@api_router.get("/creators/{creatorId}")
+async def get_creator(creatorId: str):
+    creator = await db.creators.find_one({"id": creatorId}, {"_id": 0})
+    if not creator:
+        raise HTTPException(status_code=404, detail="Creator not found")
+    return creator
+
 # ===== WALLET ROUTES =====
 
 @api_router.get("/wallet")
