@@ -381,10 +381,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Starbucks-style Wallet Page"
-  stuck_tasks: []
+    - "Standalone Venues Page"
+    - "Standalone Events Page"
+  stuck_tasks:
+    - "Standalone Venues Page"
+    - "Standalone Events Page"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 frontend:
   - task: "Discover Page Venues and Events Tabs"
