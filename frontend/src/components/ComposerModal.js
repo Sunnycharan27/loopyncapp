@@ -1,10 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { API } from "../App";
-import { X, Image as ImageIcon, Upload } from "lucide-react";
+import { X, Image as ImageIcon, Upload, Cloud } from "lucide-react";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const CLOUDINARY_CLOUD = process.env.REACT_APP_CLOUDINARY_CLOUD;
+const CLOUDINARY_PRESET = process.env.REACT_APP_CLOUDINARY_UNSIGNED || 'loopync_unsigned';
 
 const ComposerModal = ({ currentUser, onClose, onPostCreated }) => {
   const [text, setText] = useState("");
@@ -13,7 +15,70 @@ const ComposerModal = ({ currentUser, onClose, onPostCreated }) => {
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadMethod, setUploadMethod] = useState("local"); // "local" or "cloudinary"
   const fileInputRef = useRef(null);
+  const widgetRef = useRef(null);
+
+  useEffect(() => {
+    // Load Cloudinary widget script if configured
+    if (CLOUDINARY_CLOUD) {
+      const script = document.createElement('script');
+      script.src = 'https://upload-widget.cloudinary.com/global/all.js';
+      script.async = true;
+      document.body.appendChild(script);
+
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, []);
+
+  const openCloudinaryWidget = () => {
+    if (window.cloudinary && CLOUDINARY_CLOUD) {
+      widgetRef.current = window.cloudinary.createUploadWidget(
+        {
+          cloudName: CLOUDINARY_CLOUD,
+          uploadPreset: CLOUDINARY_PRESET,
+          folder: 'loopync/posts',
+          sources: ['local', 'camera'],
+          resourceType: 'image',
+          maxFileSize: 10000000,
+          clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+          showPoweredBy: false,
+          styles: {
+            palette: {
+              window: '#121427',
+              sourceBg: '#0f021e',
+              windowBorder: '#00E0FF',
+              tabIcon: '#00E0FF',
+              inactiveTabIcon: '#555',
+              menuIcons: '#00E0FF',
+              link: '#00E0FF',
+              action: '#00E0FF',
+              inProgress: '#00E0FF',
+              complete: '#5AFF9C',
+              error: '#FF3DB3',
+              textDark: '#FFFFFF',
+              textLight: '#FFFFFF'
+            }
+          }
+        },
+        (error, result) => {
+          if (!error && result && result.event === 'success') {
+            setMedia(result.info.secure_url);
+            setPreviewUrl(result.info.secure_url);
+            setUploadMethod('cloudinary');
+            toast.success('Image uploaded to Cloudinary!');
+          }
+        }
+      );
+      widgetRef.current.open();
+    } else {
+      toast.error('Cloudinary not configured');
+    }
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
