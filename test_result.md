@@ -101,3 +101,190 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  User wants real authentication with user data stored in Google Sheets or Sheetly.
+  Requirements:
+  - Google Sheets API for storage
+  - Email & Password authentication with proper validation
+  - Store ONLY user data in Google Sheets, keep posts/tribes/messages in MongoDB
+  - Use test/demo setup first (not requiring real Google Sheets credentials)
+  - User data should create unique IDs for each user
+
+backend:
+  - task: "Google Sheets Database Module"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/sheets_db.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Created sheets_db.py module with demo mode support.
+          Features:
+          - SheetsDB class that supports both real Google Sheets and in-memory demo mode
+          - CRUD operations: create_user, find_user_by_email, find_user_by_id, verify_password, update_user
+          - Password hashing with bcrypt
+          - UUID generation for user IDs
+          - Demo mode initialized with test user (email: demo@loopync.com, password: password123)
+
+  - task: "JWT Token Authentication"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Implemented JWT token-based authentication:
+          - create_access_token() function to generate JWT tokens
+          - verify_token() function to validate tokens
+          - get_current_user() dependency for protecting routes
+          - JWT_SECRET configurable via environment variable
+          - Token expiration set to 24 hours
+
+  - task: "Signup Endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Updated /api/auth/signup endpoint:
+          - Now accepts email field (EmailStr type)
+          - Creates user in Google Sheets with hashed password
+          - Also creates user in MongoDB for app data
+          - Returns JWT token on successful signup
+          - Validates email uniqueness
+
+  - task: "Login Endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Updated /api/auth/login endpoint:
+          - Now uses email instead of handle
+          - Verifies password using bcrypt
+          - Returns JWT token on success
+          - Returns user data from both Google Sheets and MongoDB
+
+  - task: "Protected Route (Get Me)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Updated /api/auth/me endpoint:
+          - Now requires JWT token authentication
+          - Uses get_current_user dependency
+          - Returns user data from MongoDB if available, falls back to Google Sheets data
+
+frontend:
+  - task: "Email-based Authentication UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Auth.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Updated Auth page:
+          - Added email field for both login and signup
+          - Moved handle field to signup only
+          - Updated demo login to use email (demo@loopync.com) and password (password123)
+          - Added minimum password length validation (8 characters)
+          - Display demo credentials in UI for easy testing
+
+  - task: "React Context Fix"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Fixed duplicate React import issue:
+          - Removed duplicate import at bottom of file
+          - Kept React import at top with hooks
+          - App now compiles successfully
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Signup Endpoint"
+    - "Login Endpoint"
+    - "JWT Token Authentication"
+    - "Google Sheets Database Module"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implementation Complete - Ready for Testing
+      
+      I have implemented real authentication with the following features:
+      
+      1. Google Sheets Integration (Demo Mode):
+         - Created sheets_db.py module with full CRUD operations
+         - Currently running in demo/test mode (no real Google Sheets credentials needed)
+         - In-memory storage with demo user pre-populated
+         
+      2. Backend Authentication:
+         - JWT token-based authentication
+         - Email & password login/signup
+         - Password hashing with bcrypt
+         - User data stored in Google Sheets (demo mode)
+         - App data (posts, tribes, etc.) still in MongoDB
+         
+      3. Frontend Updates:
+         - Auth page now has email field
+         - Demo login button with credentials displayed
+         - Proper validation
+      
+      Test Scenarios to Focus On:
+      1. Demo Login: Use email "demo@loopync.com" and password "password123"
+      2. New User Signup: Create account with email, handle, name, password
+      3. Login with new account credentials
+      4. Verify JWT token is returned and stored
+      5. Test protected routes work with token
+      6. Test invalid credentials fail appropriately
+      
+      Demo Mode Details:
+      - Backend logs show "Running in DEMO MODE - using in-memory storage"
+      - Pre-populated demo user available for immediate testing
+      - No Google Sheets credentials required for testing
+      - Can upgrade to real Google Sheets by setting GOOGLE_APPLICATION_CREDENTIALS and GOOGLE_SPREADSHEET_ID environment variables
