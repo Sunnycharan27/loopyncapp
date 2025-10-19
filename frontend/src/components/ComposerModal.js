@@ -119,22 +119,63 @@ const ComposerModal = ({ currentUser, onClose, onPostCreated }) => {
             autoFocus
           />
 
+          {/* File Upload Section */}
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2 text-gray-400">
-              <ImageIcon size={16} className="inline mr-2" />
-              Image URL (optional)
-            </label>
             <input
-              data-testid="composer-media-input"
-              type="url"
-              value={media}
-              onChange={(e) => setMedia(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="w-full"
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              onChange={handleFileSelect}
+              className="hidden"
             />
+            
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-400/10 text-cyan-400 hover:bg-cyan-400/20"
+              data-testid="composer-file-btn"
+            >
+              <Upload size={18} />
+              {selectedFile ? "Change Photo" : "Upload Photo"}
+            </button>
           </div>
 
-          {media && (
+          {/* Preview */}
+          {previewUrl && (
+            <div className="mb-4 relative">
+              <img src={previewUrl} alt="Preview" className="rounded-2xl w-full max-h-64 object-cover" />
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedFile(null);
+                  setPreviewUrl("");
+                }}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          )}
+
+          {/* URL Input (optional fallback) */}
+          {!selectedFile && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2 text-gray-400">
+                <ImageIcon size={16} className="inline mr-2" />
+                Or paste image URL (optional)
+              </label>
+              <input
+                data-testid="composer-media-input"
+                type="url"
+                value={media}
+                onChange={(e) => setMedia(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="w-full"
+              />
+            </div>
+          )}
+
+          {media && !selectedFile && (
             <div className="mb-4">
               <img src={media} alt="Preview" className="rounded-2xl w-full max-h-64 object-cover" onError={() => setMedia("")} />
             </div>
@@ -151,10 +192,10 @@ const ComposerModal = ({ currentUser, onClose, onPostCreated }) => {
             <button
               data-testid="composer-submit-btn"
               type="submit"
-              disabled={loading || !text.trim()}
+              disabled={loading || uploading || !text.trim()}
               className="flex-1 btn-primary"
             >
-              {loading ? "Posting..." : "Post"}
+              {uploading ? "Uploading..." : loading ? "Posting..." : "Post"}
             </button>
           </div>
         </form>
