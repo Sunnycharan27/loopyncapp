@@ -55,6 +55,11 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="glass-card p-8 w-full max-w-md">
         <div className="text-center mb-8">
+          <img 
+            src="/loopync-logo.jpg" 
+            alt="Loopync" 
+            className="w-32 h-32 mx-auto mb-4 rounded-3xl"
+          />
           <h1 className="text-5xl font-bold neon-text mb-2">Loopync</h1>
           <p className="text-gray-400 text-sm">Where your vibes find their tribes</p>
         </div>
