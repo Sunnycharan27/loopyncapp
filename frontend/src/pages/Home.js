@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
+import TopHeader from "../components/TopHeader";
 import CreateFAB from "../components/CreateFAB";
 import PostCard from "../components/PostCard";
 import ComposerModal from "../components/ComposerModal";
