@@ -8,6 +8,7 @@ import Tribes from "./pages/Tribes";
 import TribeDetail from "./pages/TribeDetail";
 import Wallet from "./pages/Wallet";
 import Discover from "./pages/Discover";
+import VenueDetail from "./pages/VenueDetail";
 import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
