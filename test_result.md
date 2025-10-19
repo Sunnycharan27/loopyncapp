@@ -311,10 +311,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Signup Endpoint"
-    - "Login Endpoint"
-    - "JWT Token Authentication"
-    - "Google Sheets Database Module"
+    - "Email-based Authentication UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
