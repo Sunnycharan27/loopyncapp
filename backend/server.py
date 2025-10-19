@@ -421,6 +421,38 @@ async def seed_data():
     
     return {"message": "Data seeded successfully", "users": len(users), "posts": len(posts), "reels": len(reels), "tribes": len(tribes)}
 
+# ===== FILE UPLOAD ROUTES =====
+
+@api_router.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """Upload image or video file"""
+    # Validate file type
+    allowed_types = {
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+        'video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'
+    }
+    
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="File type not supported")
+    
+    # Generate unique filename
+    file_ext = file.filename.split('.')[-1]
+    unique_filename = f"{uuid.uuid4()}.{file_ext}"
+    file_path = UPLOAD_DIR / unique_filename
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Return URL path
+    file_url = f"/uploads/{unique_filename}"
+    
+    return {
+        "url": file_url,
+        "filename": unique_filename,
+        "content_type": file.content_type
+    }
+
 # Include router
 app.include_router(api_router)
 
