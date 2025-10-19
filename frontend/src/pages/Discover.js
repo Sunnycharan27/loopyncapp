@@ -211,12 +211,3 @@ const Discover = () => {
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      <BottomNav active="discover" />
-    </div>
-  );
-};
-
-export default Discover;
