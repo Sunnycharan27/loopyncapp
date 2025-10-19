@@ -117,6 +117,61 @@ class Comment(BaseModel):
 class CommentCreate(BaseModel):
     text: str
 
+class Message(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    fromId: str
+    toId: str
+    text: str
+    read: bool = False
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class MessageCreate(BaseModel):
+    text: str
+
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    type: str  # post_like, tribe_join, order_ready, ticket_bought, dm
+    payload: dict = Field(default_factory=dict)
+    read: bool = False
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class Venue(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str = ""
+    avatar: str = "https://api.dicebear.com/7.x/shapes/svg?seed=venue"
+    location: str = ""
+    rating: float = 4.5
+    menuItems: List[dict] = Field(default_factory=list)
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class Event(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str = ""
+    image: str = ""
+    date: str = ""
+    location: str = ""
+    tiers: List[dict] = Field(default_factory=list)
+    vibeMeter: int = 85
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class Creator(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    displayName: str
+    avatar: str = ""
+    bio: str = ""
+    items: List[dict] = Field(default_factory=list)
+    followers: int = 0
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 class WalletTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
