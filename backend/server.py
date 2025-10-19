@@ -582,12 +582,14 @@ async def get_messages(userId: str):
         "$or": [{"fromId": userId}, {"toId": userId}]
     }, {"_id": 0}).sort("createdAt", -1).to_list(100)
     
-    # Enrich with user data
+    # Enrich with peer data
     for message in messages:
-        from_user = await db.users.find_one({"id": message["fromId"]}, {"_id": 0})
-        to_user = await db.users.find_one({"id": message["toId"]}, {"_id": 0})
-        message["fromUser"] = from_user
-        message["toUser"] = to_user
+        if message["fromId"] != userId:
+            peer = await db.users.find_one({"id": message["fromId"]}, {"_id": 0})
+            message["peer"] = peer
+        else:
+            peer = await db.users.find_one({"id": message["toId"]}, {"_id": 0})
+            message["peer"] = peer
     
     return messages
 
