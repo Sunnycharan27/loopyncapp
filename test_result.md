@@ -386,6 +386,100 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+frontend:
+  - task: "Discover Page Venues and Events Tabs"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Discover.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          DISCOVER PAGE VENUES AND EVENTS TABS TESTING COMPLETED - CORE FUNCTIONALITY WORKING
+          
+          ✅ AUTHENTICATION AND NAVIGATION:
+          - Demo login working perfectly (demo@loopync.com / password123)
+          - Navigation to Discover page via bottom navigation successful
+          - Discover page loads with correct title "Discover" and subtitle "Explore venues, events, marketplace & tribes"
+          
+          ✅ VENUES TAB FUNCTIONALITY:
+          - Venues tab found and clickable
+          - Displays 2 venue cards with proper information
+          - Venue cards show: images, names, descriptions, locations, ratings
+          - "View Menu" buttons present on venue cards
+          - Venue card navigation working (clicking navigates to /venues/v2 for venue detail)
+          
+          ✅ EVENTS TAB FUNCTIONALITY:
+          - Events tab found and clickable
+          - Displays 2 event cards with proper information
+          - Event cards show: images, names, descriptions, dates, locations, vibe meter
+          - "Get Tickets" buttons present on event cards
+          
+          ✅ MOBILE RESPONSIVENESS:
+          - Perfect display at mobile viewport (393x852)
+          - Touch-friendly interface elements
+          - Proper spacing and layout optimization
+          
+          Minor: Event cards don't navigate to detail pages (stay on discover page)
+
+  - task: "Standalone Venues Page"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/Venues.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          STANDALONE VENUES PAGE TESTING - AUTHENTICATION ROUTING ISSUE
+          
+          ❌ CRITICAL ISSUE: Direct navigation to /venues redirects to auth page
+          - URL navigation: /venues → /auth (authentication context issue)
+          - Page exists and is implemented but not accessible directly
+          - Authentication tokens are present in localStorage but routing fails
+          
+          FEATURES IMPLEMENTED (visible in code):
+          - Search bar for venues and locations
+          - Category filters (All, Cafés, Restaurants, Pubs & Bars, Temples, Malls, Parks)
+          - Venue cards with images, ratings, locations
+          - "View Menu" and "Book Table" buttons
+          - Mobile-responsive design
+          
+          ROOT CAUSE: Authentication context or protected route configuration issue
+          preventing direct access to standalone pages while allowing access via Discover tabs.
+
+  - task: "Standalone Events Page"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/Events.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          STANDALONE EVENTS PAGE TESTING - AUTHENTICATION ROUTING ISSUE
+          
+          ❌ CRITICAL ISSUE: Direct navigation to /events redirects to auth page
+          - URL navigation: /events → /auth (authentication context issue)
+          - Page exists and is implemented but not accessible directly
+          - Authentication tokens are present in localStorage but routing fails
+          
+          FEATURES IMPLEMENTED (visible in code):
+          - Tabs (All Events, Trending, Upcoming)
+          - Event cards with images, dates, locations, prices
+          - "Book Tickets" button functionality
+          - Mobile-responsive design
+          
+          ROOT CAUSE: Same authentication context issue as Venues page.
+          Direct navigation to standalone pages fails while Discover tab access works.
+
 agent_communication:
   - agent: "main"
     message: |
@@ -514,3 +608,38 @@ agent_communication:
       
       The Starbucks-style wallet page is fully implemented and working perfectly at mobile viewport.
       All requested design elements, functionality, and user experience features are verified and functional.
+
+  - agent: "testing"
+    message: |
+      🎯 VENUES AND EVENTS PAGES TESTING COMPLETE - MIXED RESULTS
+      
+      COMPREHENSIVE TESTING COMPLETED for newly added Venues and Events functionality:
+      
+      ✅ WORKING FEATURES:
+      - Demo login successful (demo@loopync.com / password123)
+      - Discover page accessible via bottom navigation
+      - Venues tab in Discover working with venue cards, ratings, "View Menu" buttons
+      - Events tab in Discover working with event cards, dates, "Get Tickets" buttons
+      - Venue card navigation to detail pages working (/venues/v2)
+      - Mobile viewport (393x852) display perfect
+      - All UI elements properly styled and responsive
+      
+      ❌ CRITICAL ISSUES FOUND:
+      1. **Authentication Routing Problem**: Direct navigation to /venues and /events redirects to auth page
+         - Tokens exist in localStorage but routing context fails
+         - Affects standalone page access while Discover tabs work fine
+      
+      2. **Missing Category Cards**: Review request expected "Nearby Venues" and "Events & Tickets" category cards
+         - Current implementation uses tabs within Discover page instead
+         - No direct navigation cards to standalone pages as requested
+      
+      3. **Event Card Navigation**: Event cards don't navigate to detail pages (stay on discover)
+      
+      SCREENSHOTS CAPTURED:
+      📸 Updated Discover page with working tabs
+      📸 Venues tab showing venue cards and functionality  
+      📸 Events tab showing event cards and functionality
+      📸 Venue detail page navigation working
+      📸 Mobile viewport optimization verified
+      
+      **RECOMMENDATION**: Fix authentication context for direct /venues and /events access.
