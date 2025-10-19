@@ -158,7 +158,9 @@ async def get_posts(limit: int = 50):
 async def create_post(post: PostCreate, authorId: str):
     post_obj = Post(authorId=authorId, **post.model_dump())
     doc = post_obj.model_dump()
-    await db.posts.insert_one(doc)
+    result = await db.posts.insert_one(doc)
+    # Remove _id from doc before returning
+    doc.pop('_id', None)
     # Enrich with author
     author = await db.users.find_one({"id": authorId}, {"_id": 0})
     doc["author"] = author
