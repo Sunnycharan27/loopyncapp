@@ -79,6 +79,10 @@ function App() {
               element={isAuthenticated ? <Discover /> : <Navigate to="/auth" />}
             />
             <Route
+              path="/venues/:venueId"
+              element={isAuthenticated ? <VenueDetail /> : <Navigate to="/auth" />}
+            />
+            <Route
               path="/messenger"
               element={isAuthenticated ? <Messenger /> : <Navigate to="/auth" />}
             />
