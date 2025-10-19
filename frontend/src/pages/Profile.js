@@ -53,35 +53,36 @@ const Profile = () => {
           <div className="glass-card p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-4">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-20 h-20 rounded-full"
-              />
-              <div>
-                <h1 className="text-2xl font-bold neon-text">{currentUser.name}</h1>
-                <p className="text-gray-400">@{currentUser.handle}</p>
-                <p className="text-sm text-gray-500 mt-1">{currentUser.bio || "No bio yet"}</p>
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="w-20 h-20 rounded-full"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold neon-text">{currentUser.name}</h1>
+                  <p className="text-gray-400">@{currentUser.handle}</p>
+                  <p className="text-sm text-gray-500 mt-1">{currentUser.bio || "No bio yet"}</p>
+                </div>
               </div>
+              <button
+                data-testid="logout-btn"
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
             </div>
-            <button
-              data-testid="logout-btn"
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20"
-            >
-              <LogOut size={18} />
-              Logout
-            </button>
-          </div>
 
-          <div className="flex gap-6 text-sm">
-            <div>
-              <span className="font-bold text-cyan-400">{myPosts.length}</span>
-              <span className="text-gray-400 ml-1">Posts</span>
-            </div>
-            <div>
-              <span className="font-bold text-cyan-400">{myTribes.length}</span>
-              <span className="text-gray-400 ml-1">Tribes</span>
+            <div className="flex gap-6 text-sm">
+              <div>
+                <span className="font-bold text-cyan-400">{myPosts.length}</span>
+                <span className="text-gray-400 ml-1">Posts</span>
+              </div>
+              <div>
+                <span className="font-bold text-cyan-400">{myTribes.length}</span>
+                <span className="text-gray-400 ml-1">Tribes</span>
+              </div>
             </div>
           </div>
         </div>
