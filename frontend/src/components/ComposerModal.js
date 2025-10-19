@@ -194,15 +194,29 @@ const ComposerModal = ({ currentUser, onClose, onPostCreated }) => {
               className="hidden"
             />
             
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-400/10 text-cyan-400 hover:bg-cyan-400/20"
-              data-testid="composer-file-btn"
-            >
-              <Upload size={18} />
-              {selectedFile ? "Change Photo" : "Upload Photo"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-cyan-400/10 text-cyan-400 hover:bg-cyan-400/20"
+                data-testid="composer-file-btn"
+              >
+                <Upload size={18} />
+                {selectedFile ? "Change Photo" : "Upload from Device"}
+              </button>
+              
+              {CLOUDINARY_CLOUD && (
+                <button
+                  type="button"
+                  onClick={openCloudinaryWidget}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-purple-400/10 text-purple-400 hover:bg-purple-400/20"
+                  data-testid="composer-cloudinary-btn"
+                >
+                  <Cloud size={18} />
+                  Upload to Cloud
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Preview */}
