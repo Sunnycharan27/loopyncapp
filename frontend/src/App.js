@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import VibeZone from "./pages/VibeZone";
 import Tribes from "./pages/Tribes";
 import TribeDetail from "./pages/TribeDetail";
+import Wallet from "./pages/Wallet";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import { Toaster } from "sonner";
