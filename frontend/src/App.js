@@ -8,7 +8,9 @@ import Tribes from "./pages/Tribes";
 import TribeDetail from "./pages/TribeDetail";
 import Wallet from "./pages/Wallet";
 import Discover from "./pages/Discover";
+import Venues from "./pages/Venues";
 import VenueDetail from "./pages/VenueDetail";
+import Events from "./pages/Events";
 import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
@@ -79,8 +81,16 @@ function App() {
               element={isAuthenticated ? <Discover /> : <Navigate to="/auth" />}
             />
             <Route
+              path="/venues"
+              element={isAuthenticated ? <Venues /> : <Navigate to="/auth" />}
+            />
+            <Route
               path="/venues/:venueId"
               element={isAuthenticated ? <VenueDetail /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/events"
+              element={isAuthenticated ? <Events /> : <Navigate to="/auth" />}
             />
             <Route
               path="/messenger"
