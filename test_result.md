@@ -381,7 +381,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Email-based Authentication UI"
+    - "Starbucks-style Wallet Page"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
