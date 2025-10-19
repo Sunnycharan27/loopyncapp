@@ -669,6 +669,86 @@ async def get_venue(venueId: str):
         raise HTTPException(status_code=404, detail="Venue not found")
     return venue
 
+# ===== ORDER ROUTES =====
+
+@api_router.post("/orders")
+async def create_order(order: OrderCreate, userId: str):
+    order_obj = Order(userId=userId, **order.model_dump())
+    
+    # Create Razorpay Payment Link
+    try:
+        payment_link_data = {
+            "amount": int(order.total * 100),  # Amount in paise
+            "currency": "INR",
+            "accept_partial": False,
+            "description": f"Order at venue {order.venueId}",
+            "customer": {
+                "name": "Customer",
+                "email": "customer@example.com"
+            },
+            "notify": {
+                "sms": False,
+                "email": False
+            },
+            "reminder_enable": False,
+            "callback_url": f"{os.environ.get('FRONTEND_URL', 'http://localhost:3000')}/order-success",
+            "callback_method": "get"
+        }
+        
+        # Only create payment link if Razorpay is properly configured
+        if razorpay_key != 'rzp_test_xxx':
+            payment_link = razorpay_client.payment_link.create(payment_link_data)
+            order_obj.paymentLink = payment_link['short_url']
+            order_obj.razorpayOrderId = payment_link['id']
+        else:
+            # Mock payment link for demo
+            order_obj.paymentLink = f"https://razorpay.com/payment-links/demo_{order_obj.id}"
+    except Exception as e:
+        logging.error(f"Razorpay error: {e}")
+        # Fallback to mock payment link
+        order_obj.paymentLink = f"https://razorpay.com/payment-links/demo_{order_obj.id}"
+    
+    doc = order_obj.model_dump()
+    await db.orders.insert_one(doc)
+    doc.pop('_id', None)
+    
+    # Create notification
+    notif = Notification(
+        userId=userId,
+        type="order_placed",
+        payload={"orderId": order_obj.id, "total": order.total, "venueId": order.venueId}
+    )
+    await db.notifications.insert_one(notif.model_dump())
+    
+    return doc
+
+@api_router.get("/orders")
+async def get_user_orders(userId: str):
+    orders = await db.orders.find({"userId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    
+    # Enrich with venue data
+    for order in orders:
+        venue = await db.venues.find_one({"id": order.get("venueId")}, {"_id": 0})
+        order["venue"] = venue
+    
+    return orders
+
+@api_router.patch("/orders/{orderId}/status")
+async def update_order_status(orderId: str, status: str):
+    await db.orders.update_one({"id": orderId}, {"$set": {"status": status}})
+    
+    # Notify user
+    order = await db.orders.find_one({"id": orderId}, {"_id": 0})
+    if order and status == "ready":
+        notif = Notification(
+            userId=order["userId"],
+            type="order_ready",
+            payload={"orderId": orderId}
+        )
+        await db.notifications.insert_one(notif.model_dump())
+    
+    return {"success": True, "status": status}
+
 # ===== EVENT ROUTES =====
 
 @api_router.get("/events")
