@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Film, Users, User as UserIcon, Wallet as WalletIcon } from "lucide-react";
+import { Home, Film, Users, Wallet as WalletIcon, Compass } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BottomNav = ({ active }) => {
@@ -8,9 +8,9 @@ const BottomNav = ({ active }) => {
   const navItems = [
     { id: "home", label: "Timeline", icon: Home, path: "/" },
     { id: "vibezone", label: "VibeZone", icon: Film, path: "/vibezone" },
-    { id: "tribes", label: "Tribes", icon: Users, path: "/tribes" },
+    { id: "discover", label: "Discover", icon: Compass, path: "/discover" },
     { id: "wallet", label: "Wallet", icon: WalletIcon, path: "/wallet" },
-    { id: "profile", label: "Profile", icon: UserIcon, path: "/profile" },
+    { id: "tribes", label: "Tribes", icon: Users, path: "/tribes" },
   ];
 
   return (
@@ -24,13 +24,13 @@ const BottomNav = ({ active }) => {
               key={item.id}
               data-testid={`nav-${item.id}-btn`}
               onClick={() => navigate(item.path)}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl transition-all ${
+              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all ${
                 isActive
                   ? 'text-cyan-400 bg-cyan-400/10'
                   : 'text-gray-400 hover:text-gray-300'
               }`}
             >
-              <Icon size={22} className={isActive ? 'neon-glow' : ''} />
+              <Icon size={20} className={isActive ? 'neon-glow' : ''} />
               <span className="text-xs font-medium">{item.label}</span>
             </button>
           );
