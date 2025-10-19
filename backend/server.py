@@ -434,7 +434,18 @@ async def seed_data():
     ]
     await db.tribes.insert_many(tribes)
     
-    return {"message": "Data seeded successfully", "users": len(users), "posts": len(posts), "reels": len(reels), "tribes": len(tribes)}
+    # Seed wallet transactions
+    wallet_transactions = [
+        {"id": "wt1", "userId": "u1", "type": "topup", "amount": 500.0, "status": "completed", "description": "Initial wallet top-up", "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "wt2", "userId": "u2", "type": "topup", "amount": 1000.0, "status": "completed", "description": "Wallet top-up", "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "wt3", "userId": "u3", "type": "topup", "amount": 750.0, "status": "completed", "description": "Artist fund top-up", "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "wt4", "userId": "u4", "type": "topup", "amount": 2500.0, "status": "completed", "description": "Crypto earnings deposit", "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "wt5", "userId": "u5", "type": "topup", "amount": 300.0, "status": "completed", "description": "Food review earnings", "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "wt6", "userId": "demo_user", "type": "topup", "amount": 1500.0, "status": "completed", "description": "Demo account funding", "createdAt": datetime.now(timezone.utc).isoformat()},
+    ]
+    await db.wallet_transactions.insert_many(wallet_transactions)
+    
+    return {"message": "Data seeded successfully", "users": len(users), "posts": len(posts), "reels": len(reels), "tribes": len(tribes), "wallet_transactions": len(wallet_transactions)}
 
 # ===== FILE UPLOAD ROUTES =====
 
