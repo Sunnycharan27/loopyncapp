@@ -88,7 +88,12 @@ const Discover = () => {
           {activeTab === "venues" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {venues.map(venue => (
-                <div key={venue.id} className="glass-card p-5" data-testid="venue-card">
+                <div 
+                  key={venue.id} 
+                  className="glass-card p-5 cursor-pointer hover:scale-[1.02] transition-transform" 
+                  data-testid="venue-card"
+                  onClick={() => navigate(`/venues/${venue.id}`)}
+                >
                   <div className="flex items-start gap-4">
                     <img src={venue.avatar} alt={venue.name} className="w-20 h-20 rounded-3xl" />
                     <div className="flex-1">
