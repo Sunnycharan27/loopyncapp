@@ -69,13 +69,62 @@ const Messenger = () => {
     if (!messageText.trim() || !selectedThread) return;
 
     try {
-      await axios.post(`${API}/messages?fromId=${currentUser.id}&toId=${selectedThread.peer.id}`, {
+      const res = await axios.post(`${API}/messages?fromId=${currentUser.id}&toId=${selectedThread.peer.id}`, {
         text: messageText
       });
       setMessageText("");
-      fetchMessages(selectedThread.peer.id);
+      // Add new message to local state immediately
+      setMessages([...messages, res.data]);
+      toast.success("Message sent!");
     } catch (error) {
       toast.error("Failed to send message");
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    
+    if (!isImage && !isVideo) {
+      toast.error("Only images and videos are supported");
+      return;
+    }
+
+    // Validate size
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`File too large. Max ${isVideo ? '50MB' : '10MB'}`);
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const uploadRes = await axios.post(`${API}/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      
+      const mediaUrl = `${BACKEND_URL}${uploadRes.data.url}`;
+      
+      // Send message with media
+      const res = await axios.post(`${API}/messages?fromId=${currentUser.id}&toId=${selectedThread.peer.id}`, {
+        text: isVideo ? "📹 Video" : "📷 Photo",
+        mediaUrl: mediaUrl,
+        mediaType: isVideo ? "video" : "image"
+      });
+      
+      setMessages([...messages, res.data]);
+      toast.success(`${isVideo ? 'Video' : 'Photo'} sent!`);
+    } catch (error) {
+      toast.error("Failed to upload media");
+    } finally {
+      setUploading(false);
     }
   };
 
