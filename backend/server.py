@@ -500,7 +500,42 @@ async def seed_data():
     ]
     await db.wallet_transactions.insert_many(wallet_transactions)
     
-    return {"message": "Data seeded successfully", "users": len(users), "posts": len(posts), "reels": len(reels), "tribes": len(tribes), "wallet_transactions": len(wallet_transactions)}
+    # Seed venues
+    venues = [
+        {"id": "v1", "name": "Café Mondegar", "description": "Iconic café in Colaba with vintage vibes", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=cafe1", "location": "Colaba, Mumbai", "rating": 4.5, "menuItems": [{"id": "m1", "name": "Cappuccino", "price": 150}, {"id": "m2", "name": "Chicken Sandwich", "price": 250}], "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "v2", "name": "The Bombay Canteen", "description": "Modern Indian cuisine", "avatar": "https://api.dicebear.com/7.x/shapes/svg?seed=restaurant1", "location": "Lower Parel, Mumbai", "rating": 4.8, "menuItems": [{"id": "m3", "name": "Butter Chicken", "price": 450}], "createdAt": datetime.now(timezone.utc).isoformat()},
+    ]
+    await db.venues.insert_many(venues)
+    
+    # Seed events
+    events = [
+        {"id": "e1", "name": "TechCrunch Disrupt Mumbai", "description": "India's biggest tech conference", "image": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800", "date": "2025-11-15", "location": "BKC, Mumbai", "tiers": [{"name": "General", "price": 5000}], "vibeMeter": 92, "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "e2", "name": "Mumbai Food Festival", "description": "Best street food", "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800", "date": "2025-11-22", "location": "Juhu Beach", "tiers": [{"name": "Entry", "price": 500}], "vibeMeter": 88, "createdAt": datetime.now(timezone.utc).isoformat()},
+    ]
+    await db.events.insert_many(events)
+    
+    # Seed creators
+    creators = [
+        {"id": "c1", "userId": "u3", "displayName": "Ananya Reddy", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=ananya", "bio": "Digital art courses & NFT masterclasses", "items": [{"id": "i1", "name": "Digital Art Basics", "type": "course", "price": 2999}], "followers": 12400, "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "c2", "userId": "u2", "displayName": "Raj Malhotra", "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=raj", "bio": "Full-stack development bootcamp", "items": [{"id": "i2", "name": "React Masterclass", "type": "course", "price": 3999}], "followers": 8900, "createdAt": datetime.now(timezone.utc).isoformat()},
+    ]
+    await db.creators.insert_many(creators)
+    
+    # Seed messages
+    messages = [
+        {"id": "msg1", "fromId": "u1", "toId": "demo_user", "text": "Hey! Loved your recent post!", "read": False, "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "msg2", "fromId": "demo_user", "toId": "u1", "text": "Thanks! How have you been?", "read": True, "createdAt": datetime.now(timezone.utc).isoformat()},
+    ]
+    await db.messages.insert_many(messages)
+    
+    # Seed notifications  
+    notifications = [
+        {"id": "n1", "userId": "demo_user", "type": "post_like", "payload": {"fromName": "Priya Sharma", "postId": "p1"}, "read": False, "createdAt": datetime.now(timezone.utc).isoformat()},
+        {"id": "n2", "userId": "demo_user", "type": "tribe_join", "payload": {"fromName": "Raj Malhotra", "tribeId": "t1"}, "read": False, "createdAt": datetime.now(timezone.utc).isoformat()},
+    ]
+    await db.notifications.insert_many(notifications)
+    
+    return {"message": "Data seeded successfully", "users": len(users), "posts": len(posts), "reels": len(reels), "tribes": len(tribes), "wallet_transactions": len(wallet_transactions), "venues": len(venues), "events": len(events), "creators": len(creators), "messages": len(messages), "notifications": len(notifications)}
 
 # ===== FILE UPLOAD ROUTES =====
 
