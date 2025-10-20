@@ -33,6 +33,35 @@ const Messenger = () => {
     return () => clearInterval(interval);
   }, [selectedThread]);
 
+  // Mock Trust Circles data
+  const trustCircles = [
+    { id: "c1", name: "Close Friends", members: 5, color: "from-pink-400 to-rose-500", icon: "❤️" },
+    { id: "c2", name: "Work Colleagues", members: 12, color: "from-blue-400 to-cyan-500", icon: "💼" },
+    { id: "c3", name: "Family", members: 8, color: "from-green-400 to-emerald-500", icon: "🏠" },
+  ];
+
+  // Mock Vibe Rooms data
+  const vibeRooms = [
+    { id: "r1", name: "Music Lovers Hub", members: 234, activeNow: 45, category: "Music", emoji: "🎵" },
+    { id: "r2", name: "Fitness Warriors", members: 189, activeNow: 23, category: "Fitness", emoji: "💪" },
+    { id: "r3", name: "Tech Talk", members: 456, activeNow: 67, category: "Technology", emoji: "💻" },
+    { id: "r4", name: "Foodie Paradise", members: 321, activeNow: 34, category: "Food", emoji: "🍕" },
+  ];
+
+  // Context Card for active chat
+  const getContextCard = (peer) => {
+    if (!peer) return null;
+    
+    // Mock context data
+    return {
+      sharedInterests: ["Music", "Food", "Travel"],
+      mutualFriends: 12,
+      lastInteraction: "Liked your post 2 days ago",
+      location: "Mumbai, India",
+      upcomingEvents: ["TechCrunch Disrupt Mumbai - Nov 15"]
+    };
+  };
+
   const fetchThreads = async () => {
     try {
       const res = await axios.get(`${API}/messages?userId=${currentUser.id}`);
