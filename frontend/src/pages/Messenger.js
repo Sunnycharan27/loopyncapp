@@ -278,8 +278,12 @@ const Messenger = () => {
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-full px-4 py-2"
                 data-testid="message-input"
               />
-              <button type="submit" disabled={!messageText.trim()} className="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-black disabled:opacity-50">
-                <Send size={18} />
+              <button type="submit" disabled={!messageText.trim() || uploading} className="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-black disabled:opacity-50">
+                {uploading ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></div>
+                ) : (
+                  <Send size={18} />
+                )}
               </button>
             </div>
           </form>
