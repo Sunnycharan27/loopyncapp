@@ -11,6 +11,8 @@ import Discover from "./pages/Discover";
 import Venues from "./pages/Venues";
 import VenueDetail from "./pages/VenueDetail";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
+import Payment from "./pages/Payment";
 import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
@@ -91,6 +93,14 @@ function App() {
             <Route
               path="/events"
               element={isAuthenticated ? <Events /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/events/:eventId"
+              element={isAuthenticated ? <EventDetail /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/payment"
+              element={isAuthenticated ? <Payment /> : <Navigate to="/auth" />}
             />
             <Route
               path="/messenger"
