@@ -127,8 +127,9 @@ const Onboarding = () => {
         toast.success("Welcome to Loopync! 🎉 +100 Loop Credits earned!");
       }
       
-      // Redirect to home
-      window.location.href = '/';
+      // Update state and navigate to home (no page reload)
+      setNeedsOnboarding(false);
+      navigate('/');
     } catch (error) {
       console.error("Onboarding error:", error);
       toast.error("Failed to save preferences. Please try again.");
