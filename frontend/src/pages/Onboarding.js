@@ -50,14 +50,20 @@ const Onboarding = () => {
 
     setLoading(true);
     try {
-      // Save user interests and language - fix API call
-      await axios.post(`${API}/users/${currentUser.id}/interests?interests=${selectedInterests.join(',')}&language=${selectedLanguage}`);
+      // Save user interests and language - send as comma-separated string
+      const interestsString = selectedInterests.join(',');
+      const url = `${API}/users/${currentUser.id}/interests?interests=${encodeURIComponent(interestsString)}&language=${selectedLanguage}`;
+      
+      await axios.post(url);
 
       // Award onboarding credits
-      await axios.post(`${API}/credits/earn?userId=${currentUser.id}&amount=100&source=onboarding&description=Welcome bonus for completing onboarding`);
+      const creditsUrl = `${API}/credits/earn?userId=${currentUser.id}&amount=100&source=onboarding&description=${encodeURIComponent('Welcome bonus for completing onboarding')}`;
+      await axios.post(creditsUrl);
 
       toast.success("Welcome to Loopync! 🎉 +100 Loop Credits earned!");
-      navigate('/');
+      
+      // Redirect to home
+      window.location.href = '/';
     } catch (error) {
       console.error("Onboarding error:", error);
       toast.error("Failed to save preferences. Please try again.");
