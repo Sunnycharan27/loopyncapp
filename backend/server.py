@@ -1576,6 +1576,165 @@ async def get_user_analytics(userId: str):
     
     # Get credits balance
     credits_info = await get_user_credits(userId)
+
+
+# ===== FRIEND REQUEST ROUTES =====
+
+@api_router.post("/friend-requests")
+async def send_friend_request(fromUserId: str, toUserId: str):
+    """Send a friend request"""
+    # Check if already friends
+    existing_friendship = await db.friendships.find_one({
+        "$or": [
+            {"userId1": fromUserId, "userId2": toUserId},
+            {"userId1": toUserId, "userId2": fromUserId}
+        ]
+    })
+    if existing_friendship:
+        raise HTTPException(status_code=400, detail="Already friends")
+    
+    # Check if request already exists
+    existing_request = await db.friend_requests.find_one({
+        "fromUserId": fromUserId,
+        "toUserId": toUserId,
+        "status": "pending"
+    }, {"_id": 0})
+    
+    if existing_request:
+        raise HTTPException(status_code=400, detail="Friend request already sent")
+    
+    # Create friend request
+    friend_request = FriendRequest(fromUserId=fromUserId, toUserId=toUserId)
+    await db.friend_requests.insert_one(friend_request.model_dump())
+    
+    # Create notification
+    from_user = await db.users.find_one({"id": fromUserId}, {"_id": 0})
+    notification = Notification(
+        userId=toUserId,
+        type="friend_request",
+        content=f"{from_user.get('name', 'Someone')} sent you a friend request",
+        link=f"/profile/{fromUserId}"
+    )
+    await db.notifications.insert_one(notification.model_dump())
+    
+    return {"success": True, "request": friend_request.model_dump()}
+
+@api_router.get("/friend-requests/{userId}")
+async def get_friend_requests(userId: str):
+    """Get incoming friend requests"""
+    requests = await db.friend_requests.find({
+        "toUserId": userId,
+        "status": "pending"
+    }, {"_id": 0}).to_list(100)
+    
+    # Enrich with user data
+    for req in requests:
+        from_user = await db.users.find_one({"id": req["fromUserId"]}, {"_id": 0})
+        if from_user:
+            req["fromUser"] = from_user
+    
+    return requests
+
+@api_router.post("/friend-requests/{requestId}/accept")
+async def accept_friend_request(requestId: str):
+    """Accept a friend request"""
+    request = await db.friend_requests.find_one({"id": requestId}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+    
+    if request["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Request already processed")
+    
+    # Update request status
+    await db.friend_requests.update_one(
+        {"id": requestId},
+        {"$set": {"status": "accepted"}}
+    )
+    
+    # Create friendship
+    friendship = Friendship(
+        userId1=request["fromUserId"],
+        userId2=request["toUserId"]
+    )
+    await db.friendships.insert_one(friendship.model_dump())
+    
+    # Create notification
+    to_user = await db.users.find_one({"id": request["toUserId"]}, {"_id": 0})
+    notification = Notification(
+        userId=request["fromUserId"],
+        type="friend_accept",
+        content=f"{to_user.get('name', 'Someone')} accepted your friend request",
+        link=f"/profile/{request['toUserId']}"
+    )
+    await db.notifications.insert_one(notification.model_dump())
+    
+    # Award credits
+    await earn_credits(request["fromUserId"], 10, "friend", "Friend request accepted")
+    await earn_credits(request["toUserId"], 10, "friend", "New friend added")
+    
+    return {"success": True}
+
+@api_router.post("/friend-requests/{requestId}/reject")
+async def reject_friend_request(requestId: str):
+    """Reject a friend request"""
+    request = await db.friend_requests.find_one({"id": requestId}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+    
+    await db.friend_requests.update_one(
+        {"id": requestId},
+        {"$set": {"status": "rejected"}}
+    )
+    
+    return {"success": True}
+
+@api_router.get("/friends/{userId}")
+async def get_friends(userId: str):
+    """Get user's friends list"""
+    friendships = await db.friendships.find({
+        "$or": [{"userId1": userId}, {"userId2": userId}]
+    }, {"_id": 0}).to_list(1000)
+    
+    friends = []
+    for friendship in friendships:
+        friend_id = friendship["userId2"] if friendship["userId1"] == userId else friendship["userId1"]
+        friend = await db.users.find_one({"id": friend_id}, {"_id": 0})
+        if friend:
+            friends.append(friend)
+    
+    return friends
+
+@api_router.get("/friends/check/{userId}/{friendId}")
+async def check_friendship(userId: str, friendId: str):
+    """Check if two users are friends"""
+    friendship = await db.friendships.find_one({
+        "$or": [
+            {"userId1": userId, "userId2": friendId},
+            {"userId1": friendId, "userId2": userId}
+        ]
+    }, {"_id": 0})
+    
+    if friendship:
+        return {"areFriends": True}
+    
+    # Check for pending request
+    pending_request = await db.friend_requests.find_one({
+        "$or": [
+            {"fromUserId": userId, "toUserId": friendId},
+            {"fromUserId": friendId, "toUserId": userId}
+        ],
+        "status": "pending"
+    }, {"_id": 0})
+    
+    if pending_request:
+        return {
+            "areFriends": False,
+            "hasPendingRequest": True,
+            "requestDirection": "sent" if pending_request["fromUserId"] == userId else "received"
+        }
+    
+    return {"areFriends": False, "hasPendingRequest": False}
+
     analytics["creditsBalance"] = credits_info["balance"]
     
     # Calculate tier based on credits
