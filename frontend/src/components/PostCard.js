@@ -43,40 +43,37 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
 
           {/* Actions */}
           <div className="flex items-center gap-6 text-gray-400">
-        <button
-          data-testid="post-like-btn"
-          onClick={() => onLike(post.id)}
-          className={`flex items-center gap-2 hover:text-pink-400 transition-colors ${
-            isLiked ? 'text-pink-400' : ''
-          }`}
-        >
-          <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-          <span className="text-sm">{post.stats?.likes || 0}</span>
-        </button>
+            <button
+              data-testid="post-like-btn"
+              onClick={() => onLike(post.id)}
+              className={`flex items-center gap-2 hover:text-pink-400 transition-colors ${
+                isLiked ? 'text-pink-400' : ''
+              }`}
+            >
+              <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
+              <span className="text-sm">{post.stats?.likes || 0}</span>
+            </button>
 
-        <button
-          data-testid="post-comment-btn"
-          className="flex items-center gap-2 hover:text-cyan-400 transition-colors"
-        >
-          <MessageCircle size={18} />
-          <span className="text-sm">{post.stats?.replies || 0}</span>
-        </button>
+            <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+              <MessageCircle size={18} />
+              <span className="text-sm">{post.stats?.replies || 0}</span>
+            </button>
 
-        <button
-          data-testid="post-repost-btn"
-          onClick={() => onRepost(post.id)}
-          className={`flex items-center gap-2 hover:text-green-400 transition-colors ${
-            isReposted ? 'text-green-400' : ''
-          }`}
-        >
-          <Repeat2 size={18} />
-          <span className="text-sm">{post.stats?.reposts || 0}</span>
-        </button>
+            <button
+              data-testid="post-repost-btn"
+              onClick={() => onRepost(post.id)}
+              className={`flex items-center gap-2 hover:text-green-400 transition-colors ${
+                isReposted ? 'text-green-400' : ''
+              }`}
+            >
+              <Repeat2 size={18} />
+              <span className="text-sm">{post.stats?.reposts || 0}</span>
+            </button>
 
-        <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
-          <Share2 size={18} />
-        </button>
-      </div>
+            <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+              <Share2 size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
