@@ -77,6 +77,20 @@ const Home = () => {
     }
   };
 
+  const handleDelete = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/posts/${postId}`);
+      setPosts(posts.filter(p => p.id !== postId));
+      toast.success("Post deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete post");
+    }
+  };
+
   return (
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-2xl mx-auto">
