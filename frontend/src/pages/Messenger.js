@@ -243,6 +243,29 @@ const Messenger = () => {
                   <div className={`max-w-xs px-4 py-2 rounded-2xl ${
                     isMe ? 'bg-cyan-400 text-black' : 'glass-card'
                   }`}>
+                    {msg.mediaUrl && (
+                      <div className="mb-2">
+                        {msg.mediaType === 'image' ? (
+                          <img 
+                            src={msg.mediaUrl} 
+                            alt="Shared media" 
+                            className="max-w-full h-auto rounded-lg"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : msg.mediaType === 'video' ? (
+                          <video 
+                            src={msg.mediaUrl} 
+                            controls 
+                            className="max-w-full h-auto rounded-lg"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    )}
                     <p className="text-sm">{msg.text}</p>
                     <span className={`text-xs ${isMe ? 'text-black/70' : 'text-gray-500'}`}>
                       {new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
