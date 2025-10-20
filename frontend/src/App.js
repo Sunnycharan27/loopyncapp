@@ -152,6 +152,7 @@ function App() {
         </BrowserRouter>
         <Toaster position="top-center" richColors />
       </div>
+      </WebSocketProvider>
     </AuthContext.Provider>
   );
 }
