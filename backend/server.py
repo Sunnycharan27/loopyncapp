@@ -42,6 +42,20 @@ security = HTTPBearer()
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+# Create Socket.IO server
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins='*',  # In production, restrict this
+    logger=True,
+    engineio_logger=True
+)
+
+# Wrap with ASGI app
+socket_app = socketio.ASGIApp(sio, app)
+
+# Store connected clients: {userId: sid}
+connected_clients = {}
+
 # Create uploads directory
 UPLOAD_DIR = Path("/app/backend/uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
