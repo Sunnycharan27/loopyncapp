@@ -488,7 +488,9 @@ async def login(req: LoginRequest):
         new_mongo_user = User(
             id=user['user_id'],
             handle=handle,
-            name=user['name']
+            name=user['name'],
+            email=user['email'],
+            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}"
         )
         doc = new_mongo_user.model_dump()
         await db.users.insert_one(doc)
@@ -496,6 +498,17 @@ async def login(req: LoginRequest):
     
     # Generate JWT token
     token = create_access_token(user['user_id'])
+    
+    return {
+        "token": token,
+        "user": {
+            "id": user['user_id'],
+            "handle": mongo_user.get('handle', user['email'].split('@')[0]),
+            "name": user['name'],
+            "email": user['email'],
+            "avatar": mongo_user.get('avatar', f"https://api.dicebear.com/7.x/avataaars/svg?seed={user['email']}")
+        }
+    }
     
     return {
         "token": token,
