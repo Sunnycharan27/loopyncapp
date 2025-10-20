@@ -1,56 +1,87 @@
 <analysis>
-The AI engineer initiated Loopync, a full-stack social superapp, focusing first on an MVP (Timeline, VibeZone, Tribes) using FastAPI, React, and MongoDB, with Shadcn UI for design. Early development involved fixing MongoDB ObjectId serialization issues. Subsequent work expanded functionality, including direct file uploads, a LoopPay wallet with QR/barcode, and foundational pages for Messenger, Discover, and Notifications. Crucially, Cloudinary was integrated for media uploads and Razorpay for payment links. The navigation and UI were reorganized, a logo was added, and the app was optimized for iPhone 15, fixing several frontend JSX errors. The current task is to implement real-time updates for posts and media, and enable photo/video sharing within Messenger, marking an iterative, user-feedback-driven development approach.
+The AI engineer has progressed Loopync, a full-stack social superapp, from an MVP. Initial efforts included fixing MongoDB serialization and integrating Cloudinary for media, and Razorpay for payments. Key tasks completed include implementing Google Sheets-based user authentication and ensuring MongoDB user creation upon login. The LoopPay Wallet was redesigned to a Starbucks-style interface. A BookMyShow-style ticket booking system, including event details, seat selection, payment, and QR ticket generation, was successfully integrated and tested. Recent work focused on fixing critical frontend issues like post media not displaying (due to incorrect API proxy URL generation) and onboarding preference saving. Additionally, a post deletion feature, a friend request system, and notification routes were added, along with navigation improvements. The trajectory concludes with the user providing an extensive new Product Requirements Document, and the AI engineer seeking clarification on the expanded scope.
 </analysis>
 
 <product_requirements>
-Loopync is India’s Free-Speech Social × Vibe Video × Venues × Fintech Superapp, a full-stack, mobile-first (iPhone 15) and desktop web application with neon glass/cyber-aurora theming. Core features include Timeline (posts), VibeZone (reels), Tribes (groups), LoopPay Wallet (UPI, balance, history), Venues (QR, menu, split bill), Events/Ticketing (QR pass), Creator Marketplace, Messenger (DMs, spaces), Discover/Search, and user profiles/settings. Compliance (India-specific badges, DPDP Consent Center) and mock AI features are also required. Integrations for Cloudinary (media upload) and Razorpay (payments) were explicitly requested. The current implementation provides a functional MVP with Timeline, VibeZone, Tribes, a LoopPay wallet (with barcode), Messenger, Discover, Notifications, and Search pages, integrated with Cloudinary and Razorpay, and optimized for iPhone 15.
+Loopync is India’s Free-Speech Social × Vibe Video × Venues × Fintech Superapp, a mobile-first (iPhone 15) and desktop web application with a neon glass/cyber-aurora theme. Core features include Timeline (posts), VibeZone (reels), Tribes (groups), LoopPay Wallet (UPI, balance, history), Venues (QR, menu, split bill), Events/Ticketing (QR pass), Creator Marketplace, Messenger (DMs, spaces), Discover/Search, and user profiles/settings. Compliance (India-specific badges, DPDP Consent Center) and mock AI features (Parallels AI, Safety AI, Sculpture AI) are also required. Integrations with Cloudinary and Razorpay are essential. The current build includes functional Timeline, VibeZone, Tribes, a Starbucks-style LoopPay wallet, Messenger, Discover, Notifications, and Search pages. Recent additions include Google Sheets-based authentication, a BookMyShow-style event ticketing system with QR codes, post deletion, and a friend request system. The overall goal is to create a fully functional, production-ready social media platform.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-Stack:** FastAPI (Python backend), React (JavaScript frontend).
--   **Database:** MongoDB (NoSQL).
--   **UI/Styling:** Shadcn UI, Tailwind CSS.
+-   **Database:** MongoDB (NoSQL), Google Sheets (for user authentication data).
+-   **UI/Styling:** Shadcn UI, Tailwind CSS, Neon glass/cyber-aurora theming.
 -   **Package Managers:** Yarn (frontend), Pip (backend).
--   **Integrations:** Cloudinary (media upload), Razorpay (payments).
--   **Data Handling:** Pydantic for API models, ObjectId serialization.
+-   **Integrations:** Cloudinary (media upload), Razorpay (payments), gspread/google-auth (Google Sheets).
+-   **Data Handling:** Pydantic for API models, JWT for authentication, UUIDs for IDs.
 </key_technical_concepts>
 
 <code_architecture>
 
--   **/app/backend/server.py**: Main FastAPI application handling API routes and MongoDB CRUD for User, Post, Reel, Tribe, Wallet, Message, Notification, Venue, Event, Creator models.
-    -   **Changes**: Initial setup; fixed MongoDB ObjectId serialization; added wallet, Razorpay payment, Messenger, Notifications, Venues, Events, and Creators endpoints; updated seed data.
--   **/app/frontend/src/App.js**: Central React router defining application navigation.
-    -   **Changes**: Configured routes for MVP features, Wallet, Messenger, Discover, Notifications, Profile, and VenueDetail, managing authentication redirects.
--   **/app/frontend/src/pages/Wallet.js**: Implements the LoopPay wallet.
-    -   **Changes**: Created from scratch with UI, then integrated  for QR and later  for a Starbucks-style barcode.
--   **/app/frontend/src/pages/Discover.js**: Displays various content, now including Tribes and a Marketplace for creators/courses.
-    -   **Changes**: Reorganized content sections (Tribes, Marketplace), renamed 'Creators', and fixed JSX parsing errors related to incomplete component structure.
+-   **/app/backend/server.py**: Main FastAPI app.
+    -   **Summary**: Handles all API routes for various features (User, Post, Reel, Tribe, Wallet, Message, Notification, Venue, Event, Creator, Credits, Checkins, Offers, Polls, Friend Requests).
+    -   **Changes**: Extensive modifications for Google Sheets authentication, JWT token generation/validation, MongoDB user creation on login, post deletion, friend request management, notification endpoints, and new models/routes for Loop Credits, Check-ins, Offers, Polls, etc. Corrected static file serving for uploads.
+-   **/app/backend/sheets_db.py**: New module.
+    -   **Summary**: Handles interaction with Google Sheets for user data storage and retrieval during authentication.
+-   **/app/frontend/src/App.js**: Central React router.
+    -   **Summary**: Defines application navigation, manages authentication redirects.
+    -   **Changes**: Added routes for , , , , , . Fixed duplicate  import.
+-   **/app/frontend/src/pages/Auth.js**: Authentication page.
+    -   **Summary**: Provides UI for user login/signup.
+    -   **Changes**: Updated to support email-based authentication integrating with the new backend Google Sheets auth.
+-   **/app/frontend/src/pages/Wallet.js**: LoopPay wallet.
+    -   **Summary**: Displays user balance, QR/barcode, and transaction history.
+    -   **Changes**: Redesigned to match a Starbucks-style UI, including layout and color theme adjustments.
 -   **/app/frontend/src/components/ComposerModal.js**: Post creation modal.
-    -   **Changes**: Updated to support local file uploads and integrated the  for cloud-based media uploads.
--   **/app/frontend/src/components/TopHeader.js**: Top navigation bar.
-    -   **Changes**: Created to include the Loopync logo, Messenger icon with badge, and Notifications icon; integrated into  and .
--   **/app/frontend/src/components/BottomNav.js**: Bottom navigation bar.
-    -   **Changes**: Tabs updated to include Home, VibeZone, Discover, Wallet, and Profile, with Tribes moved to Discover.
--   **/app/frontend/src/components/CloudinaryUploadWidget.js**: Custom component for Cloudinary uploads.
-    -   **Changes**: New file created to handle Cloudinary's unsigned upload process.
--   **/app/frontend/public/logo.jpg**: Static asset for the application logo.
-    -   **Changes**: Added user-provided logo image.
+    -   **Summary**: Handles text and media input for new posts.
+    -   **Changes**: Fixed media URL generation to include the  prefix, ensuring proper routing for uploaded images ().
+-   **/app/frontend/src/components/PostCard.js**: Component for displaying individual posts.
+    -   **Summary**: Renders post content, including text and media.
+    -   **Changes**: Added a delete button and associated logic for removing posts.
+-   **/app/frontend/src/pages/Discover.js**: Page for content discovery.
+    -   **Summary**: Displays various content sections like Tribes, Marketplace, Events, Venues.
+    -   **Changes**: Ensured Marketplace tab exists. Updated Get Tickets button navigation to .
+-   **/app/frontend/src/pages/Events.js**: Lists available events.
+    -   **Summary**: Shows events and allows navigation to event details.
+    -   **Changes**: Modified to navigate directly to  upon clicking an event, replacing a previous toast message.
+-   **/app/frontend/src/pages/Venues.js**: New page for venue listings.
+    -   **Summary**: Provides an overview of available venues.
+-   **/app/frontend/src/pages/EventDetail.js**: New page for individual event details.
+    -   **Summary**: Implements BookMyShow-style features like event info, tier selection, ticket quantity, and theater-style seat selection.
+-   **/app/frontend/src/pages/Payment.js**: New page for payment processing.
+    -   **Summary**: Manages booking summary, payment method selection, processing, and success/QR code generation. Button text changed from Browse More Events to Browse Events.
+-   **/app/frontend/src/pages/Onboarding.js**: New page for user onboarding.
+    -   **Summary**: Handles initial user setup, including preference selection.
+    -   **Changes**: Frontend logic updated to send interests as a comma-separated string for backend compatibility.
+-   **/app/frontend/src/pages/Marketplace.js**: New page for creator marketplace.
+    -   **Summary**: Displays courses, eBooks, digital packs, and merch listings.
+-   **/app/frontend/src/pages/Profile.js**: User profile page.
+    -   **Summary**: Displays user information, posts, and credits balance.
+    -   **Changes**: Updated to an enhanced version, potentially including analytics (though not fully detailed in the trajectory).
 </code_architecture>
 
 <pending_tasks>
--   Implement real-time updates for posts/media on the timeline.
+-   Implement real-time updates for posts/media on the timeline (beyond initial image display fix).
 -   Enable photo/video sharing functionality within Messenger.
 -   Complete the full onboarding flow (e.g., Aadhaar eKYC, Consent Center).
 -   Implement advanced Messenger features (Trust Circles, Vibe Rooms, Context Cards).
--   Integrate full AI wiring as specified (e.g., /ai/rank, /ai/safety).
+-   Integrate full AI wiring as specified (e.g., /ai/rank, /ai/safety, translate AI, insight AI).
 -   Build the Analytics panel and emit all specified events.
 -   Configure the two guided demo tours.
+-   Implement remaining features from the latest comprehensive PRD (Chat 370).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was tasked with enhancing the application's real-time capabilities for social media interactions. Specifically, the work involves ensuring that every post or media uploaded, including videos in VibeZone, instantly appears on the timeline without manual refresh. Concurrently, the engineer is to implement the functionality to share photos and videos directly within the Messenger feature. This requires updates to both frontend components for real-time display and backend endpoints for handling media uploads and distribution in Messenger. This task directly follows the completion of iPhone 15 optimization and general bug fixing, aiming to bring the social media aspect of Loopync closer to a fully functional prototype.
+Immediately before this summary request, the AI engineer was engaged in expanding core social media functionality and addressing critical bugs. This involved:
+1.  **Post Management:** Adding a delete option for user posts, including frontend UI in  and , and a corresponding backend  endpoint in .
+2.  **Social Interactions:** Implementing a friend request system, which included adding new models and API routes in  for sending, accepting, and rejecting requests.
+3.  **Notifications:** Adding backend routes in  for real-time notifications related to likes, comments, and shares.
+4.  **Navigation Refinements:** Updating the Discover page to correctly navigate to  when clicking Get Tickets on event cards, and changing the Browse More Events button text on the Payment page to Browse Events.
+5.  **Debugging & Fixes (recently resolved):**
+    *   Resolved the Failed to save preferences error on the  page by correcting the API parameter mismatch (frontend sending array, backend expecting comma-separated string) in both  and .
+    *   Fixed the persistent issue of Post media placeholder text showing instead of actual images on the timeline by correctly prepending the  prefix to the Cloudinary/upload URLs in  (e.g., changing  to ).
+This work was immediately followed by the user submitting a highly detailed, extensive new Product Requirements Document, prompting the AI to seek clarification on the new project scope.
 </current_work>
 
 <optional_next_step>
-Update the backend  to handle media uploads for Messenger messages.
+I am awaiting user clarification on the extensive new Product Requirements Document provided.
 </optional_next_step>
