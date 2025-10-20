@@ -101,6 +101,10 @@ const Notifications = () => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'friend_request':
+        return <UserPlus size={18} className="text-blue-400" />;
+      case 'friend_accepted':
+        return <UserCheck size={18} className="text-green-400" />;
       case 'post_like':
         return <Heart size={18} className="text-pink-400" />;
       case 'post_comment':
@@ -114,7 +118,7 @@ const Notifications = () => {
       case 'ticket_bought':
         return <Ticket size={18} className="text-purple-400" />;
       default:
-        return <Heart size={18} className="text-gray-400" />;
+        return <Bell size={18} className="text-gray-400" />;
     }
   };
 
