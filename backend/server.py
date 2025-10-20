@@ -1512,11 +1512,14 @@ async def use_ticket(ticketId: str, qrCode: str):
 # ===== USER INTERESTS & ONBOARDING =====
 
 @api_router.post("/users/{userId}/interests")
-async def update_user_interests(userId: str, interests: List[str], language: str = "en"):
+async def update_user_interests(userId: str, interests: str, language: str = "en"):
     """Update user interests and language preference"""
+    # Parse comma-separated interests
+    interest_list = [i.strip() for i in interests.split(',') if i.strip()]
+    
     user_interest = UserInterest(
         userId=userId,
-        interests=interests,
+        interests=interest_list,
         language=language,
         onboardingComplete=True
     )
