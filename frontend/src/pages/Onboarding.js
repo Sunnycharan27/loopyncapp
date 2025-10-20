@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import { toast } from "sonner";
-import { CheckCircle, Music, Dumbbell, Coffee, Code, Palette, BookOpen, Heart, MapPin } from "lucide-react";
+import { CheckCircle, Music, Dumbbell, Coffee, Code, Palette, BookOpen, Heart, MapPin, Shield, Lock, Eye, Bell, Mail, FileText, CreditCard } from "lucide-react";
 
 const Onboarding = () => {
   const { currentUser, login } = useContext(AuthContext);
@@ -12,6 +12,21 @@ const Onboarding = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // eKYC state
+  const [aadhaarNumber, setAadhaarNumber] = useState("");
+  const [kycVerified, setKycVerified] = useState(false);
+  const [verifyingKyc, setVerifyingKyc] = useState(false);
+  
+  // Consent state
+  const [consents, setConsents] = useState({
+    dataCollection: false,
+    personalizedAds: false,
+    locationTracking: false,
+    emailNotifications: false,
+    pushNotifications: false,
+    dataSharing: false
+  });
 
   const languages = [
     { code: "en", name: "English", nativeName: "English" },
