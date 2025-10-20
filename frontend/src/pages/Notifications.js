@@ -1,19 +1,40 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
-import { ArrowLeft, Heart, MessageCircle, Users, ShoppingBag, Ticket } from "lucide-react";
+import { ArrowLeft, Heart, MessageCircle, Users, ShoppingBag, Ticket, UserPlus, UserCheck, UserX, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import BottomNav from "../components/BottomNav";
 
 const Notifications = () => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all"); // all, requests
 
   useEffect(() => {
     fetchNotifications();
+    fetchFriendRequests();
+    
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchNotifications();
+      fetchFriendRequests();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchFriendRequests = async () => {
+    try {
+      const res = await axios.get(`${API}/friend-requests?userId=${currentUser.id}`);
+      setFriendRequests(res.data.filter(req => req.status === 'pending' && req.toUserId === currentUser.id));
+    } catch (error) {
+      console.error("Failed to load friend requests", error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
