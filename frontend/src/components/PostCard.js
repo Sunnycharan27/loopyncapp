@@ -71,7 +71,7 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
           }`}
         >
           <Repeat2 size={18} />
-          <span className="text-xs">{post.stats?.reposts || 0}</span>
+          <span className="text-sm">{post.stats?.reposts || 0}</span>
         </button>
 
         <button
