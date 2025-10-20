@@ -1828,14 +1828,16 @@ async def get_user_analytics(userId: str):
 @api_router.post("/friend-requests")
 async def send_friend_request(fromUserId: str, toUserId: str):
     """Send a friend request"""
+    # Validate: cannot send to yourself
+    if fromUserId == toUserId:
+        raise HTTPException(status_code=400, detail="Cannot send friend request to yourself")
+    
+    # Check if either user blocked the other
+    if await is_blocked(fromUserId, toUserId) or await is_blocked(toUserId, fromUserId):
+        raise HTTPException(status_code=403, detail="Cannot send friend request to this user")
+    
     # Check if already friends
-    existing_friendship = await db.friendships.find_one({
-        "$or": [
-            {"userId1": fromUserId, "userId2": toUserId},
-            {"userId1": toUserId, "userId2": fromUserId}
-        ]
-    })
-    if existing_friendship:
+    if await are_friends(fromUserId, toUserId):
         raise HTTPException(status_code=400, detail="Already friends")
     
     # Check if request already exists
@@ -1852,17 +1854,28 @@ async def send_friend_request(fromUserId: str, toUserId: str):
     friend_request = FriendRequest(fromUserId=fromUserId, toUserId=toUserId)
     await db.friend_requests.insert_one(friend_request.model_dump())
     
-    # Create notification
+    # Get sender info
     from_user = await db.users.find_one({"id": fromUserId}, {"_id": 0})
+    
+    # Create notification
     notification = Notification(
         userId=toUserId,
         type="friend_request",
         content=f"{from_user.get('name', 'Someone')} sent you a friend request",
-        link=f"/profile/{fromUserId}"
+        link=f"/profile/{fromUserId}",
+        payload={"fromUser": from_user}
     )
     await db.notifications.insert_one(notification.model_dump())
     
-    return {"success": True, "request": friend_request.model_dump()}
+    # Real-time notification via WebSocket
+    await emit_to_user(toUserId, 'friend_request', {
+        'id': friend_request.id,
+        'from_user': from_user,
+        'status': 'pending',
+        'createdAt': friend_request.createdAt
+    })
+    
+    return {"success": True, "requestId": friend_request.id, "status": "pending"}
 
 @api_router.get("/friend-requests")
 async def get_friend_requests(userId: str):
