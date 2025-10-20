@@ -177,11 +177,6 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
               <Heart size={18} className={`${isLiked ? 'fill-current' : ''} group-hover:scale-110 transition-transform`} />
               <span className="text-sm">{post.likeCount || 0}</span>
             </button>
-              }`}
-            >
-              <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-              <span className="text-sm">{post.stats?.likes || 0}</span>
-            </button>
 
             <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
               <MessageCircle size={18} />
