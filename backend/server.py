@@ -458,6 +458,15 @@ async def signup(req: UserCreate):
         logging.error(f"Signup error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@api_router.get("/auth/check-handle/{handle}")
+async def check_handle_availability(handle: str):
+    """Check if a username/handle is available"""
+    existing = await db.users.find_one({"handle": handle}, {"_id": 0})
+    return {
+        "available": existing is None,
+        "handle": handle
+    }
+
 @api_router.post("/auth/login", response_model=dict)
 async def login(req: LoginRequest):
     """
