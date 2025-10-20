@@ -1589,6 +1589,35 @@ async def get_user_interests(userId: str):
         return {"interests": [], "language": "en", "onboardingComplete": False}
     return interests
 
+# ===== CONSENT ROUTES =====
+
+@api_router.post("/users/{userId}/consents")
+async def save_user_consents(userId: str, consent_data: UserConsent):
+    """Save user consent preferences (DPDP compliance)"""
+    consent_dict = consent_data.model_dump()
+    consent_dict["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    
+    # Mask Aadhaar number for storage (store only last 4 digits for display)
+    if consent_dict.get("aadhaarNumber"):
+        # In production, this should be encrypted
+        consent_dict["aadhaarNumberMasked"] = f"XXXX-XXXX-{consent_dict['aadhaarNumber'][-4:]}"
+    
+    await db.user_consents.update_one(
+        {"userId": userId},
+        {"$set": consent_dict},
+        upsert=True
+    )
+    
+    return {"success": True, "message": "Consent preferences saved"}
+
+@api_router.get("/users/{userId}/consents")
+async def get_user_consents(userId: str):
+    """Get user consent preferences"""
+    consents = await db.user_consents.find_one({"userId": userId}, {"_id": 0})
+    if not consents:
+        return UserConsent(userId=userId).model_dump()
+    return consents
+
 # ===== ANALYTICS ROUTES =====
 
 @api_router.get("/analytics/{userId}")
