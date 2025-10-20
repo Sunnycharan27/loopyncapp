@@ -228,6 +228,111 @@ class OrderCreate(BaseModel):
     total: float
     split: List[dict] = []
 
+
+# ===== NEW MODELS FOR ENHANCED FEATURES =====
+
+class LoopCredit(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    amount: int
+    type: str  # earn, spend
+    source: str  # post, checkin, challenge, event, purchase
+    description: str = ""
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class CheckIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    venueId: str
+    checkedInAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    checkedOutAt: Optional[str] = None
+    status: str = "active"  # active, completed
+
+class Offer(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    venueId: str
+    title: str
+    description: str
+    creditsRequired: int = 0
+    validUntil: str
+    claimLimit: int = 100
+    claimedCount: int = 0
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class OfferClaim(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    offerId: str
+    venueId: str
+    qrCode: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    status: str = "active"  # active, redeemed, expired
+    claimedAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    redeemedAt: Optional[str] = None
+
+class Poll(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    postId: str
+    question: str
+    options: List[dict] = Field(default_factory=list)  # [{"id": "1", "text": "Option 1", "votes": 0}]
+    totalVotes: int = 0
+    votedBy: List[str] = Field(default_factory=list)
+    endsAt: str
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class Bookmark(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    userId: str
+    postId: str
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class TribeChallenge(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tribeId: str
+    title: str
+    description: str
+    reward: int  # Loop Credits
+    startDate: str
+    endDate: str
+    participants: List[str] = Field(default_factory=list)
+    completedBy: List[str] = Field(default_factory=list)
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class EventTicket(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    eventId: str
+    userId: str
+    qrCode: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tier: str = "General"
+    status: str = "active"  # active, used, cancelled
+    purchasedAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    usedAt: Optional[str] = None
+
+class UserInterest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    userId: str
+    interests: List[str] = Field(default_factory=list)  # music, fitness, food, tech, art, etc.
+    language: str = "en"  # en, hi, te
+    onboardingComplete: bool = False
+
+class UserAnalytics(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    userId: str
+    totalCredits: int = 0
+    totalPosts: int = 0
+    totalCheckins: int = 0
+    totalChallengesCompleted: int = 0
+    vibeRank: int = 0
+    tier: str = "Bronze"  # Bronze, Silver, Gold, Platinum
+    lastUpdated: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 # Initialize Razorpay client
 razorpay_key = os.environ.get('RAZORPAY_KEY', 'rzp_test_xxx')
 razorpay_secret = os.environ.get('RAZORPAY_SECRET', 'rzp_secret_xxx')
