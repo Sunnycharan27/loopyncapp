@@ -465,10 +465,10 @@ const Messenger = () => {
             {messages.map((msg, idx) => {
               const isMe = msg.fromId === currentUser.id;
               return (
-                <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-xs px-4 py-2 rounded-2xl ${
                     isMe ? 'bg-cyan-400 text-black' : 'glass-card'
-                  }`}>
+                  } ${msg.sending ? 'opacity-50' : ''}`}>
                     {msg.mediaUrl && (
                       <div className="mb-2">
                         {msg.mediaType === 'image' ? (
@@ -493,13 +493,19 @@ const Messenger = () => {
                       </div>
                     )}
                     <p className="text-sm">{msg.text}</p>
-                    <span className={`text-xs ${isMe ? 'text-black/70' : 'text-gray-500'}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-xs ${isMe ? 'text-black/70' : 'text-gray-500'}`}>
+                        {new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      {msg.sending && (
+                        <div className="w-3 h-3 border-2 border-black/30 border-t-black/70 rounded-full animate-spin"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })}
+            <div ref={messagesEndRef} />
           </div>
 
           <form onSubmit={handleSendMessage} className="glass-surface p-4">
