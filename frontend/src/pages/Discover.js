@@ -121,13 +121,112 @@ const Discover = () => {
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-6xl mx-auto">
         <div className="sticky top-0 z-10 glass-surface p-4 mb-6">
-          <h1 className="text-2xl font-bold neon-text">Discover</h1>
-          <p className="text-sm text-gray-400">Explore venues, events, marketplace & tribes</p>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-2xl font-bold neon-text">Discover</h1>
+              <p className="text-sm text-gray-400">Explore venues, events, marketplace & tribes</p>
+            </div>
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-cyan-400/20 text-cyan-400 hover:bg-cyan-400/30 transition-all"
+            >
+              {showSearch ? <X size={20} /> : <Search size={20} />}
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          {showSearch && (
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search people, posts, tribes, venues, events..."
+                className="w-full px-4 py-3 pl-12 rounded-full bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
+                autoFocus
+              />
+              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              {searching && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
+        {/* Search Results */}
+        {searchResults && searchQuery.length >= 2 && (
+          <div className="px-4 mb-6 space-y-6">
+            {/* Users */}
+            {searchResults.users.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                  <Users size={20} className="text-cyan-400" />
+                  People ({searchResults.users.length})
+                </h3>
+                <div className="space-y-2">
+                  {searchResults.users.map(user => (
+                    <div key={user.id} className="glass-card p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full" />
+                        <div>
+                          <p className="font-semibold text-white">{user.name}</p>
+                          <p className="text-sm text-gray-400">@{user.handle}</p>
+                        </div>
+                      </div>
+                      {!user.isFriend && !user.isBlocked && !user.requestSent && user.id !== currentUser.id && (
+                        <button
+                          onClick={() => sendFriendRequest(user.id)}
+                          className="px-4 py-2 rounded-full bg-cyan-400 text-black font-semibold hover:bg-cyan-500 transition-all flex items-center gap-2"
+                        >
+                          <UserPlus size={16} />
+                          Add Friend
+                        </button>
+                      )}
+                      {user.isFriend && (
+                        <span className="px-4 py-2 rounded-full bg-green-500/20 text-green-400 font-semibold">Friends</span>
+                      )}
+                      {user.requestSent && (
+                        <span className="px-4 py-2 rounded-full bg-gray-700 text-gray-400 font-semibold">Requested</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Posts */}
+            {searchResults.posts.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-white mb-3">Posts ({searchResults.posts.length})</h3>
+                <div className="space-y-2">
+                  {searchResults.posts.slice(0, 3).map(post => (
+                    <div key={post.id} className="glass-card p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={post.author?.avatar} alt={post.author?.name} className="w-8 h-8 rounded-full" />
+                        <span className="font-semibold text-white">{post.author?.name}</span>
+                      </div>
+                      <p className="text-gray-300 text-sm">{post.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Other Results */}
+            {searchResults.tribes.length === 0 && searchResults.venues.length === 0 && searchResults.events.length === 0 && searchResults.users.length === 0 && searchResults.posts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-400">No results found for "{searchQuery}"</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="flex gap-2 px-4 mb-6 overflow-x-auto">
-          <button
+        {!searchResults && (
+          <div className="flex gap-2 px-4 mb-6 overflow-x-auto">
+            <button
             onClick={() => setActiveTab("venues")}
             className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
               activeTab === "venues" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
