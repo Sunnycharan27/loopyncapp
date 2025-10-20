@@ -131,7 +131,7 @@ const Events = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleBookTicket(event.id);
+                        navigate(`/events/${event.id}`);
                       }}
                       className="w-full py-2 px-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-semibold hover:opacity-90"
                     >
