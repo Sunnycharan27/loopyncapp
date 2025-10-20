@@ -558,6 +558,15 @@ async def get_post_comments(postId: str):
     for comment in comments:
         author = await db.users.find_one({"id": comment["authorId"]}, {"_id": 0})
         comment["author"] = author
+
+@api_router.delete("/posts/{postId}")
+async def delete_post(postId: str):
+    """Delete a post"""
+    result = await db.posts.delete_one({"id": postId})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"success": True, "message": "Post deleted"}
+
     return comments
 
 @api_router.post("/posts/{postId}/comments")
