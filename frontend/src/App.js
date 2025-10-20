@@ -20,6 +20,7 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import { Toaster } from "sonner";
+import { WebSocketProvider } from "./context/WebSocketContext";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
