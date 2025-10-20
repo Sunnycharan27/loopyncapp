@@ -390,6 +390,49 @@ test_plan:
   test_priority: "stuck_first"
 
 frontend:
+  - task: "BookMyShow-style Ticket Booking Flow"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/Events.js, /app/frontend/src/pages/EventDetail.js, /app/frontend/src/pages/Payment.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          BOOKMYSHOW-STYLE TICKET BOOKING FLOW TESTING - CRITICAL NAVIGATION ISSUES
+          
+          ✅ WORKING COMPONENTS:
+          - Demo login successful (demo@loopync.com / password123)
+          - Events page accessible via Discover > Events tab
+          - Event display components working perfectly:
+            * Event banner image with TechCrunch Disrupt Mumbai
+            * Date (2025-11-15), Location (BKC, Mumbai), Vibe meter (92%)
+            * "Get Tickets" button present and styled correctly
+          - Mobile responsive design (393x852 viewport)
+          - Backend API endpoints working (/api/events)
+          
+          ❌ CRITICAL BOOKING FLOW BLOCKERS:
+          1. **Event Detail Navigation Broken**: 
+             - Clicking event cards does NOT navigate to EventDetail.js page
+             - "Get Tickets" button shows toast "Ticket booking will be available soon!" instead of navigating
+             - Direct navigation to /events/e1 redirects to auth page (routing issue)
+          
+          2. **Complete Booking Flow Inaccessible**:
+             - Cannot access EventDetail.js page (which has all BookMyShow components implemented)
+             - Cannot test seat selection UI (theater-style grid A-J, seats 1-12)
+             - Cannot test tier selection (General, VIP) and quantity selector
+             - Cannot test payment flow (UPI, Card, Loop Credits)
+             - Cannot test success page with QR code and credits reward
+          
+          📋 IMPLEMENTATION STATUS:
+          - EventDetail.js: ✅ Complete BookMyShow-style components implemented but inaccessible
+          - Payment.js: ✅ Complete payment flow with QR code generation implemented
+          - Events.js: ❌ handleBookTicket() shows toast instead of navigating
+          
+          🔧 ROOT CAUSE: Authentication routing + Events.js navigation logic prevents booking flow access
+
   - task: "Discover Page Venues and Events Tabs"
     implemented: true
     working: true
