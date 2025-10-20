@@ -31,18 +31,18 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
             )}
           </div>
 
-      {/* Content */}
-      <p className="text-gray-200 mb-3">{post.text}</p>
-      {post.media && (
-        <img
-          src={post.media}
-          alt="Post media"
-          className="rounded-2xl w-full mb-3 hover:scale-[1.02] transition-transform"
-        />
-      )}
+          <p className="text-gray-200 mb-3">{post.text}</p>
 
-      {/* Actions */}
-      <div className="flex items-center gap-6 text-gray-400">
+          {post.media && (
+            <img
+              src={post.media}
+              alt="Post media"
+              className="rounded-2xl w-full mb-3 hover:scale-[1.02] transition-transform"
+            />
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-6 text-gray-400">
         <button
           data-testid="post-like-btn"
           onClick={() => onLike(post.id)}
