@@ -18,8 +18,19 @@ const Messenger = () => {
   const [showCircles, setShowCircles] = useState(false);
   const [activeView, setActiveView] = useState("chats"); // chats, rooms, circles
   const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
   
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     fetchThreads();
