@@ -414,6 +414,11 @@ async def signup(req: UserCreate):
     User data is stored in Google Sheets (or demo mode).
     """
     try:
+        # Check if handle already exists in MongoDB
+        existing_handle = await db.users.find_one({"handle": req.handle}, {"_id": 0})
+        if existing_handle:
+            raise HTTPException(status_code=400, detail=f"Username '@{req.handle}' is already taken. Please choose a different username.")
+        
         # Create user in Google Sheets
         user = sheets_db.create_user(
             name=req.name,
@@ -425,7 +430,9 @@ async def signup(req: UserCreate):
         mongo_user = User(
             id=user['user_id'],
             handle=req.handle,
-            name=req.name
+            name=req.name,
+            email=req.email,
+            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={req.handle}"
         )
         doc = mongo_user.model_dump()
         await db.users.insert_one(doc)
@@ -439,9 +446,12 @@ async def signup(req: UserCreate):
                 "id": user['user_id'],
                 "handle": req.handle,
                 "name": user['name'],
-                "email": user['email']
+                "email": user['email'],
+                "avatar": mongo_user.avatar
             }
         }
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
