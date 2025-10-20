@@ -45,6 +45,44 @@ const Discover = () => {
     }
   };
 
+  const handleSearch = async (query) => {
+    setSearchQuery(query);
+    
+    if (query.length < 2) {
+      setSearchResults(null);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const res = await axios.get(`${API}/search?q=${encodeURIComponent(query)}&currentUserId=${currentUser.id}`);
+      setSearchResults(res.data);
+    } catch (error) {
+      toast.error("Search failed");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const sendFriendRequest = async (toUserId) => {
+    try {
+      await axios.post(`${API}/friend-requests?fromUserId=${currentUser.id}&toUserId=${toUserId}`);
+      toast.success("Friend request sent!");
+      
+      // Update search results
+      if (searchResults) {
+        setSearchResults({
+          ...searchResults,
+          users: searchResults.users.map(u => 
+            u.id === toUserId ? { ...u, requestSent: true } : u
+          )
+        });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to send request");
+    }
+  };
+
   const handleJoinLeave = async (tribeId, isMember) => {
     try {
       const endpoint = isMember ? "leave" : "join";
