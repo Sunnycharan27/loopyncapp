@@ -6,6 +6,9 @@ import TopHeader from "../components/TopHeader";
 import CreateFAB from "../components/CreateFAB";
 import PostCard from "../components/PostCard";
 import ComposerModal from "../components/ComposerModal";
+import LiveActivityFeed from "../components/LiveActivityFeed";
+import StreakCounter from "../components/StreakCounter";
+import MoodSelector from "../components/MoodSelector";
 import { toast } from "sonner";
 
 const Home = () => {
@@ -13,6 +16,7 @@ const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showComposer, setShowComposer] = useState(false);
+  const [userMood, setUserMood] = useState("happy");
 
   useEffect(() => {
     fetchPosts();
