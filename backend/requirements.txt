@@ -77,3 +77,5 @@ emergentintegrations==0.1.0
 google-generativeai==0.8.5
 litellm==1.78.5
 openai==1.99.9
+aiohttp==3.13.1
+python-socketio==5.14.2
