@@ -29,8 +29,49 @@ const Auth = () => {
     }
   }, [handle, isLogin]);
 
+  // Debounced handle check
+  useEffect(() => {
+    if (!isLogin && handle.length >= 3) {
+      const timer = setTimeout(() => {
+        checkHandleAvailability(handle);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setHandleAvailable(null);
+    }
+  }, [handle, isLogin]);
+
+  const checkHandleAvailability = async (handleToCheck) => {
+    setCheckingHandle(true);
+    try {
+      const res = await axios.get(`${API}/auth/check-handle/${handleToCheck}`);
+      setHandleAvailable(res.data.available);
+    } catch (error) {
+      console.error("Failed to check handle");
+    } finally {
+      setCheckingHandle(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!isLogin) {
+      if (handle.length < 3) {
+        toast.error("Username must be at least 3 characters");
+        return;
+      }
+      if (!handleAvailable) {
+        toast.error("Please choose an available username");
+        return;
+      }
+      if (password.length < 8) {
+        toast.error("Password must be at least 8 characters");
+        return;
+      }
+    }
+    
     setLoading(true);
 
     try {
