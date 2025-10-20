@@ -1062,6 +1062,516 @@ async def topup_wallet(request: TopUpRequest, userId: str):
     
     return {"balance": new_balance, "success": True}
 
+
+# ===== LOOP CREDITS ROUTES =====
+
+@api_router.get("/credits/{userId}")
+async def get_user_credits(userId: str):
+    """Get user's Loop Credits balance and history"""
+    # Get total credits
+    credits = await db.loop_credits.find({"userId": userId}, {"_id": 0}).to_list(1000)
+    
+    earned = sum(c["amount"] for c in credits if c["type"] == "earn")
+    spent = sum(c["amount"] for c in credits if c["type"] == "spend")
+    balance = earned - spent
+    
+    # Get analytics
+    analytics = await db.user_analytics.find_one({"userId": userId}, {"_id": 0})
+    if not analytics:
+        analytics = UserAnalytics(userId=userId, totalCredits=balance).model_dump()
+        await db.user_analytics.insert_one(analytics)
+    
+    return {
+        "balance": balance,
+        "earned": earned,
+        "spent": spent,
+        "history": credits[:20],  # Last 20 transactions
+        "tier": analytics.get("tier", "Bronze"),
+        "vibeRank": analytics.get("vibeRank", 0)
+    }
+
+@api_router.post("/credits/earn")
+async def earn_credits(userId: str, amount: int, source: str, description: str = ""):
+    """Award Loop Credits to user"""
+    credit = LoopCredit(
+        userId=userId,
+        amount=amount,
+        type="earn",
+        source=source,
+        description=description
+    )
+    await db.loop_credits.insert_one(credit.model_dump())
+    
+    # Update analytics
+    await db.user_analytics.update_one(
+        {"userId": userId},
+        {"$inc": {"totalCredits": amount}, "$set": {"lastUpdated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {"success": True, "amount": amount, "balance": await get_credits_balance(userId)}
+
+@api_router.post("/credits/spend")
+async def spend_credits(userId: str, amount: int, source: str, description: str = ""):
+    """Deduct Loop Credits from user"""
+    balance = await get_credits_balance(userId)
+    if balance < amount:
+        raise HTTPException(status_code=400, detail="Insufficient credits")
+    
+    credit = LoopCredit(
+        userId=userId,
+        amount=amount,
+        type="spend",
+        source=source,
+        description=description
+    )
+    await db.loop_credits.insert_one(credit.model_dump())
+    
+    # Update analytics
+    await db.user_analytics.update_one(
+        {"userId": userId},
+        {"$inc": {"totalCredits": -amount}, "$set": {"lastUpdated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {"success": True, "amount": amount, "balance": await get_credits_balance(userId)}
+
+async def get_credits_balance(userId: str) -> int:
+    """Helper to get current credits balance"""
+    credits = await db.loop_credits.find({"userId": userId}, {"_id": 0}).to_list(1000)
+    earned = sum(c["amount"] for c in credits if c["type"] == "earn")
+    spent = sum(c["amount"] for c in credits if c["type"] == "spend")
+    return earned - spent
+
+# ===== CHECK-IN ROUTES =====
+
+@api_router.post("/checkins")
+async def create_checkin(userId: str, venueId: str):
+    """Check-in to a venue"""
+    # Check if already checked in
+    existing = await db.checkins.find_one({"userId": userId, "status": "active"}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already checked in to a venue")
+    
+    checkin = CheckIn(userId=userId, venueId=venueId)
+    await db.checkins.insert_one(checkin.model_dump())
+    
+    # Award credits for check-in
+    await earn_credits(userId, 10, "checkin", f"Check-in at venue {venueId}")
+    
+    # Update analytics
+    await db.user_analytics.update_one(
+        {"userId": userId},
+        {"$inc": {"totalCheckins": 1}, "$set": {"lastUpdated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    # Update venue vibe meter
+    await update_venue_vibe_meter(venueId)
+    
+    return {"success": True, "checkin": checkin.model_dump(), "creditsEarned": 10}
+
+@api_router.post("/checkins/{checkinId}/checkout")
+async def checkout(checkinId: str):
+    """Check-out from a venue"""
+    checkin = await db.checkins.find_one({"id": checkinId}, {"_id": 0})
+    if not checkin:
+        raise HTTPException(status_code=404, detail="Check-in not found")
+    
+    await db.checkins.update_one(
+        {"id": checkinId},
+        {"$set": {"checkedOutAt": datetime.now(timezone.utc).isoformat(), "status": "completed"}}
+    )
+    
+    # Update venue vibe meter
+    await update_venue_vibe_meter(checkin["venueId"])
+    
+    return {"success": True}
+
+@api_router.get("/checkins/venue/{venueId}")
+async def get_venue_checkins(venueId: str):
+    """Get active check-ins at a venue"""
+    checkins = await db.checkins.find({"venueId": venueId, "status": "active"}, {"_id": 0}).to_list(100)
+    
+    # Enrich with user data
+    for checkin in checkins:
+        user = await db.users.find_one({"id": checkin["userId"]}, {"_id": 0})
+        if user:
+            checkin["user"] = {"id": user["id"], "name": user["name"], "avatar": user["avatar"]}
+    
+    return {"count": len(checkins), "checkins": checkins}
+
+@api_router.get("/checkins/user/{userId}/active")
+async def get_user_active_checkin(userId: str):
+    """Get user's active check-in"""
+    checkin = await db.checkins.find_one({"userId": userId, "status": "active"}, {"_id": 0})
+    if not checkin:
+        return {"checkedIn": False}
+    
+    # Get venue details
+    venue = await db.venues.find_one({"id": checkin["venueId"]}, {"_id": 0})
+    
+    return {"checkedIn": True, "checkin": checkin, "venue": venue}
+
+async def update_venue_vibe_meter(venueId: str):
+    """Update venue's vibe meter based on active check-ins"""
+    checkins = await db.checkins.find({"venueId": venueId, "status": "active"}, {"_id": 0}).to_list(100)
+    count = len(checkins)
+    
+    # Calculate vibe meter (0-100 scale)
+    vibe_meter = min(100, count * 10)  # 10 points per active user
+    
+    await db.venues.update_one(
+        {"id": venueId},
+        {"$set": {"vibeMeter": vibe_meter}}
+    )
+    
+    return vibe_meter
+
+# ===== OFFERS ROUTES =====
+
+@api_router.get("/offers/venue/{venueId}")
+async def get_venue_offers(venueId: str):
+    """Get active offers for a venue"""
+    now = datetime.now(timezone.utc).isoformat()
+    offers = await db.offers.find(
+        {"venueId": venueId, "validUntil": {"$gt": now}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    return offers
+
+@api_router.post("/offers/{offerId}/claim")
+async def claim_offer(offerId: str, userId: str):
+    """Claim an offer"""
+    offer = await db.offers.find_one({"id": offerId}, {"_id": 0})
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
+    
+    # Check if already claimed
+    existing_claim = await db.offer_claims.find_one({"userId": userId, "offerId": offerId, "status": "active"}, {"_id": 0})
+    if existing_claim:
+        raise HTTPException(status_code=400, detail="Offer already claimed")
+    
+    # Check claim limit
+    if offer["claimedCount"] >= offer["claimLimit"]:
+        raise HTTPException(status_code=400, detail="Offer claim limit reached")
+    
+    # Check credits
+    if offer["creditsRequired"] > 0:
+        balance = await get_credits_balance(userId)
+        if balance < offer["creditsRequired"]:
+            raise HTTPException(status_code=400, detail="Insufficient credits")
+        
+        # Deduct credits
+        await spend_credits(userId, offer["creditsRequired"], "offer", f"Claimed offer: {offer['title']}")
+    
+    # Create claim
+    claim = OfferClaim(
+        userId=userId,
+        offerId=offerId,
+        venueId=offer["venueId"]
+    )
+    await db.offer_claims.insert_one(claim.model_dump())
+    
+    # Update offer claimed count
+    await db.offers.update_one({"id": offerId}, {"$inc": {"claimedCount": 1}})
+    
+    return {"success": True, "claim": claim.model_dump()}
+
+@api_router.get("/offers/claims/{userId}")
+async def get_user_claims(userId: str):
+    """Get user's claimed offers"""
+    claims = await db.offer_claims.find({"userId": userId, "status": "active"}, {"_id": 0}).to_list(100)
+    
+    # Enrich with offer and venue details
+    for claim in claims:
+        offer = await db.offers.find_one({"id": claim["offerId"]}, {"_id": 0})
+        venue = await db.venues.find_one({"id": claim["venueId"]}, {"_id": 0})
+        if offer:
+            claim["offer"] = offer
+        if venue:
+            claim["venue"] = venue
+    
+    return claims
+
+# ===== POLLS ROUTES =====
+
+@api_router.post("/polls")
+async def create_poll(postId: str, question: str, options: List[str], endsAt: str):
+    """Create a poll for a post"""
+    poll_options = [{"id": str(i), "text": opt, "votes": 0} for i, opt in enumerate(options)]
+    
+    poll = Poll(
+        postId=postId,
+        question=question,
+        options=poll_options,
+        endsAt=endsAt
+    )
+    await db.polls.insert_one(poll.model_dump())
+    
+    return poll.model_dump()
+
+@api_router.post("/polls/{pollId}/vote")
+async def vote_on_poll(pollId: str, userId: str, optionId: str):
+    """Vote on a poll"""
+    poll = await db.polls.find_one({"id": pollId}, {"_id": 0})
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    
+    # Check if already voted
+    if userId in poll["votedBy"]:
+        raise HTTPException(status_code=400, detail="Already voted")
+    
+    # Update poll
+    for option in poll["options"]:
+        if option["id"] == optionId:
+            option["votes"] += 1
+            break
+    
+    poll["totalVotes"] += 1
+    poll["votedBy"].append(userId)
+    
+    await db.polls.update_one(
+        {"id": pollId},
+        {"$set": {"options": poll["options"], "totalVotes": poll["totalVotes"], "votedBy": poll["votedBy"]}}
+    )
+    
+    # Award credits for voting
+    await earn_credits(userId, 2, "poll_vote", f"Voted on poll {pollId}")
+    
+    return {"success": True, "poll": poll}
+
+@api_router.get("/polls/{pollId}")
+async def get_poll(pollId: str):
+    """Get poll details"""
+    poll = await db.polls.find_one({"id": pollId}, {"_id": 0})
+    if not poll:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    return poll
+
+# ===== BOOKMARKS ROUTES =====
+
+@api_router.post("/bookmarks")
+async def create_bookmark(userId: str, postId: str):
+    """Bookmark a post"""
+    existing = await db.bookmarks.find_one({"userId": userId, "postId": postId}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Post already bookmarked")
+    
+    bookmark = Bookmark(userId=userId, postId=postId)
+    await db.bookmarks.insert_one(bookmark.model_dump())
+    
+    return {"success": True, "bookmark": bookmark.model_dump()}
+
+@api_router.delete("/bookmarks")
+async def remove_bookmark(userId: str, postId: str):
+    """Remove bookmark"""
+    result = await db.bookmarks.delete_one({"userId": userId, "postId": postId})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Bookmark not found")
+    
+    return {"success": True}
+
+@api_router.get("/bookmarks/{userId}")
+async def get_user_bookmarks(userId: str):
+    """Get user's bookmarks"""
+    bookmarks = await db.bookmarks.find({"userId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    
+    # Enrich with post details
+    posts = []
+    for bookmark in bookmarks:
+        post = await db.posts.find_one({"id": bookmark["postId"]}, {"_id": 0})
+        if post:
+            # Get author details
+            author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+            if author:
+                post["author"] = author
+            posts.append(post)
+    
+    return posts
+
+# ===== TRIBE CHALLENGES ROUTES =====
+
+@api_router.get("/tribes/{tribeId}/challenges")
+async def get_tribe_challenges(tribeId: str):
+    """Get active challenges for a tribe"""
+    now = datetime.now(timezone.utc).isoformat()
+    challenges = await db.tribe_challenges.find(
+        {"tribeId": tribeId, "endDate": {"$gt": now}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    return challenges
+
+@api_router.post("/challenges/{challengeId}/join")
+async def join_challenge(challengeId: str, userId: str):
+    """Join a tribe challenge"""
+    challenge = await db.tribe_challenges.find_one({"id": challengeId}, {"_id": 0})
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    if userId in challenge["participants"]:
+        raise HTTPException(status_code=400, detail="Already joined this challenge")
+    
+    await db.tribe_challenges.update_one(
+        {"id": challengeId},
+        {"$push": {"participants": userId}}
+    )
+    
+    return {"success": True}
+
+@api_router.post("/challenges/{challengeId}/complete")
+async def complete_challenge(challengeId: str, userId: str):
+    """Mark challenge as completed"""
+    challenge = await db.tribe_challenges.find_one({"id": challengeId}, {"_id": 0})
+    if not challenge:
+        raise HTTPException(status_code=404, detail="Challenge not found")
+    
+    if userId not in challenge["participants"]:
+        raise HTTPException(status_code=400, detail="Not a participant")
+    
+    if userId in challenge["completedBy"]:
+        raise HTTPException(status_code=400, detail="Challenge already completed")
+    
+    # Mark as completed
+    await db.tribe_challenges.update_one(
+        {"id": challengeId},
+        {"$push": {"completedBy": userId}}
+    )
+    
+    # Award credits
+    await earn_credits(userId, challenge["reward"], "challenge", f"Completed challenge: {challenge['title']}")
+    
+    # Update analytics
+    await db.user_analytics.update_one(
+        {"userId": userId},
+        {"$inc": {"totalChallengesCompleted": 1}, "$set": {"lastUpdated": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    
+    return {"success": True, "reward": challenge["reward"]}
+
+# ===== EVENT TICKETS ROUTES =====
+
+@api_router.post("/events/{eventId}/tickets")
+async def claim_event_ticket(eventId: str, userId: str, tier: str = "General"):
+    """Claim a free event ticket"""
+    event = await db.events.find_one({"id": eventId}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Check if already has ticket
+    existing = await db.event_tickets.find_one({"eventId": eventId, "userId": userId, "status": "active"}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already have a ticket for this event")
+    
+    # Create ticket
+    ticket = EventTicket(
+        eventId=eventId,
+        userId=userId,
+        tier=tier
+    )
+    await db.event_tickets.insert_one(ticket.model_dump())
+    
+    return {"success": True, "ticket": ticket.model_dump()}
+
+@api_router.get("/tickets/{userId}")
+async def get_user_tickets(userId: str):
+    """Get user's event tickets"""
+    tickets = await db.event_tickets.find({"userId": userId, "status": "active"}, {"_id": 0}).to_list(100)
+    
+    # Enrich with event details
+    for ticket in tickets:
+        event = await db.events.find_one({"id": ticket["eventId"]}, {"_id": 0})
+        if event:
+            ticket["event"] = event
+    
+    return tickets
+
+@api_router.post("/tickets/{ticketId}/use")
+async def use_ticket(ticketId: str, qrCode: str):
+    """Mark ticket as used (scanned at venue)"""
+    ticket = await db.event_tickets.find_one({"id": ticketId, "qrCode": qrCode}, {"_id": 0})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found or invalid QR code")
+    
+    if ticket["status"] != "active":
+        raise HTTPException(status_code=400, detail="Ticket already used or cancelled")
+    
+    await db.event_tickets.update_one(
+        {"id": ticketId},
+        {"$set": {"status": "used", "usedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Award credits for attending
+    await earn_credits(ticket["userId"], 50, "event_attendance", f"Attended event")
+    
+    return {"success": True, "message": "Ticket validated"}
+
+# ===== USER INTERESTS & ONBOARDING =====
+
+@api_router.post("/users/{userId}/interests")
+async def update_user_interests(userId: str, interests: List[str], language: str = "en"):
+    """Update user interests and language preference"""
+    user_interest = UserInterest(
+        userId=userId,
+        interests=interests,
+        language=language,
+        onboardingComplete=True
+    )
+    
+    await db.user_interests.update_one(
+        {"userId": userId},
+        {"$set": user_interest.model_dump()},
+        upsert=True
+    )
+    
+    return {"success": True}
+
+@api_router.get("/users/{userId}/interests")
+async def get_user_interests(userId: str):
+    """Get user interests"""
+    interests = await db.user_interests.find_one({"userId": userId}, {"_id": 0})
+    if not interests:
+        return {"interests": [], "language": "en", "onboardingComplete": False}
+    return interests
+
+# ===== ANALYTICS ROUTES =====
+
+@api_router.get("/analytics/{userId}")
+async def get_user_analytics(userId: str):
+    """Get user analytics dashboard"""
+    analytics = await db.user_analytics.find_one({"userId": userId}, {"_id": 0})
+    if not analytics:
+        analytics = UserAnalytics(userId=userId).model_dump()
+        await db.user_analytics.insert_one(analytics)
+    
+    # Get credits balance
+    credits_info = await get_user_credits(userId)
+    analytics["creditsBalance"] = credits_info["balance"]
+    
+    # Calculate tier based on credits
+    balance = credits_info["balance"]
+    if balance >= 10000:
+        tier = "Platinum"
+    elif balance >= 5000:
+        tier = "Gold"
+    elif balance >= 1000:
+        tier = "Silver"
+    else:
+        tier = "Bronze"
+    
+    analytics["tier"] = tier
+    
+    # Update tier in database
+    await db.user_analytics.update_one(
+        {"userId": userId},
+        {"$set": {"tier": tier}}
+    )
+    
+    return analytics
+
 # Include router
 app.include_router(api_router)
 
