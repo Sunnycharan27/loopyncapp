@@ -73,14 +73,15 @@ function App() {
 
   return (
     <AuthContext.Provider value={{ currentUser, isAuthenticated, needsOnboarding, setNeedsOnboarding, login, logout }}>
-      <div className="App">
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/onboarding"
-              element={isAuthenticated ? <Onboarding /> : <Navigate to="/auth" />}
-            />
+      <WebSocketProvider>
+        <div className="App">
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route
+                path="/onboarding"
+                element={isAuthenticated ? <Onboarding /> : <Navigate to="/auth" />}
+              />
             <Route
               path="/"
               element={
