@@ -7,7 +7,7 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
   const isOwnPost = post.authorId === currentUser?.id;
 
   return (
-    <div data-testid="post-card" className="glass-card p-5">
+    <div className="glass-card p-4 mb-4 hover:bg-gray-800/30 transition-all" data-testid="post-card">
       {/* Author */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
