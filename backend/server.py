@@ -461,6 +461,109 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     
     return user
 
+# ===== WEBSOCKET HELPERS =====
+
+async def emit_to_user(user_id: str, event: str, data: dict):
+    """Emit event to a specific user if they're connected"""
+    if user_id in connected_clients:
+        sid = connected_clients[user_id]
+        await sio.emit(event, data, room=sid)
+        logging.info(f"Emitted {event} to user {user_id}")
+
+async def emit_to_thread(thread_id: str, event: str, data: dict, exclude_user: str = None):
+    """Emit event to all users in a thread"""
+    # Get thread participants
+    thread = await db.dm_threads.find_one({"id": thread_id}, {"_id": 0})
+    if thread:
+        for user_id in [thread['user1Id'], thread['user2Id']]:
+            if user_id != exclude_user:
+                await emit_to_user(user_id, event, data)
+
+def get_canonical_friend_order(user_a: str, user_b: str) -> tuple:
+    """Return users in canonical order (lexicographic)"""
+    return (user_a, user_b) if user_a < user_b else (user_b, user_a)
+
+async def are_friends(user_a: str, user_b: str) -> bool:
+    """Check if two users are friends"""
+    u1, u2 = get_canonical_friend_order(user_a, user_b)
+    friendship = await db.friendships.find_one({"userId1": u1, "userId2": u2}, {"_id": 0})
+    return friendship is not None
+
+async def is_blocked(blocker: str, blocked: str) -> bool:
+    """Check if blocker has blocked blocked"""
+    block = await db.user_blocks.find_one({"blockerId": blocker, "blockedId": blocked}, {"_id": 0})
+    return block is not None
+
+# ===== WEBSOCKET EVENT HANDLERS =====
+
+@sio.event
+async def connect(sid, environ, auth):
+    """Handle client connection"""
+    try:
+        # Extract token from auth
+        if not auth or 'token' not in auth:
+            logging.warning(f"Connection rejected: no token provided")
+            return False
+        
+        token = auth['token']
+        user_id = verify_token(token)
+        
+        if not user_id:
+            logging.warning(f"Connection rejected: invalid token")
+            return False
+        
+        # Store connection
+        connected_clients[user_id] = sid
+        logging.info(f"User {user_id} connected with sid {sid}")
+        
+        # Join personal room
+        await sio.enter_room(sid, f"user:{user_id}")
+        
+        return True
+        
+    except Exception as e:
+        logging.error(f"Connection error: {e}")
+        return False
+
+@sio.event
+async def disconnect(sid):
+    """Handle client disconnection"""
+    try:
+        # Find and remove user
+        user_id = None
+        for uid, client_sid in list(connected_clients.items()):
+            if client_sid == sid:
+                user_id = uid
+                del connected_clients[uid]
+                break
+        
+        if user_id:
+            logging.info(f"User {user_id} disconnected")
+    except Exception as e:
+        logging.error(f"Disconnect error: {e}")
+
+@sio.event
+async def typing(sid, data):
+    """Handle typing indicator"""
+    try:
+        thread_id = data.get('threadId')
+        user_id = None
+        
+        # Find user_id from sid
+        for uid, client_sid in connected_clients.items():
+            if client_sid == sid:
+                user_id = uid
+                break
+        
+        if user_id and thread_id:
+            await emit_to_thread(thread_id, 'typing', {
+                'threadId': thread_id,
+                'userId': user_id,
+                'timestamp': datetime.now(timezone.utc).isoformat()
+            }, exclude_user=user_id)
+    except Exception as e:
+        logging.error(f"Typing event error: {e}")
+
 # ===== AUTH ROUTES (REAL AUTHENTICATION WITH GOOGLE SHEETS) =====
 
 @api_router.post("/auth/signup", response_model=dict)
