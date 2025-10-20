@@ -5,9 +5,11 @@ import { ArrowLeft, Heart, MessageCircle, Users, ShoppingBag, Ticket, UserPlus, 
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BottomNav from "../components/BottomNav";
+import { useWebSocket } from "../context/WebSocketContext";
 
 const Notifications = () => {
   const { currentUser } = useContext(AuthContext);
+  const { friendRequests: wsRequests, connected } = useWebSocket();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
@@ -17,15 +19,15 @@ const Notifications = () => {
   useEffect(() => {
     fetchNotifications();
     fetchFriendRequests();
-    
-    // Poll for updates every 5 seconds
-    const interval = setInterval(() => {
-      fetchNotifications();
-      fetchFriendRequests();
-    }, 5000);
-    
-    return () => clearInterval(interval);
   }, []);
+
+  // Real-time friend requests from WebSocket
+  useEffect(() => {
+    if (wsRequests.length > 0) {
+      // Add new requests from WebSocket
+      fetchFriendRequests();
+    }
+  }, [wsRequests]);
 
   const fetchFriendRequests = async () => {
     try {
