@@ -2176,6 +2176,276 @@ async def get_muted_users(userId: str):
     
     return muted_users
 
+# ===== DIRECT MESSAGING (DM) ROUTES =====
+
+@api_router.get("/dm/threads")
+async def get_dm_threads(userId: str, cursor: str = "0", limit: int = 50):
+    """Get user's DM threads with last message and unread count"""
+    # Find all threads where user is participant
+    threads = await db.dm_threads.find({
+        "$or": [{"user1Id": userId}, {"user2Id": userId}]
+    }, {"_id": 0}).sort("lastMessageAt", -1).to_list(1000)
+    
+    result = []
+    for thread in threads:
+        # Get peer user
+        peer_id = thread["user2Id"] if thread["user1Id"] == userId else thread["user1Id"]
+        peer = await db.users.find_one({"id": peer_id}, {"_id": 0})
+        
+        if not peer:
+            continue
+        
+        # Get last message
+        last_message = await db.messages.find_one(
+            {"threadId": thread["id"], "deletedAt": None},
+            {"_id": 0}
+        ).sort("createdAt", -1)
+        
+        # Get unread count
+        read_receipt = await db.message_reads.find_one({
+            "threadId": thread["id"],
+            "userId": userId
+        }, {"_id": 0})
+        
+        last_read_id = read_receipt.get("lastReadMessageId") if read_receipt else None
+        
+        if last_read_id:
+            unread_count = await db.messages.count_documents({
+                "threadId": thread["id"],
+                "senderId": {"$ne": userId},
+                "createdAt": {"$gt": last_message.get("createdAt") if last_message else ""},
+                "deletedAt": None
+            })
+        else:
+            unread_count = await db.messages.count_documents({
+                "threadId": thread["id"],
+                "senderId": {"$ne": userId},
+                "deletedAt": None
+            })
+        
+        result.append({
+            "id": thread["id"],
+            "peer": peer,
+            "lastMessage": last_message,
+            "unreadCount": unread_count,
+            "updatedAt": thread.get("lastMessageAt", thread["createdAt"])
+        })
+    
+    # Pagination
+    start_idx = int(cursor)
+    end_idx = start_idx + limit
+    paginated = result[start_idx:end_idx]
+    next_cursor = str(end_idx) if end_idx < len(result) else None
+    
+    return {"items": paginated, "nextCursor": next_cursor}
+
+@api_router.post("/dm/thread")
+async def create_or_get_dm_thread(userId: str, peerUserId: str):
+    """Create or get existing DM thread with another user"""
+    if userId == peerUserId:
+        raise HTTPException(status_code=400, detail="Cannot create thread with yourself")
+    
+    # Check if either user blocked the other
+    if await is_blocked(userId, peerUserId) or await is_blocked(peerUserId, userId):
+        raise HTTPException(status_code=403, detail="Cannot message this user")
+    
+    # Check if friends (required for DM)
+    friends = await are_friends(userId, peerUserId)
+    
+    # Find existing thread
+    existing_thread = await db.dm_threads.find_one({
+        "$or": [
+            {"user1Id": userId, "user2Id": peerUserId},
+            {"user1Id": peerUserId, "user2Id": userId}
+        ]
+    }, {"_id": 0})
+    
+    if existing_thread:
+        return {"threadId": existing_thread["id"], "existing": True}
+    
+    # Create new thread only if friends
+    if not friends:
+        raise HTTPException(status_code=403, detail="Must be friends to start a conversation")
+    
+    u1, u2 = get_canonical_friend_order(userId, peerUserId)
+    thread = DMThread(user1Id=u1, user2Id=u2)
+    await db.dm_threads.insert_one(thread.model_dump())
+    
+    return {"threadId": thread.id, "existing": False}
+
+@api_router.get("/dm/threads/{threadId}/messages")
+async def get_thread_messages(threadId: str, userId: str, cursor: str = "", limit: int = 50):
+    """Get messages from a thread"""
+    # Verify user is participant
+    thread = await db.dm_threads.find_one({"id": threadId}, {"_id": 0})
+    if not thread:
+        raise HTTPException(status_code=404, detail="Thread not found")
+    
+    if userId not in [thread["user1Id"], thread["user2Id"]]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get messages
+    query = {"threadId": threadId, "deletedAt": None}
+    if cursor:
+        query["createdAt"] = {"$lt": cursor}
+    
+    messages = await db.messages.find(query, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    messages.reverse()  # Return in chronological order
+    
+    next_cursor = messages[0]["createdAt"] if messages else None
+    
+    return {"items": messages, "nextCursor": next_cursor}
+
+@api_router.post("/dm/threads/{threadId}/messages")
+async def send_message(threadId: str, userId: str, text: str = None, mediaUrl: str = None, mimeType: str = None):
+    """Send a message in a thread"""
+    # Verify thread exists and user is participant
+    thread = await db.dm_threads.find_one({"id": threadId}, {"_id": 0})
+    if not thread:
+        raise HTTPException(status_code=404, detail="Thread not found")
+    
+    if userId not in [thread["user1Id"], thread["user2Id"]]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Get peer
+    peer_id = thread["user2Id"] if thread["user1Id"] == userId else thread["user1Id"]
+    
+    # Check if blocked
+    if await is_blocked(userId, peer_id) or await is_blocked(peer_id, userId):
+        raise HTTPException(status_code=403, detail="Cannot send message")
+    
+    # Validate content
+    if not text and not mediaUrl:
+        raise HTTPException(status_code=400, detail="Message must have text or media")
+    
+    # Create message
+    message = DMMessage(
+        threadId=threadId,
+        senderId=userId,
+        text=text,
+        mediaUrl=mediaUrl,
+        mimeType=mimeType
+    )
+    await db.messages.insert_one(message.model_dump())
+    
+    # Update thread's lastMessageAt
+    await db.dm_threads.update_one(
+        {"id": threadId},
+        {"$set": {"lastMessageAt": message.createdAt}}
+    )
+    
+    # Real-time: emit to thread participants
+    sender = await db.users.find_one({"id": userId}, {"_id": 0})
+    await emit_to_thread(threadId, 'message', {
+        "type": "message",
+        "message": {
+            **message.model_dump(),
+            "sender": sender
+        }
+    }, exclude_user=userId)
+    
+    # Check if peer is muted
+    is_muted = await db.user_mutes.find_one({
+        "muterId": peer_id,
+        "mutedId": userId
+    }, {"_id": 0})
+    
+    # Create notification if not muted
+    if not is_muted:
+        notification = Notification(
+            userId=peer_id,
+            type="dm",
+            content=text[:50] if text else "Sent a photo",
+            link=f"/messenger/{threadId}",
+            payload={"sender": sender, "threadId": threadId}
+        )
+        await db.notifications.insert_one(notification.model_dump())
+    
+    return {"messageId": message.id, "timestamp": message.createdAt}
+
+@api_router.post("/dm/threads/{threadId}/read")
+async def mark_thread_read(threadId: str, userId: str, lastReadMessageId: str):
+    """Mark messages as read"""
+    # Verify thread and user
+    thread = await db.dm_threads.find_one({"id": threadId}, {"_id": 0})
+    if not thread or userId not in [thread["user1Id"], thread["user2Id"]]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Update or create read receipt
+    await db.message_reads.update_one(
+        {"threadId": threadId, "userId": userId},
+        {
+            "$set": {
+                "lastReadMessageId": lastReadMessageId,
+                "readAt": datetime.now(timezone.utc).isoformat()
+            }
+        },
+        upsert=True
+    )
+    
+    # Real-time: emit read receipt to peer
+    await emit_to_thread(threadId, 'read', {
+        "type": "read",
+        "userId": userId,
+        "lastReadMessageId": lastReadMessageId,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }, exclude_user=userId)
+    
+    return {"success": True}
+
+@api_router.patch("/dm/messages/{messageId}")
+async def edit_message(messageId: str, userId: str, text: str):
+    """Edit a message"""
+    message = await db.messages.find_one({"id": messageId}, {"_id": 0})
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    if message["senderId"] != userId:
+        raise HTTPException(status_code=403, detail="Can only edit your own messages")
+    
+    if message.get("deletedAt"):
+        raise HTTPException(status_code=400, detail="Cannot edit deleted message")
+    
+    await db.messages.update_one(
+        {"id": messageId},
+        {"$set": {
+            "text": text,
+            "editedAt": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Real-time: emit edit to thread
+    updated_message = await db.messages.find_one({"id": messageId}, {"_id": 0})
+    await emit_to_thread(message["threadId"], 'message_edited', {
+        "type": "edit",
+        "message": updated_message
+    })
+    
+    return {"success": True}
+
+@api_router.delete("/dm/messages/{messageId}")
+async def delete_message(messageId: str, userId: str):
+    """Soft delete a message"""
+    message = await db.messages.find_one({"id": messageId}, {"_id": 0})
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    if message["senderId"] != userId:
+        raise HTTPException(status_code=403, detail="Can only delete your own messages")
+    
+    await db.messages.update_one(
+        {"id": messageId},
+        {"$set": {"deletedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Real-time: emit deletion to thread
+    await emit_to_thread(message["threadId"], 'message_deleted', {
+        "type": "delete",
+        "messageId": messageId
+    })
+    
+    return {"success": True}
+
 @api_router.get("/friends/{userId}")
 async def get_friends(userId: str):
     """Get user's friends list"""
