@@ -52,7 +52,7 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
           }`}
         >
           <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-          <span className="text-xs">{post.stats?.likes || 0}</span>
+          <span className="text-sm">{post.stats?.likes || 0}</span>
         </button>
 
         <button
