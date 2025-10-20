@@ -255,7 +255,19 @@ const Messenger = () => {
 
           <form onSubmit={handleSendMessage} className="glass-surface p-4">
             <div className="flex items-center gap-2">
-              <button type="button" className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-cyan-400">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*,video/*"
+                className="hidden"
+              />
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-cyan-400 disabled:opacity-50"
+              >
                 <ImageIcon size={20} />
               </button>
               <input
