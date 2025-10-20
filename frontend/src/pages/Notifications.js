@@ -167,7 +167,15 @@ const Notifications = () => {
               <ArrowLeft size={24} />
             </button>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold neon-text">Notifications</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold neon-text">Notifications</h1>
+                {connected && (
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                    <span className="text-xs text-green-400">Live</span>
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-gray-400">Stay updated</p>
             </div>
             {friendRequests.length > 0 && (
