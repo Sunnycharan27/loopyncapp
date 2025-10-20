@@ -43,12 +43,28 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
   };
 
   return (
-    <div className="glass-card p-4 mb-4 hover:bg-gray-800/30 transition-all" data-testid="post-card">
+    <div className="glass-card p-4 mb-4 hover:bg-gray-800/30 transition-all relative" data-testid="post-card">
+      {/* Reactions popup */}
+      {showReactions && (
+        <div className="absolute -top-14 left-12 z-50 glass-card p-2 rounded-full shadow-2xl flex gap-2 animate-slideUp">
+          {reactions.map((reaction, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleReaction(reaction)}
+              className={`w-10 h-10 rounded-full ${reaction.color} flex items-center justify-center text-2xl hover:scale-125 transition-transform`}
+              title={reaction.label}
+            >
+              {reaction.emoji}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-start gap-3">
         <img
           src={post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
           alt={post.author?.name || 'User'}
-          className="w-12 h-12 rounded-full"
+          className="w-12 h-12 rounded-full ring-2 ring-cyan-400/20"
         />
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -56,15 +72,76 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
               <h3 className="font-semibold text-white">{post.author?.name || 'User'}</h3>
               <p className="text-sm text-gray-400">@{post.author?.handle || post.authorId?.substring(0, 8)}</p>
             </div>
-            {isOwnPost && (
+            <div className="relative">
               <button
-                onClick={() => onDelete(post.id)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-all"
-                title="Delete post"
+                onClick={() => setShowQuickActions(!showQuickActions)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all"
               >
-                <Trash2 size={16} />
+                <MoreHorizontal size={18} />
               </button>
-            )}
+
+              {/* Quick Actions Menu */}
+              {showQuickActions && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowQuickActions(false)}></div>
+                  <div className="absolute right-0 top-full mt-2 w-48 glass-card rounded-xl shadow-2xl overflow-hidden z-50">
+                    {!isOwnPost && (
+                      <>
+                        <button
+                          onClick={handleSavePost}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 transition-all text-left"
+                        >
+                          <Bookmark size={16} className="text-cyan-400" />
+                          <span className="text-sm text-white">Save Post</span>
+                        </button>
+                        <button
+                          onClick={handleCopyLink}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 transition-all text-left"
+                        >
+                          <Copy size={16} className="text-blue-400" />
+                          <span className="text-sm text-white">Copy Link</span>
+                        </button>
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 transition-all text-left"
+                        >
+                          <UserPlus size={16} className="text-green-400" />
+                          <span className="text-sm text-white">Follow {post.author?.name}</span>
+                        </button>
+                        <div className="border-t border-gray-700"></div>
+                        <button
+                          onClick={handleReport}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/20 transition-all text-left"
+                        >
+                          <Flag size={16} className="text-red-400" />
+                          <span className="text-sm text-red-400">Report Post</span>
+                        </button>
+                      </>
+                    )}
+                    {isOwnPost && (
+                      <>
+                        <button
+                          onClick={handleCopyLink}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700/50 transition-all text-left"
+                        >
+                          <ExternalLink size={16} className="text-cyan-400" />
+                          <span className="text-sm text-white">Share</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            onDelete(post.id);
+                            setShowQuickActions(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/20 transition-all text-left"
+                        >
+                          <Trash2 size={16} className="text-red-400" />
+                          <span className="text-sm text-red-400">Delete Post</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <p className="text-gray-200 mb-3">{post.text}</p>
@@ -73,17 +150,33 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
             <img
               src={post.media}
               alt="Post media"
-              className="rounded-2xl w-full mb-3 hover:scale-[1.02] transition-transform"
+              className="rounded-2xl w-full mb-3 hover:scale-[1.01] transition-transform cursor-pointer"
+              onClick={() => setShowReactions(true)}
             />
+          )}
+
+          {/* Selected Reaction Display */}
+          {selectedReaction && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-800/50 mb-3 animate-bounce-in">
+              <span className="text-lg">{selectedReaction.emoji}</span>
+              <span className="text-xs text-gray-400">You reacted</span>
+            </div>
           )}
 
           {/* Actions */}
           <div className="flex items-center gap-6 text-gray-400">
             <button
               data-testid="post-like-btn"
+              onMouseEnter={() => setShowReactions(true)}
+              onMouseLeave={() => setTimeout(() => setShowReactions(false), 1000)}
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-2 hover:text-pink-400 transition-colors ${
+              className={`flex items-center gap-2 hover:text-pink-400 transition-colors group ${
                 isLiked ? 'text-pink-400' : ''
+              }`}
+            >
+              <Heart size={18} className={`${isLiked ? 'fill-current' : ''} group-hover:scale-110 transition-transform`} />
+              <span className="text-sm">{post.likeCount || 0}</span>
+            </button>
               }`}
             >
               <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
