@@ -333,6 +333,20 @@ class UserAnalytics(BaseModel):
     tier: str = "Bronze"  # Bronze, Silver, Gold, Platinum
     lastUpdated: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+class UserConsent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    userId: str
+    dataCollection: bool = False  # Required for app functionality
+    personalizedAds: bool = False
+    locationTracking: bool = False
+    emailNotifications: bool = False
+    pushNotifications: bool = False
+    dataSharing: bool = False
+    kycCompleted: bool = False
+    aadhaarNumber: Optional[str] = None
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updatedAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 # Initialize Razorpay client
 razorpay_key = os.environ.get('RAZORPAY_KEY', 'rzp_test_xxx')
 razorpay_secret = os.environ.get('RAZORPAY_SECRET', 'rzp_secret_xxx')
