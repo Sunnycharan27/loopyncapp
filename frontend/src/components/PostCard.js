@@ -77,6 +77,8 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
           <Share2 size={18} />
         </button>
       </div>
+        </div>
+      </div>
     </div>
   );
 };
