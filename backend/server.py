@@ -365,6 +365,47 @@ class Friendship(BaseModel):
     userId2: str
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+# ===== NEW MODELS FOR FRIEND SYSTEM & DM =====
+
+class UserBlock(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    blockerId: str
+    blockedId: str
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class UserMute(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    muterId: str
+    mutedId: str
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class DMThread(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user1Id: str
+    user2Id: str
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    lastMessageAt: Optional[str] = None
+
+class DMMessage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    threadId: str
+    senderId: str
+    text: Optional[str] = None
+    mediaUrl: Optional[str] = None
+    mimeType: Optional[str] = None
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    editedAt: Optional[str] = None
+    deletedAt: Optional[str] = None
+
+class MessageRead(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    threadId: str
+    userId: str
+    lastReadMessageId: Optional[str] = None
+    readAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 razorpay_client = razorpay.Client(auth=(razorpay_key, razorpay_secret))
 
 # ===== JWT TOKEN UTILITIES =====
