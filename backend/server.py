@@ -1974,17 +1974,207 @@ async def accept_friend_request(requestId: str):
 
 @api_router.post("/friend-requests/{requestId}/reject")
 async def reject_friend_request(requestId: str):
-    """Reject a friend request"""
+    """Reject/decline a friend request"""
     request = await db.friend_requests.find_one({"id": requestId}, {"_id": 0})
     if not request:
         raise HTTPException(status_code=404, detail="Friend request not found")
     
     await db.friend_requests.update_one(
         {"id": requestId},
-        {"$set": {"status": "rejected"}}
+        {"$set": {"status": "declined", "decidedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"success": True, "status": "declined"}
+
+@api_router.post("/friend-requests/{requestId}/cancel")
+async def cancel_friend_request(requestId: str):
+    """Cancel a sent friend request"""
+    request = await db.friend_requests.find_one({"id": requestId}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Friend request not found")
+    
+    if request["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Can only cancel pending requests")
+    
+    await db.friend_requests.update_one(
+        {"id": requestId},
+        {"$set": {"status": "cancelled", "decidedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"success": True, "status": "cancelled"}
+
+@api_router.get("/friends/list")
+async def get_friends_list(userId: str, q: str = "", cursor: str = "0", limit: int = 50):
+    """Get user's friends list with search"""
+    # Get all friendships
+    friendships = await db.friendships.find({
+        "$or": [{"userId1": userId}, {"userId2": userId}]
+    }, {"_id": 0}).to_list(1000)
+    
+    friends = []
+    for friendship in friendships:
+        friend_id = friendship["userId2"] if friendship["userId1"] == userId else friendship["userId1"]
+        friend = await db.users.find_one({"id": friend_id}, {"_id": 0})
+        if friend:
+            # Apply search filter
+            if q:
+                if q.lower() in friend.get('name', '').lower() or q.lower() in friend.get('handle', '').lower():
+                    friends.append({
+                        "user": friend,
+                        "friendedAt": friendship.get("createdAt")
+                    })
+            else:
+                friends.append({
+                    "user": friend,
+                    "friendedAt": friendship.get("createdAt")
+                })
+    
+    # Simple pagination
+    start_idx = int(cursor)
+    end_idx = start_idx + limit
+    paginated_friends = friends[start_idx:end_idx]
+    next_cursor = str(end_idx) if end_idx < len(friends) else None
+    
+    return {
+        "items": paginated_friends,
+        "nextCursor": next_cursor
+    }
+
+@api_router.delete("/friends/{friendUserId}")
+async def remove_friend(userId: str, friendUserId: str):
+    """Remove a friend (unfriend)"""
+    u1, u2 = get_canonical_friend_order(userId, friendUserId)
+    
+    result = await db.friendships.delete_one({"userId1": u1, "userId2": u2})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Friendship not found")
+    
+    # Real-time notification
+    await emit_to_user(friendUserId, 'friend_event', {
+        'type': 'removed',
+        'peerId': userId
+    })
+    
+    return {"success": True}
+
+# ===== BLOCK & MUTE ROUTES =====
+
+@api_router.post("/blocks")
+async def block_user(blockerId: str, blockedUserId: str):
+    """Block a user"""
+    if blockerId == blockedUserId:
+        raise HTTPException(status_code=400, detail="Cannot block yourself")
+    
+    # Check if already blocked
+    existing = await db.user_blocks.find_one({
+        "blockerId": blockerId,
+        "blockedId": blockedUserId
+    }, {"_id": 0})
+    
+    if existing:
+        return {"success": True, "message": "Already blocked"}
+    
+    # Create block
+    block = UserBlock(blockerId=blockerId, blockedId=blockedUserId)
+    await db.user_blocks.insert_one(block.model_dump())
+    
+    # Remove friendship if exists
+    u1, u2 = get_canonical_friend_order(blockerId, blockedUserId)
+    await db.friendships.delete_one({"userId1": u1, "userId2": u2})
+    
+    # Cancel pending friend requests in both directions
+    await db.friend_requests.update_many(
+        {
+            "$or": [
+                {"fromUserId": blockerId, "toUserId": blockedUserId},
+                {"fromUserId": blockedUserId, "toUserId": blockerId}
+            ],
+            "status": "pending"
+        },
+        {"$set": {"status": "cancelled"}}
     )
     
     return {"success": True}
+
+@api_router.delete("/blocks/{blockedUserId}")
+async def unblock_user(blockerId: str, blockedUserId: str):
+    """Unblock a user"""
+    result = await db.user_blocks.delete_one({
+        "blockerId": blockerId,
+        "blockedId": blockedUserId
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Block not found")
+    
+    return {"success": True}
+
+@api_router.get("/blocks")
+async def get_blocked_users(userId: str):
+    """Get list of blocked users"""
+    blocks = await db.user_blocks.find({"blockerId": userId}, {"_id": 0}).to_list(1000)
+    
+    blocked_users = []
+    for block in blocks:
+        user = await db.users.find_one({"id": block["blockedId"]}, {"_id": 0})
+        if user:
+            blocked_users.append({
+                "user": user,
+                "blockedAt": block["createdAt"]
+            })
+    
+    return blocked_users
+
+@api_router.post("/mutes")
+async def mute_user(muterId: str, mutedUserId: str):
+    """Mute a user (silence notifications)"""
+    if muterId == mutedUserId:
+        raise HTTPException(status_code=400, detail="Cannot mute yourself")
+    
+    # Check if already muted
+    existing = await db.user_mutes.find_one({
+        "muterId": muterId,
+        "mutedId": mutedUserId
+    }, {"_id": 0})
+    
+    if existing:
+        return {"success": True, "message": "Already muted"}
+    
+    # Create mute
+    mute = UserMute(muterId=muterId, mutedId=mutedUserId)
+    await db.user_mutes.insert_one(mute.model_dump())
+    
+    return {"success": True}
+
+@api_router.delete("/mutes/{mutedUserId}")
+async def unmute_user(muterId: str, mutedUserId: str):
+    """Unmute a user"""
+    result = await db.user_mutes.delete_one({
+        "muterId": muterId,
+        "mutedId": mutedUserId
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Mute not found")
+    
+    return {"success": True}
+
+@api_router.get("/mutes")
+async def get_muted_users(userId: str):
+    """Get list of muted users"""
+    mutes = await db.user_mutes.find({"muterId": userId}, {"_id": 0}).to_list(1000)
+    
+    muted_users = []
+    for mute in mutes:
+        user = await db.users.find_one({"id": mute["mutedId"]}, {"_id": 0})
+        if user:
+            muted_users.append({
+                "user": user,
+                "mutedAt": mute["createdAt"]
+            })
+    
+    return muted_users
 
 @api_router.get("/friends/{userId}")
 async def get_friends(userId: str):
