@@ -1916,31 +1916,61 @@ async def accept_friend_request(requestId: str):
     # Update request status
     await db.friend_requests.update_one(
         {"id": requestId},
-        {"$set": {"status": "accepted"}}
+        {"$set": {"status": "accepted", "decidedAt": datetime.now(timezone.utc).isoformat()}}
     )
     
-    # Create friendship
-    friendship = Friendship(
-        userId1=request["fromUserId"],
-        userId2=request["toUserId"]
-    )
+    # Create friendship with canonical ordering
+    u1, u2 = get_canonical_friend_order(request["fromUserId"], request["toUserId"])
+    friendship = Friendship(userId1=u1, userId2=u2)
     await db.friendships.insert_one(friendship.model_dump())
     
-    # Create notification
+    # Auto-create DM thread if doesn't exist
+    existing_thread = await db.dm_threads.find_one({
+        "$or": [
+            {"user1Id": request["fromUserId"], "user2Id": request["toUserId"]},
+            {"user1Id": request["toUserId"], "user2Id": request["fromUserId"]}
+        ]
+    }, {"_id": 0})
+    
+    if not existing_thread:
+        dm_thread = DMThread(
+            user1Id=u1,
+            user2Id=u2
+        )
+        await db.dm_threads.insert_one(dm_thread.model_dump())
+        logging.info(f"Auto-created DM thread {dm_thread.id} for friendship")
+    
+    # Get users for notification
     to_user = await db.users.find_one({"id": request["toUserId"]}, {"_id": 0})
+    from_user = await db.users.find_one({"id": request["fromUserId"]}, {"_id": 0})
+    
+    # Create notification
     notification = Notification(
         userId=request["fromUserId"],
-        type="friend_accept",
+        type="friend_accepted",
         content=f"{to_user.get('name', 'Someone')} accepted your friend request",
-        link=f"/profile/{request['toUserId']}"
+        link=f"/profile/{request['toUserId']}",
+        payload={"toUser": to_user}
     )
     await db.notifications.insert_one(notification.model_dump())
+    
+    # Real-time notifications via WebSocket
+    await emit_to_user(request["fromUserId"], 'friend_event', {
+        'type': 'accepted',
+        'peerId': request["toUserId"],
+        'peer': to_user
+    })
+    await emit_to_user(request["toUserId"], 'friend_event', {
+        'type': 'accepted',
+        'peerId': request["fromUserId"],
+        'peer': from_user
+    })
     
     # Award credits
     await earn_credits(request["fromUserId"], 10, "friend", "Friend request accepted")
     await earn_credits(request["toUserId"], 10, "friend", "New friend added")
     
-    return {"success": True}
+    return {"success": True, "status": "accepted"}
 
 @api_router.post("/friend-requests/{requestId}/reject")
 async def reject_friend_request(requestId: str):
