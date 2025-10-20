@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, Repeat2, MessageCircle, Share } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2 } from "lucide-react";
 
 const PostCard = ({ post, currentUser, onLike, onRepost }) => {
   const isLiked = post.likedBy?.includes(currentUser?.id);
