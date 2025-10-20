@@ -50,8 +50,9 @@ sio = socketio.AsyncServer(
     engineio_logger=True
 )
 
-# Wrap with ASGI app
-socket_app = socketio.ASGIApp(sio, app)
+# Mount Socket.IO to the FastAPI app
+sio_asgi_app = socketio.ASGIApp(sio)
+app.mount('/socket.io', sio_asgi_app)
 
 # Store connected clients: {userId: sid}
 connected_clients = {}
