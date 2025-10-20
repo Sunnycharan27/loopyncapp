@@ -114,6 +114,7 @@ const Home = () => {
                 currentUser={currentUser}
                 onLike={handleLike}
                 onRepost={handleRepost}
+                onDelete={handleDelete}
               />
             ))
           )}
