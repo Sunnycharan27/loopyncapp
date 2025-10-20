@@ -127,22 +127,45 @@ const Auth = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium mb-2">Handle</label>
-              <input
-                data-testid="auth-handle-input"
-                type="text"
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="w-full"
-                required
-              />
+              <label className="block text-sm font-medium mb-2 text-white">Username</label>
+              <div className="relative">
+                <input
+                  data-testid="auth-handle-input"
+                  type="text"
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  placeholder="yourhandle"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none pr-10"
+                  required
+                  minLength={3}
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {checkingHandle && (
+                    <Loader size={20} className="text-gray-400 animate-spin" />
+                  )}
+                  {!checkingHandle && handleAvailable === true && handle.length >= 3 && (
+                    <CheckCircle size={20} className="text-green-400" />
+                  )}
+                  {!checkingHandle && handleAvailable === false && (
+                    <XCircle size={20} className="text-red-400" />
+                  )}
+                </div>
+              </div>
+              {handle.length >= 3 && handleAvailable === false && (
+                <p className="text-red-400 text-xs mt-1">@{handle} is already taken</p>
+              )}
+              {handle.length >= 3 && handleAvailable === true && (
+                <p className="text-green-400 text-xs mt-1">@{handle} is available!</p>
+              )}
+              {handle.length > 0 && handle.length < 3 && (
+                <p className="text-gray-400 text-xs mt-1">Username must be at least 3 characters</p>
+              )}
             </div>
           )}
 
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium mb-2">Name</label>
+              <label className="block text-sm font-medium mb-2 text-white">Name</label>
               <input
                 data-testid="auth-name-input"
                 type="text"
