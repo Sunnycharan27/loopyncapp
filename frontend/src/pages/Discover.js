@@ -183,7 +183,10 @@ const Discover = () => {
                           <span className="text-sm font-bold text-cyan-400">{event.vibeMeter}%</span>
                         </div>
                       </div>
-                      <button className="px-4 py-2 rounded-full bg-cyan-400 text-black font-semibold hover:bg-cyan-300">
+                      <button 
+                        onClick={() => navigate(`/events/${event.id}`)}
+                        className="px-4 py-2 rounded-full bg-cyan-400 text-black font-semibold hover:bg-cyan-300"
+                      >
                         Get Tickets
                       </button>
                     </div>
