@@ -171,47 +171,57 @@ const Auth = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                className="w-full"
+                placeholder="Your full name"
+                className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
                 required
               />
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-medium mb-2 text-white">Email</label>
             <input
               data-testid="auth-email-input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
+            <label className="block text-sm font-medium mb-2 text-white">Password</label>
             <input
               data-testid="auth-password-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full"
+              className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
               required
               minLength={8}
             />
+            {!isLogin && password.length > 0 && password.length < 8 && (
+              <p className="text-red-400 text-xs mt-1">Password must be at least 8 characters</p>
+            )}
           </div>
 
           <button
             data-testid="auth-submit-btn"
             type="submit"
-            className="btn-primary w-full"
-            disabled={loading}
+            className="w-full py-3 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-bold text-lg hover:opacity-90 transition-all disabled:opacity-50"
+            disabled={loading || (!isLogin && (!handleAvailable || checkingHandle))}
           >
-            {loading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
+            {loading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                {isLogin ? "Logging in..." : "Creating account..."}
+              </div>
+            ) : (
+              isLogin ? "Login" : "Sign Up"
+            )}
           </button>
         </form>
 
