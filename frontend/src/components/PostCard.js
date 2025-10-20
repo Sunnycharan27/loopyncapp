@@ -8,29 +8,28 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
 
   return (
     <div className="glass-card p-4 mb-4 hover:bg-gray-800/30 transition-all" data-testid="post-card">
-      {/* Author */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <img
-            src={post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
-            alt={post.author?.name || 'User'}
-            className="w-12 h-12 rounded-full"
-          />
-          <div>
-            <h3 className="font-semibold text-white">{post.author?.name || 'User'}</h3>
-            <p className="text-sm text-gray-400">@{post.author?.handle || post.authorId?.substring(0, 8)}</p>
+      <div className="flex items-start gap-3">
+        <img
+          src={post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
+          alt={post.author?.name || 'User'}
+          className="w-12 h-12 rounded-full"
+        />
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="font-semibold text-white">{post.author?.name || 'User'}</h3>
+              <p className="text-sm text-gray-400">@{post.author?.handle || post.authorId?.substring(0, 8)}</p>
+            </div>
+            {isOwnPost && (
+              <button
+                onClick={() => onDelete(post.id)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-all"
+                title="Delete post"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
-        </div>
-        {isOwnPost && (
-          <button
-            onClick={() => onDelete(post.id)}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-all"
-            title="Delete post"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
-      </div>
 
       {/* Content */}
       <p className="text-gray-200 mb-3">{post.text}</p>
