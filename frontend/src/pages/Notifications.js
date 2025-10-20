@@ -125,6 +125,10 @@ const Notifications = () => {
   const getNotificationText = (notif) => {
     const { type, payload } = notif;
     switch (type) {
+      case 'friend_request':
+        return 'sent you a friend request';
+      case 'friend_accepted':
+        return 'accepted your friend request';
       case 'post_like':
         return 'liked your post';
       case 'post_comment':
