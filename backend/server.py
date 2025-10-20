@@ -707,6 +707,71 @@ async def get_user(userId: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+@api_router.get("/search")
+async def search_all(q: str, currentUserId: str = None, limit: int = 20):
+    """Global search for users, posts, tribes, venues, events"""
+    if not q or len(q) < 2:
+        return {"users": [], "posts": [], "tribes": [], "venues": [], "events": []}
+    
+    query_pattern = {"$regex": q, "$options": "i"}
+    
+    # Search users
+    users = await db.users.find({
+        "$or": [
+            {"name": query_pattern},
+            {"handle": query_pattern}
+        ]
+    }, {"_id": 0}).limit(limit).to_list(limit)
+    
+    # Enrich users with friend status if currentUserId provided
+    if currentUserId:
+        for user in users:
+            user["isFriend"] = await are_friends(currentUserId, user["id"])
+            user["isBlocked"] = await is_blocked(currentUserId, user["id"])
+    
+    # Search posts
+    posts = await db.posts.find({
+        "text": query_pattern
+    }, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    
+    for post in posts:
+        author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+        post["author"] = author
+    
+    # Search tribes
+    tribes = await db.tribes.find({
+        "$or": [
+            {"name": query_pattern},
+            {"description": query_pattern}
+        ]
+    }, {"_id": 0}).limit(limit).to_list(limit)
+    
+    # Search venues
+    venues = await db.venues.find({
+        "$or": [
+            {"name": query_pattern},
+            {"description": query_pattern},
+            {"location": query_pattern}
+        ]
+    }, {"_id": 0}).limit(limit).to_list(limit)
+    
+    # Search events
+    events = await db.events.find({
+        "$or": [
+            {"name": query_pattern},
+            {"description": query_pattern},
+            {"venue": query_pattern}
+        ]
+    }, {"_id": 0}).limit(limit).to_list(limit)
+    
+    return {
+        "users": users,
+        "posts": posts,
+        "tribes": tribes,
+        "venues": venues,
+        "events": events
+    }
+
 # ===== POST ROUTES (TIMELINE) =====
 
 @api_router.get("/posts")
