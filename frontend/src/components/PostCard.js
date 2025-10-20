@@ -74,11 +74,8 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
           <span className="text-sm">{post.stats?.reposts || 0}</span>
         </button>
 
-        <button
-          data-testid="post-share-btn"
-          className="flex items-center gap-2 hover:text-cyan-400 transition-colors"
-        >
-          <Share size={18} />
+        <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+          <Share2 size={18} />
         </button>
       </div>
     </div>
