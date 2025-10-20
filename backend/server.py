@@ -336,6 +336,21 @@ class UserAnalytics(BaseModel):
 # Initialize Razorpay client
 razorpay_key = os.environ.get('RAZORPAY_KEY', 'rzp_test_xxx')
 razorpay_secret = os.environ.get('RAZORPAY_SECRET', 'rzp_secret_xxx')
+
+class FriendRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    fromUserId: str
+    toUserId: str
+    status: str = "pending"  # pending, accepted, rejected
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class Friendship(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    userId1: str
+    userId2: str
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 razorpay_client = razorpay.Client(auth=(razorpay_key, razorpay_secret))
 
 # ===== JWT TOKEN UTILITIES =====
