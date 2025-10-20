@@ -33,7 +33,7 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
       </div>
 
       {/* Content */}
-      <p className="text-sm mb-3 leading-relaxed">{post.text}</p>
+      <p className="text-gray-200 mb-3">{post.text}</p>
       {post.media && (
         <img
           src={post.media}
