@@ -125,16 +125,32 @@ const Messenger = () => {
     e.preventDefault();
     if (!messageText.trim() || !selectedThread) return;
 
+    const tempMessage = {
+      id: `temp-${Date.now()}`,
+      fromId: currentUser.id,
+      toId: selectedThread.peer.id,
+      text: messageText,
+      createdAt: new Date().toISOString(),
+      sending: true
+    };
+
+    // Optimistic update
+    setMessages([...messages, tempMessage]);
+    setMessageText("");
+
     try {
       const res = await axios.post(`${API}/messages?fromId=${currentUser.id}&toId=${selectedThread.peer.id}`, {
         text: messageText
       });
-      setMessageText("");
-      // Add new message to local state immediately
-      setMessages([...messages, res.data]);
-      toast.success("Message sent!");
+      
+      // Replace temp message with real message
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempMessage.id ? res.data : msg
+      ));
     } catch (error) {
       toast.error("Failed to send message");
+      // Remove temp message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
     }
   };
 
