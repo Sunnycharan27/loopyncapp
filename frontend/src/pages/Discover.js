@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
-import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign } from "lucide-react";
+import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign, Search, X, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,12 @@ const Discover = () => {
   const [tribes, setTribes] = useState([]);
   const [activeTab, setActiveTab] = useState("venues");
   const [loading, setLoading] = useState(true);
+  
+  // Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     fetchDiscoverData();
