@@ -1,8 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { CheckCircle, XCircle, Loader } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,8 +12,22 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingHandle, setCheckingHandle] = useState(false);
+  const [handleAvailable, setHandleAvailable] = useState(null);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Debounced handle check
+  useEffect(() => {
+    if (!isLogin && handle.length >= 3) {
+      const timer = setTimeout(() => {
+        checkHandleAvailability(handle);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setHandleAvailable(null);
+    }
+  }, [handle, isLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
