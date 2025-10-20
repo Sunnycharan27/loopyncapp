@@ -381,9 +381,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Standalone Venues Page"
+    - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Events Page"
   stuck_tasks:
+    - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
     - "Standalone Events Page"
   test_all: false
