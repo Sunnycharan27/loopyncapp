@@ -23,14 +23,24 @@ const Messenger = () => {
 
   useEffect(() => {
     fetchThreads();
-    // Auto-refresh messages every 5 seconds when viewing a thread
-    let interval;
+    
+    // Poll for new threads every 10 seconds
+    const threadsInterval = setInterval(() => {
+      fetchThreads();
+    }, 10000);
+    
+    // Auto-refresh messages every 3 seconds when viewing a thread
+    let messagesInterval;
     if (selectedThread) {
-      interval = setInterval(() => {
+      messagesInterval = setInterval(() => {
         fetchMessages(selectedThread.peer.id);
-      }, 5000);
+      }, 3000);
     }
-    return () => clearInterval(interval);
+    
+    return () => {
+      clearInterval(threadsInterval);
+      if (messagesInterval) clearInterval(messagesInterval);
+    };
   }, [selectedThread]);
 
   // Mock Trust Circles data
