@@ -251,22 +251,15 @@ const Onboarding = () => {
                 Back
               </button>
               <button
-                onClick={handleComplete}
-                disabled={selectedInterests.length < 2 || loading}
+                onClick={() => setStep(3)}
+                disabled={selectedInterests.length < 2}
                 className={`flex-1 py-4 rounded-full font-bold text-lg ${
-                  selectedInterests.length >= 2 && !loading
+                  selectedInterests.length >= 2
                     ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white hover:opacity-90'
                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {loading ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    Setting up...
-                  </div>
-                ) : (
-                  'Complete Setup'
-                )}
+                Continue
               </button>
             </div>
 
