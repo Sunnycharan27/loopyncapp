@@ -175,65 +175,254 @@ const Messenger = () => {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       {!selectedThread ? (
-        // Thread List
-        <div className="max-w-2xl mx-auto">
-          <div className="sticky top-0 z-10 glass-surface p-4 flex items-center gap-3">
-            <button onClick={() => navigate('/')} className="text-cyan-400">
-              <ArrowLeft size={24} />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold neon-text">Messages</h1>
-              <p className="text-xs text-gray-400">Your conversations</p>
+        // Thread List with Tabs
+        <div className="max-w-2xl mx-auto pb-24">
+          <div className="sticky top-0 z-10 glass-surface p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <button onClick={() => navigate('/')} className="text-cyan-400">
+                <ArrowLeft size={24} />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold neon-text">Messenger</h1>
+                <p className="text-xs text-gray-400">Connect with your vibes</p>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              <button
+                onClick={() => setActiveView("chats")}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all ${
+                  activeView === "chats"
+                    ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                }`}
+              >
+                <Send size={16} />
+                Chats
+              </button>
+              <button
+                onClick={() => setActiveView("rooms")}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all ${
+                  activeView === "rooms"
+                    ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                }`}
+              >
+                <Users size={16} />
+                Vibe Rooms
+              </button>
+              <button
+                onClick={() => setActiveView("circles")}
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all ${
+                  activeView === "circles"
+                    ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                }`}
+              >
+                <Shield size={16} />
+                Trust Circles
+              </button>
             </div>
           </div>
 
-          <div className="p-4 space-y-3">
-            {threads.length === 0 ? (
-              <div className="text-center py-12 glass-card p-8">
-                <p className="text-gray-400">No messages yet</p>
-                <p className="text-sm text-gray-500 mt-2">Start a conversation from a profile</p>
+          {/* Chats View */}
+          {activeView === "chats" && (
+            <div className="p-4 space-y-3">
+              {threads.length === 0 ? (
+                <div className="text-center py-12 glass-card p-8">
+                  <p className="text-gray-400">No messages yet</p>
+                  <p className="text-sm text-gray-500 mt-2">Start a conversation from a profile</p>
+                </div>
+              ) : (
+                threads.map(thread => (
+                  <div
+                    key={thread.peer.id}
+                    onClick={() => handleThreadClick(thread)}
+                    className="glass-card p-4 cursor-pointer hover:bg-cyan-400/5 transition-all"
+                    data-testid="message-thread"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src={thread.peer.avatar} alt={thread.peer.name} className="w-12 h-12 rounded-full" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold">{thread.peer.name}</p>
+                          <span className="text-xs text-gray-400">
+                            {new Date(thread.timestamp).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-400 truncate">{thread.lastMessage}</p>
+                      </div>
+                      {thread.unread && (
+                        <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Vibe Rooms View */}
+          {activeView === "rooms" && (
+            <div className="p-4 space-y-3">
+              <div className="glass-card p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles size={20} className="text-yellow-400" />
+                  <h3 className="font-bold text-white">Vibe Rooms</h3>
+                </div>
+                <p className="text-sm text-gray-400">Join group spaces based on your interests</p>
               </div>
-            ) : (
-              threads.map(thread => (
+
+              {vibeRooms.map(room => (
                 <div
-                  key={thread.peer.id}
-                  onClick={() => handleThreadClick(thread)}
-                  className="glass-card p-4 cursor-pointer hover:bg-cyan-400/5 transition-all"
-                  data-testid="message-thread"
+                  key={room.id}
+                  className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform"
+                  onClick={() => toast.info("Vibe Rooms coming soon!")}
                 >
-                  <div className="flex items-center gap-3">
-                    <img src={thread.peer.avatar} alt={thread.peer.name} className="w-12 h-12 rounded-full" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400/20 to-pink-500/20 flex items-center justify-center text-4xl">
+                      {room.emoji}
+                    </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold">{thread.peer.name}</p>
-                        <span className="text-xs text-gray-400">
-                          {new Date(thread.timestamp).toLocaleDateString()}
+                      <h3 className="font-bold text-white mb-1">{room.name}</h3>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <span>{room.members} members</span>
+                        <span className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                          {room.activeNow} active
                         </span>
                       </div>
-                      <p className="text-sm text-gray-400 truncate">{thread.lastMessage}</p>
+                      <div className="mt-2">
+                        <span className="inline-block px-2 py-1 rounded-full bg-cyan-400/10 text-cyan-400 text-xs font-semibold">
+                          {room.category}
+                        </span>
+                      </div>
                     </div>
-                    {thread.unread && (
-                      <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
-                    )}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {/* Trust Circles View */}
+          {activeView === "circles" && (
+            <div className="p-4 space-y-3">
+              <div className="glass-card p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield size={20} className="text-blue-400" />
+                  <h3 className="font-bold text-white">Trust Circles</h3>
+                </div>
+                <p className="text-sm text-gray-400">Organize your connections into private groups</p>
+              </div>
+
+              <button
+                onClick={() => toast.info("Create Circle feature coming soon!")}
+                className="w-full py-3 rounded-full border-2 border-dashed border-gray-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400 transition-all"
+              >
+                + Create New Circle
+              </button>
+
+              {trustCircles.map(circle => (
+                <div
+                  key={circle.id}
+                  className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform"
+                  onClick={() => toast.info("Circle details coming soon!")}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${circle.color} flex items-center justify-center text-3xl`}>
+                      {circle.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white mb-1">{circle.name}</h3>
+                      <p className="text-sm text-gray-400">{circle.members} members</p>
+                    </div>
+                    <ArrowLeft size={20} className="text-gray-500 rotate-180" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
-        // Chat View
+        // Chat View with Context Card
         <div className="flex flex-col h-screen">
-          <div className="glass-surface p-4 flex items-center gap-3">
-            <button onClick={() => setSelectedThread(null)} className="text-cyan-400">
-              <ArrowLeft size={24} />
-            </button>
-            <img src={selectedThread.peer.avatar} alt={selectedThread.peer.name} className="w-10 h-10 rounded-full" />
-            <div className="flex-1">
-              <p className="font-semibold">{selectedThread.peer.name}</p>
-              <p className="text-xs text-gray-400">@{selectedThread.peer.handle}</p>
+          <div className="glass-surface p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSelectedThread(null)} className="text-cyan-400">
+                <ArrowLeft size={24} />
+              </button>
+              <img src={selectedThread.peer.avatar} alt={selectedThread.peer.name} className="w-10 h-10 rounded-full" />
+              <div className="flex-1">
+                <p className="font-semibold">{selectedThread.peer.name}</p>
+                <p className="text-xs text-gray-400">@{selectedThread.peer.handle}</p>
+              </div>
             </div>
+            
+            {/* Context Card Toggle */}
+            <button
+              onClick={() => setShowCircles(!showCircles)}
+              className="p-2 rounded-full hover:bg-cyan-400/10 text-cyan-400"
+              title="View context"
+            >
+              <FileText size={20} />
+            </button>
           </div>
+
+          {/* Context Card */}
+          {showCircles && (
+            <div className="glass-card m-4 p-4 space-y-3">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles size={18} className="text-cyan-400" />
+                <h3 className="font-bold text-white">Connection Context</h3>
+              </div>
+              
+              {(() => {
+                const context = getContextCard(selectedThread.peer);
+                return context ? (
+                  <>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-2">Shared Interests</p>
+                      <div className="flex flex-wrap gap-2">
+                        {context.sharedInterests.map((interest, idx) => (
+                          <span key={idx} className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs">
+                            {interest}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <Users size={16} className="text-cyan-400" />
+                      <span>{context.mutualFriends} mutual friends</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                      <MapPin size={16} className="text-cyan-400" />
+                      <span>{context.location}</span>
+                    </div>
+
+                    {context.upcomingEvents.length > 0 && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-2">Upcoming Events</p>
+                        {context.upcomingEvents.map((event, idx) => (
+                          <div key={idx} className="flex items-center gap-2 text-sm text-gray-400">
+                            <Calendar size={16} className="text-cyan-400" />
+                            <span>{event}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-gray-700">
+                      <p className="text-xs text-gray-500 mb-1">Last Interaction</p>
+                      <p className="text-sm text-gray-400">{context.lastInteraction}</p>
+                    </div>
+                  </>
+                ) : null;
+              })()}
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((msg, idx) => {
