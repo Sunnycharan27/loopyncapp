@@ -3,35 +3,39 @@ import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
 import TopHeader from "../components/TopHeader";
-import { LogOut, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Settings, LogOut, Award, TrendingUp, Zap, Calendar, Ticket, Bookmark, Trophy } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [myPosts, setMyPosts] = useState([]);
-  const [myTribes, setMyTribes] = useState([]);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [analytics, setAnalytics] = useState(null);
+  const [credits, setCredits] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUserData();
+    fetchProfileData();
   }, []);
 
-  const fetchUserData = async () => {
+  const fetchProfileData = async () => {
     try {
-      const [postsRes, tribesRes] = await Promise.all([
-        axios.get(`${API}/posts`),
-        axios.get(`${API}/tribes`)
+      const [analyticsRes, creditsRes, ticketsRes, bookmarksRes] = await Promise.all([
+        axios.get(`${API}/analytics/${currentUser.id}`),
+        axios.get(`${API}/credits/${currentUser.id}`),
+        axios.get(`${API}/tickets/${currentUser.id}`),
+        axios.get(`${API}/bookmarks/${currentUser.id}`)
       ]);
-      
-      const userPosts = postsRes.data.filter(p => p.authorId === currentUser.id);
-      const userTribes = tribesRes.data.filter(t => t.members.includes(currentUser.id));
-      
-      setMyPosts(userPosts);
-      setMyTribes(userTribes);
+
+      setAnalytics(analyticsRes.data);
+      setCredits(creditsRes.data);
+      setTickets(ticketsRes.data);
+      setBookmarks(bookmarksRes.data);
     } catch (error) {
-      toast.error("Failed to load profile data");
+      console.error("Failed to fetch profile data");
     } finally {
       setLoading(false);
     }
@@ -39,112 +43,273 @@ const Profile = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/auth");
     toast.success("Logged out successfully");
+    navigate("/auth");
   };
+
+  const getTierColor = (tier) => {
+    switch(tier) {
+      case "Platinum": return "from-purple-400 to-pink-500";
+      case "Gold": return "from-yellow-400 to-orange-500";
+      case "Silver": return "from-gray-400 to-gray-500";
+      default: return "from-orange-600 to-orange-800";
+    }
+  };
+
+  const getTierEmoji = (tier) => {
+    switch(tier) {
+      case "Platinum": return "💎";
+      case "Gold": return "🏆";
+      case "Silver": return "🥈";
+      default: return "🥉";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+        <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
-      <div className="max-w-2xl mx-auto">
-        <TopHeader title="Profile" subtitle="Your digital identity" />
+      <TopHeader title="Profile" subtitle={`@${currentUser.handle}`} />
 
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Profile Header */}
-        <div className="px-4 mb-6">
-          <div className="glass-card p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-20 h-20 rounded-full"
-                />
-                <div>
-                  <h1 className="text-2xl font-bold neon-text">{currentUser.name}</h1>
-                  <p className="text-gray-400">@{currentUser.handle}</p>
-                  <p className="text-sm text-gray-500 mt-1">{currentUser.bio || "No bio yet"}</p>
-                </div>
+        <div className="glass-card p-6 mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="relative">
+              <img
+                src={currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.handle}`}
+                alt={currentUser.name}
+                className="w-20 h-20 rounded-full border-4 border-cyan-400"
+              />
+              <div className="absolute -bottom-2 -right-2 text-3xl">
+                {getTierEmoji(analytics?.tier || "Bronze")}
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-white neon-text">{currentUser.name}</h2>
+              <p className="text-gray-400">@{currentUser.handle}</p>
+              <div className="mt-2">
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getTierColor(analytics?.tier || "Bronze")} text-white`}>
+                  {analytics?.tier || "Bronze"} Tier
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/settings')}
+              className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:text-white"
+            >
+              <Settings size={20} />
+            </button>
+          </div>
+
+          {/* Credits Card */}
+          <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-400/10 to-purple-400/10 border border-cyan-400/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm mb-1">Loop Credits Balance</p>
+                <p className="text-4xl font-bold text-cyan-400">{credits?.balance || 0}</p>
               </div>
               <button
-                data-testid="logout-btn"
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                onClick={() => navigate('/wallet')}
+                className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-semibold"
               >
-                <LogOut size={18} />
-                Logout
+                Earn More
               </button>
-            </div>
-
-            <div className="flex gap-6 text-sm">
-              <div>
-                <span className="font-bold text-cyan-400">{myPosts.length}</span>
-                <span className="text-gray-400 ml-1">Posts</span>
-              </div>
-              <div>
-                <span className="font-bold text-cyan-400">{myTribes.length}</span>
-                <span className="text-gray-400 ml-1">Tribes</span>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="px-4">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold mb-4">Your Tribes</h2>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto"></div>
-              </div>
-            ) : myTribes.length === 0 ? (
-              <div className="text-center py-8 glass-card p-6">
-                <p className="text-gray-400">You haven't joined any tribes yet</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {myTribes.map(tribe => (
-                  <div
-                    key={tribe.id}
-                    onClick={() => navigate(`/tribes/${tribe.id}`)}
-                    className="glass-card p-4 cursor-pointer hover:scale-105 transition-transform"
-                  >
-                    <img src={tribe.avatar} alt={tribe.name} className="w-12 h-12 rounded-2xl mb-2" />
-                    <h3 className="font-semibold text-sm">{tribe.name}</h3>
-                    <p className="text-xs text-gray-400">{tribe.memberCount} members</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
+          {[
+            { id: "overview", name: "Overview", icon: <TrendingUp size={16} /> },
+            { id: "tickets", name: "My Tickets", icon: <Ticket size={16} /> },
+            { id: "bookmarks", name: "Bookmarks", icon: <Bookmark size={16} /> }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+            >
+              {tab.icon}
+              {tab.name}
+            </button>
+          ))}
+        </div>
 
-          <div>
-            <h2 className="text-xl font-bold mb-4">Your Posts</h2>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto"></div>
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <div className="space-y-4">
+            {/* Analytics Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="glass-card p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-cyan-400/20 flex items-center justify-center">
+                    <Zap size={20} className="text-cyan-400" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Posts</p>
+                    <p className="text-2xl font-bold text-white">{analytics?.totalPosts || 0}</p>
+                  </div>
+                </div>
               </div>
-            ) : myPosts.length === 0 ? (
-              <div className="text-center py-8 glass-card p-6">
-                <p className="text-gray-400">You haven't posted anything yet</p>
+
+              <div className="glass-card p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-green-400/20 flex items-center justify-center">
+                    <Calendar size={20} className="text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Check-ins</p>
+                    <p className="text-2xl font-bold text-white">{analytics?.totalCheckins || 0}</p>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {myPosts.map(post => (
-                  <div key={post.id} className="glass-card p-4">
-                    <p className="text-sm mb-2">{post.text}</p>
-                    {post.media && (
-                      <img src={post.media} alt="Post" className="rounded-2xl w-full" />
-                    )}
-                    <div className="flex gap-4 mt-3 text-xs text-gray-400">
-                      <span>{post.stats.likes} likes</span>
-                      <span>{post.stats.reposts} reposts</span>
-                      <span>{post.stats.replies} replies</span>
+
+              <div className="glass-card p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-purple-400/20 flex items-center justify-center">
+                    <Trophy size={20} className="text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Challenges</p>
+                    <p className="text-2xl font-bold text-white">{analytics?.totalChallengesCompleted || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-yellow-400/20 flex items-center justify-center">
+                    <Award size={20} className="text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">VibeRank</p>
+                    <p className="text-2xl font-bold text-white">#{analytics?.vibeRank || '--'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Credits History */}
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-bold text-white mb-4">Recent Credits Activity</h3>
+              <div className="space-y-3">
+                {credits?.history && credits.history.length > 0 ? (
+                  credits.history.slice(0, 5).map((txn) => (
+                    <div key={txn.id} className="flex items-center justify-between py-2 border-b border-gray-700 last:border-0">
+                      <div>
+                        <p className="text-white text-sm font-medium">{txn.description || txn.source}</p>
+                        <p className="text-gray-400 text-xs">
+                          {new Date(txn.createdAt).toLocaleDateString('en-IN')}
+                        </p>
+                      </div>
+                      <span className={`font-bold ${txn.type === 'earn' ? 'text-green-400' : 'text-red-400'}`}>
+                        {txn.type === 'earn' ? '+' : '-'}{txn.amount}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-400 text-center py-4">No activity yet</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tickets Tab */}
+        {activeTab === "tickets" && (
+          <div className="space-y-4">
+            {tickets.length > 0 ? (
+              tickets.map((ticket) => (
+                <div key={ticket.id} className="glass-card p-4">
+                  <div className="flex gap-4">
+                    <img
+                      src={ticket.event?.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400'}
+                      alt={ticket.event?.name}
+                      className="w-20 h-20 rounded-xl object-cover"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-white mb-1">{ticket.event?.name || 'Event'}</h4>
+                      <p className="text-sm text-gray-400 mb-2">{ticket.event?.location}</p>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          ticket.status === 'active' 
+                            ? 'bg-green-500/20 text-green-400 border border-green-400'
+                            : 'bg-gray-700 text-gray-400'
+                        }`}>
+                          {ticket.status.toUpperCase()}
+                        </span>
+                        <span className="text-xs text-gray-400">{ticket.tier}</span>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))
+            ) : (
+              <div className="glass-card p-12 text-center">
+                <Ticket size={48} className="text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 mb-4">No tickets yet</p>
+                <button
+                  onClick={() => navigate('/events')}
+                  className="px-6 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-semibold"
+                >
+                  Browse Events
+                </button>
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Bookmarks Tab */}
+        {activeTab === "bookmarks" && (
+          <div className="space-y-4">
+            {bookmarks.length > 0 ? (
+              bookmarks.map((post) => (
+                <div key={post.id} className="glass-card p-4">
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
+                      alt={post.author?.name}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div className="flex-1">
+                      <p className="font-semibold text-white">{post.author?.name || 'User'}</p>
+                      <p className="text-sm text-gray-300 mt-1">{post.text}</p>
+                      {post.media && (
+                        <img src={post.media} alt="Post" className="mt-2 rounded-xl max-h-64 object-cover" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="glass-card p-12 text-center">
+                <Bookmark size={48} className="text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No bookmarks yet</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="w-full mt-6 py-3 rounded-full border-2 border-red-500/30 text-red-400 font-semibold hover:bg-red-500/10 flex items-center justify-center gap-2"
+        >
+          <LogOut size={20} />
+          Logout
+        </button>
       </div>
 
       <BottomNav active="profile" />
