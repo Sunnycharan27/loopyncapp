@@ -47,6 +47,27 @@ const Notifications = () => {
     }
   };
 
+  const handleAcceptRequest = async (requestId, fromUser) => {
+    try {
+      await axios.post(`${API}/friend-requests/${requestId}/accept`);
+      toast.success(`You and ${fromUser.name} are now friends! 🎉`);
+      fetchFriendRequests();
+      fetchNotifications();
+    } catch (error) {
+      toast.error("Failed to accept request");
+    }
+  };
+
+  const handleRejectRequest = async (requestId) => {
+    try {
+      await axios.post(`${API}/friend-requests/${requestId}/reject`);
+      toast.success("Friend request rejected");
+      fetchFriendRequests();
+    } catch (error) {
+      toast.error("Failed to reject request");
+    }
+  };
+
   const handleNotificationClick = async (notif) => {
     // Mark as read
     if (!notif.read) {
