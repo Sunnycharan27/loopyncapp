@@ -83,6 +83,7 @@ const Events = () => {
             {events.map((event) => (
               <div
                 key={event.id}
+                onClick={() => navigate(`/events/${event.id}`)}
                 className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform"
               >
                 <div className="flex gap-4">
