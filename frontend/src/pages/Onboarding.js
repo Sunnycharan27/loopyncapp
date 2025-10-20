@@ -262,12 +262,283 @@ const Onboarding = () => {
                 Continue
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Step 3: Aadhaar eKYC (Mock) */}
+        {step === 3 && (
+          <div className="glass-card p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-teal-500 mb-4">
+                <Shield size={40} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Complete eKYC Verification</h2>
+              <p className="text-gray-400">Verify your identity to unlock premium features</p>
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 border border-yellow-400">
+                <span className="text-2xl">🎁</span>
+                <span className="text-yellow-400 font-semibold">+50 Bonus Credits</span>
+              </div>
+            </div>
+
+            {!kycVerified ? (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-white font-semibold mb-3">
+                    Aadhaar Number <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={aadhaarNumber}
+                    onChange={(e) => setAadhaarNumber(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                    placeholder="Enter 12-digit Aadhaar number"
+                    maxLength={12}
+                    className="w-full px-4 py-4 rounded-xl bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none text-center text-2xl tracking-widest font-mono"
+                  />
+                  <p className="text-gray-500 text-xs mt-2 text-center">
+                    🔒 Your data is encrypted and secure (Demo Mode)
+                  </p>
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-400/30 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <FileText size={20} className="text-blue-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="text-white font-semibold mb-1">Why eKYC?</p>
+                      <ul className="text-gray-400 text-sm space-y-1">
+                        <li>✓ Unlock Loop Credits withdrawal</li>
+                        <li>✓ Participate in paid events</li>
+                        <li>✓ Creator marketplace earnings</li>
+                        <li>✓ Enhanced account security</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSkipKYC}
+                    className="flex-1 py-4 rounded-full border-2 border-gray-700 text-gray-400 font-semibold hover:bg-gray-800/50"
+                  >
+                    Skip for Now
+                  </button>
+                  <button
+                    onClick={handleVerifyAadhaar}
+                    disabled={verifyingKyc || aadhaarNumber.length !== 12}
+                    className={`flex-1 py-4 rounded-full font-bold text-lg ${
+                      !verifyingKyc && aadhaarNumber.length === 12
+                        ? 'bg-gradient-to-r from-green-400 to-teal-500 text-white hover:opacity-90'
+                        : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {verifyingKyc ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                        Verifying...
+                      </div>
+                    ) : (
+                      'Verify Aadhaar'
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="bg-green-500/10 border border-green-400 rounded-xl p-6 text-center">
+                  <CheckCircle size={64} className="text-green-400 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-white mb-2">Verification Successful!</h3>
+                  <p className="text-gray-400 mb-4">Your eKYC has been completed successfully</p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-400">
+                    <span className="text-green-400 font-mono">XXXX XXXX {aadhaarNumber.slice(-4)}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setStep(4)}
+                  className="w-full py-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-bold text-lg hover:opacity-90"
+                >
+                  Continue
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Step 4: DPDP Consent Center */}
+        {step === 4 && (
+          <div className="glass-card p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 mb-4">
+                <Lock size={40} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Privacy & Consent</h2>
+              <p className="text-gray-400">Manage your data preferences (DPDP Act 2023)</p>
+            </div>
+
+            <div className="space-y-4 mb-8">
+              {/* Mandatory Consent */}
+              <div className="bg-red-500/10 border-2 border-red-400/50 rounded-xl p-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consents.dataCollection}
+                    onChange={() => toggleConsent('dataCollection')}
+                    className="mt-1 w-5 h-5 rounded border-2 border-red-400 bg-transparent checked:bg-red-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-white font-semibold">Data Collection</p>
+                      <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-bold">REQUIRED</span>
+                    </div>
+                    <p className="text-gray-400 text-sm">
+                      Allow Loopync to collect and process your data for app functionality (Profile, Posts, Messages)
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Optional Consents */}
+              <div className="space-y-3">
+                <div className="glass-card p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={consents.personalizedAds}
+                      onChange={() => toggleConsent('personalizedAds')}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-600 bg-transparent checked:bg-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Eye size={16} className="text-cyan-400" />
+                        <p className="text-white font-semibold">Personalized Content</p>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 text-xs">OPTIONAL</span>
+                      </div>
+                      <p className="text-gray-400 text-sm">
+                        Show personalized ads and content based on your interests
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="glass-card p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={consents.locationTracking}
+                      onChange={() => toggleConsent('locationTracking')}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-600 bg-transparent checked:bg-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin size={16} className="text-cyan-400" />
+                        <p className="text-white font-semibold">Location Services</p>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 text-xs">OPTIONAL</span>
+                      </div>
+                      <p className="text-gray-400 text-sm">
+                        Access your location for venue check-ins and nearby events
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="glass-card p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={consents.emailNotifications}
+                      onChange={() => toggleConsent('emailNotifications')}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-600 bg-transparent checked:bg-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Mail size={16} className="text-cyan-400" />
+                        <p className="text-white font-semibold">Email Notifications</p>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 text-xs">OPTIONAL</span>
+                      </div>
+                      <p className="text-gray-400 text-sm">
+                        Receive updates, newsletters, and promotional emails
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="glass-card p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={consents.pushNotifications}
+                      onChange={() => toggleConsent('pushNotifications')}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-600 bg-transparent checked:bg-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Bell size={16} className="text-cyan-400" />
+                        <p className="text-white font-semibold">Push Notifications</p>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 text-xs">OPTIONAL</span>
+                      </div>
+                      <p className="text-gray-400 text-sm">
+                        Get real-time alerts for messages, likes, and events
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="glass-card p-4">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={consents.dataSharing}
+                      onChange={() => toggleConsent('dataSharing')}
+                      className="mt-1 w-5 h-5 rounded border-2 border-gray-600 bg-transparent checked:bg-cyan-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CreditCard size={16} className="text-cyan-400" />
+                        <p className="text-white font-semibold">Data Sharing with Partners</p>
+                        <span className="px-2 py-0.5 rounded-full bg-gray-700 text-gray-400 text-xs">OPTIONAL</span>
+                      </div>
+                      <p className="text-gray-400 text-sm">
+                        Share anonymized data with payment and analytics partners
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep(kycVerified ? 3 : 2)}
+                className="flex-1 py-4 rounded-full border-2 border-gray-700 text-white font-semibold hover:bg-gray-800/50"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleComplete}
+                disabled={!consents.dataCollection || loading}
+                className={`flex-1 py-4 rounded-full font-bold text-lg ${
+                  consents.dataCollection && !loading
+                    ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white hover:opacity-90'
+                    : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    Setting up...
+                  </div>
+                ) : (
+                  'Complete Setup'
+                )}
+              </button>
+            </div>
 
             {/* Reward Preview */}
             <div className="mt-6 text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 border border-yellow-400">
                 <span className="text-2xl">🎁</span>
-                <span className="text-yellow-400 font-semibold">Earn 100 Loop Credits on completion!</span>
+                <span className="text-yellow-400 font-semibold">
+                  Earn {kycVerified ? '150' : '100'} Loop Credits on completion!
+                </span>
               </div>
             </div>
           </div>
