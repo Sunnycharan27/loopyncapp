@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { CheckCircle, Music, Dumbbell, Coffee, Code, Palette, BookOpen, Heart, MapPin, Shield, Lock, Eye, Bell, Mail, FileText, CreditCard } from "lucide-react";
 
 const Onboarding = () => {
-  const { currentUser, login } = useContext(AuthContext);
+  const { currentUser, login, setNeedsOnboarding } = useContext(AuthContext);
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
