@@ -1,9 +1,10 @@
 import React from "react";
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2 } from "lucide-react";
 
-const PostCard = ({ post, currentUser, onLike, onRepost }) => {
+const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
   const isLiked = post.likedBy?.includes(currentUser?.id);
   const isReposted = post.repostedBy?.includes(currentUser?.id);
+  const isOwnPost = post.authorId === currentUser?.id;
 
   return (
     <div data-testid="post-card" className="glass-card p-5">
