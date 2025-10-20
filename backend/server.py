@@ -1673,21 +1673,31 @@ async def send_friend_request(fromUserId: str, toUserId: str):
     
     return {"success": True, "request": friend_request.model_dump()}
 
-@api_router.get("/friend-requests/{userId}")
+@api_router.get("/friend-requests")
 async def get_friend_requests(userId: str):
-    """Get incoming friend requests"""
-    requests = await db.friend_requests.find({
-        "toUserId": userId,
-        "status": "pending"
+    """Get all friend requests for a user (sent and received)"""
+    # Get incoming requests (where user is recipient)
+    incoming = await db.friend_requests.find({
+        "toUserId": userId
+    }, {"_id": 0}).to_list(100)
+    
+    # Get outgoing requests (where user is sender)
+    outgoing = await db.friend_requests.find({
+        "fromUserId": userId
     }, {"_id": 0}).to_list(100)
     
     # Enrich with user data
-    for req in requests:
+    for req in incoming:
         from_user = await db.users.find_one({"id": req["fromUserId"]}, {"_id": 0})
         if from_user:
             req["fromUser"] = from_user
     
-    return requests
+    for req in outgoing:
+        to_user = await db.users.find_one({"id": req["toUserId"]}, {"_id": 0})
+        if to_user:
+            req["toUser"] = to_user
+    
+    return incoming + outgoing
 
 @api_router.post("/friend-requests/{requestId}/accept")
 async def accept_friend_request(requestId: str):
