@@ -13,6 +13,8 @@ import VenueDetail from "./pages/VenueDetail";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import Payment from "./pages/Payment";
+import Marketplace from "./pages/Marketplace";
+import Onboarding from "./pages/Onboarding";
 import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
@@ -27,6 +29,7 @@ export const AuthContext = React.createContext();
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -35,14 +38,28 @@ function App() {
     if (token && user) {
       setCurrentUser(JSON.parse(user));
       setIsAuthenticated(true);
+      checkOnboardingStatus(JSON.parse(user).id);
     }
   }, []);
+
+  const checkOnboardingStatus = async (userId) => {
+    try {
+      const res = await axios.get(`${API}/users/${userId}/interests`);
+      if (!res.data.onboardingComplete) {
+        setNeedsOnboarding(true);
+      }
+    } catch (error) {
+      // If interests not found, user needs onboarding
+      setNeedsOnboarding(true);
+    }
+  };
 
   const login = (token, user) => {
     localStorage.setItem("loopync_token", token);
     localStorage.setItem("loopync_user", JSON.stringify(user));
     setCurrentUser(user);
     setIsAuthenticated(true);
+    checkOnboardingStatus(user.id);
   };
 
   const logout = () => {
@@ -50,6 +67,7 @@ function App() {
     localStorage.removeItem("loopync_user");
     setCurrentUser(null);
     setIsAuthenticated(false);
+    setNeedsOnboarding(false);
   };
 
   return (
@@ -59,8 +77,18 @@ function App() {
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route
+              path="/onboarding"
+              element={isAuthenticated ? <Onboarding /> : <Navigate to="/auth" />}
+            />
+            <Route
               path="/"
-              element={isAuthenticated ? <Home /> : <Navigate to="/auth" />}
+              element={
+                isAuthenticated ? (
+                  needsOnboarding ? <Navigate to="/onboarding" /> : <Home />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/vibezone"
@@ -81,6 +109,10 @@ function App() {
             <Route
               path="/discover"
               element={isAuthenticated ? <Discover /> : <Navigate to="/auth" />}
+            />
+            <Route
+              path="/marketplace"
+              element={isAuthenticated ? <Marketplace /> : <Navigate to="/auth" />}
             />
             <Route
               path="/venues"
