@@ -60,7 +60,7 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
           className="flex items-center gap-2 hover:text-cyan-400 transition-colors"
         >
           <MessageCircle size={18} />
-          <span className="text-xs">{post.stats?.replies || 0}</span>
+          <span className="text-sm">{post.stats?.replies || 0}</span>
         </button>
 
         <button
