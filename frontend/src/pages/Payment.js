@@ -145,7 +145,7 @@ const Payment = () => {
               onClick={() => navigate('/events')}
               className="w-full py-3 rounded-full border-2 border-gray-700 text-white font-semibold hover:bg-gray-800/50"
             >
-              Browse More Events
+              Events
             </button>
           </div>
 
