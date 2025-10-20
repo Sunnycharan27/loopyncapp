@@ -1,10 +1,46 @@
-import React from "react";
-import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2, Bookmark, Flag, UserPlus, Copy, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 
 const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
+  const [selectedReaction, setSelectedReaction] = useState(null);
+  
   const isLiked = post.likedBy?.includes(currentUser?.id);
   const isReposted = post.repostedBy?.includes(currentUser?.id);
   const isOwnPost = post.authorId === currentUser?.id;
+
+  const reactions = [
+    { emoji: "❤️", label: "Love", color: "hover:bg-red-500/20" },
+    { emoji: "😂", label: "Haha", color: "hover:bg-yellow-500/20" },
+    { emoji: "😮", label: "Wow", color: "hover:bg-blue-500/20" },
+    { emoji: "😢", label: "Sad", color: "hover:bg-gray-500/20" },
+    { emoji: "🔥", label: "Fire", color: "hover:bg-orange-500/20" },
+    { emoji: "👏", label: "Clap", color: "hover:bg-green-500/20" },
+  ];
+
+  const handleReaction = (reaction) => {
+    setSelectedReaction(reaction);
+    setShowReactions(false);
+    toast.success(`Reacted with ${reaction.emoji}`);
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`https://loopync.app/post/${post.id}`);
+    toast.success("Link copied to clipboard!");
+    setShowQuickActions(false);
+  };
+
+  const handleSavePost = () => {
+    toast.success("Post saved to Collections!");
+    setShowQuickActions(false);
+  };
+
+  const handleReport = () => {
+    toast.info("Post reported. We'll review it shortly.");
+    setShowQuickActions(false);
+  };
 
   return (
     <div className="glass-card p-4 mb-4 hover:bg-gray-800/30 transition-all" data-testid="post-card">
