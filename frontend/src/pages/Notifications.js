@@ -311,37 +311,6 @@ const Notifications = () => {
       <BottomNav active="notifications" />
     </div>
   );
-                key={notif.id}
-                onClick={() => handleNotificationClick(notif)}
-                className={`glass-card p-4 cursor-pointer hover:bg-cyan-400/5 transition-all ${
-                  !notif.read ? 'border-l-4 border-cyan-400' : ''
-                }`}
-                data-testid="notification-item"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
-                    {getNotificationIcon(notif.type)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm">
-                      <span className="font-semibold">{notif.payload.fromName || 'Someone'}</span>
-                      {' '}{getNotificationText(notif)}
-                    </p>
-                    <span className="text-xs text-gray-500">
-                      {new Date(notif.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                  {!notif.read && (
-                    <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
-  );
 };
 
 export default Notifications;
