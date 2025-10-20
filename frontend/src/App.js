@@ -71,7 +71,7 @@ function App() {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, isAuthenticated, needsOnboarding, setNeedsOnboarding, login, logout }}>
       <div className="App">
         <BrowserRouter>
           <Routes>
