@@ -100,8 +100,17 @@ const Home = () => {
       <div className="max-w-2xl mx-auto">
         <TopHeader title="Timeline" subtitle="What's happening now" />
 
+        {/* User Status Bar */}
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
+          <MoodSelector currentMood={userMood} onMoodChange={setUserMood} />
+          <StreakCounter />
+        </div>
+
+        {/* Live Activity Feed */}
+        <LiveActivityFeed />
+
         {/* Posts Feed */}
-        <div className="space-y-4 px-4">
+        <div className="space-y-4 px-4 mt-4">
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin w-8 h-8 border-4 border-cyan-400 border-t-transparent rounded-full mx-auto"></div>
