@@ -445,7 +445,10 @@ const Discover = () => {
                 );
               })}
             </div>
-          )}        </div>
+          )}
+        </div>
+        </>
+        )}
       </div>
 
       <BottomNav active="discover" />
