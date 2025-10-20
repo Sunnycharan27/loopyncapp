@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
-import { ArrowLeft, Send, Image as ImageIcon, Mic } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Mic, Users, Shield, Video, FileText, MapPin, Calendar, Music, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +13,13 @@ const Messenger = () => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [showRooms, setShowRooms] = useState(false);
+  const [showCircles, setShowCircles] = useState(false);
+  const [activeView, setActiveView] = useState("chats"); // chats, rooms, circles
+  const fileInputRef = useRef(null);
+  
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     fetchThreads();
