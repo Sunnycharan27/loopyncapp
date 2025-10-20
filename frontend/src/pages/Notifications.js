@@ -157,26 +157,160 @@ const Notifications = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-2xl mx-auto">
-        <div className="sticky top-0 z-10 glass-surface p-4 flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="text-cyan-400">
-            <ArrowLeft size={24} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold neon-text">Notifications</h1>
-            <p className="text-xs text-gray-400">Stay updated</p>
+        <div className="sticky top-0 z-10 glass-surface p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <button onClick={() => navigate('/')} className="text-cyan-400">
+              <ArrowLeft size={24} />
+            </button>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold neon-text">Notifications</h1>
+              <p className="text-xs text-gray-400">Stay updated</p>
+            </div>
+            {friendRequests.length > 0 && (
+              <div className="px-3 py-1 rounded-full bg-red-500 text-white text-xs font-bold">
+                {friendRequests.length}
+              </div>
+            )}
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`flex-1 py-2 px-4 rounded-full font-medium text-sm transition-all ${
+                activeTab === "all"
+                  ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+            >
+              <Bell size={16} className="inline mr-2" />
+              All
+            </button>
+            <button
+              onClick={() => setActiveTab("requests")}
+              className={`flex-1 py-2 px-4 rounded-full font-medium text-sm transition-all relative ${
+                activeTab === "requests"
+                  ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+            >
+              <UserPlus size={16} className="inline mr-2" />
+              Friend Requests
+              {friendRequests.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                  {friendRequests.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
 
         <div className="p-4 space-y-3">
-          {notifications.length === 0 ? (
-            <div className="text-center py-12 glass-card p-8">
-              <p className="text-gray-400">No notifications yet</p>
-            </div>
-          ) : (
-            notifications.map(notif => (
-              <div
+          {/* Friend Requests Tab */}
+          {activeTab === "requests" && (
+            <>
+              {friendRequests.length === 0 ? (
+                <div className="text-center py-12 glass-card p-8">
+                  <UserPlus size={48} className="text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No pending friend requests</p>
+                </div>
+              ) : (
+                friendRequests.map(request => (
+                  <div key={request.id} className="glass-card p-4">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={request.fromUser?.avatar || 'https://i.pravatar.cc/150?img=1'} 
+                        alt={request.fromUser?.name} 
+                        className="w-14 h-14 rounded-full"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-white">{request.fromUser?.name || 'User'}</p>
+                        <p className="text-sm text-gray-400">@{request.fromUser?.handle || 'user'}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(request.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => handleAcceptRequest(request.id, request.fromUser)}
+                        className="flex-1 py-2 px-4 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 text-white font-semibold hover:opacity-90 transition-all"
+                      >
+                        <UserCheck size={16} className="inline mr-2" />
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleRejectRequest(request.id)}
+                        className="flex-1 py-2 px-4 rounded-full border-2 border-gray-700 text-gray-400 font-semibold hover:bg-gray-800/50 transition-all"
+                      >
+                        <UserX size={16} className="inline mr-2" />
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </>
+          )}
+
+          {/* All Notifications Tab */}
+          {activeTab === "all" && (
+            <>
+              {notifications.length === 0 ? (
+                <div className="text-center py-12 glass-card p-8">
+                  <Bell size={48} className="text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No notifications yet</p>
+                </div>
+              ) : (
+                notifications.map(notif => (
+                  <div
+                    key={notif.id}
+                    onClick={() => handleNotificationClick(notif)}
+                    className={`glass-card p-4 cursor-pointer hover:bg-cyan-400/5 transition-all ${
+                      !notif.read ? 'border-l-4 border-cyan-400' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center flex-shrink-0">
+                        {getNotificationIcon(notif.type)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-sm">
+                              <span className="font-semibold text-white">{notif.fromUser?.name || 'Loopync'}</span>
+                              <span className="text-gray-400"> {getNotificationText(notif)}</span>
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(notif.createdAt).toLocaleDateString('en-IN', {
+                                day: 'numeric',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                          {!notif.read && (
+                            <div className="w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0 mt-1"></div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      <BottomNav active="notifications" />
+    </div>
+  );
                 key={notif.id}
                 onClick={() => handleNotificationClick(notif)}
                 className={`glass-card p-4 cursor-pointer hover:bg-cyan-400/5 transition-all ${
