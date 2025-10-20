@@ -118,7 +118,8 @@ const ComposerModal = ({ currentUser, onClose, onPostCreated }) => {
       const res = await axios.post(`${API}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-      return `${BACKEND_URL}${res.data.url}`;
+      // Return the relative URL - it will be served through /api proxy
+      return `${API}${res.data.url}`;
     } catch (error) {
       toast.error("Failed to upload file");
       return null;
