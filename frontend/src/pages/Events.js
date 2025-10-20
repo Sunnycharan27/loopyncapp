@@ -36,12 +36,8 @@ const Events = () => {
   };
 
   const handleBookTicket = async (eventId) => {
-    try {
-      // For now, just show success message
-      toast.success("Ticket booking will be available soon!");
-    } catch (error) {
-      toast.error("Failed to book ticket");
-    }
+    // Navigate to event detail page for booking
+    navigate(`/events/${eventId}`);
   };
 
   return (
