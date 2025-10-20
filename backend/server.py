@@ -542,6 +542,17 @@ async def toggle_like_post(postId: str, userId: str):
         liked_by.append(userId)
         stats["likes"] = stats["likes"] + 1
         action = "liked"
+        
+        # Create notification for post author
+        if post["authorId"] != userId:
+            liker = await db.users.find_one({"id": userId}, {"_id": 0})
+            notification = Notification(
+                userId=post["authorId"],
+                type="like",
+                content=f"{liker.get('name', 'Someone')} liked your post",
+                link=f"/posts/{postId}"
+            )
+            await db.notifications.insert_one(notification.model_dump())
     
     await db.posts.update_one({"id": postId}, {"$set": {"likedBy": liked_by, "stats": stats}})
     return {"action": action, "likes": stats["likes"]}
