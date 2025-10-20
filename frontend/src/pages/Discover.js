@@ -225,47 +225,48 @@ const Discover = () => {
 
         {/* Tabs */}
         {!searchResults && (
-          <div className="flex gap-2 px-4 mb-6 overflow-x-auto">
-            <button
-            onClick={() => setActiveTab("venues")}
-            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
-              activeTab === "venues" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-            data-testid="discover-venues-tab"
-          >
-            Venues
-          </button>
-          <button
-            onClick={() => setActiveTab("events")}
-            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
-              activeTab === "events" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-            data-testid="discover-events-tab"
-          >
-            Events
-          </button>
-          <button
-            onClick={() => setActiveTab("marketplace")}
-            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
-              activeTab === "marketplace" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-            data-testid="discover-marketplace-tab"
-          >
-            Marketplace
-          </button>
-          <button
-            onClick={() => setActiveTab("tribes")}
-            className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
-              activeTab === "tribes" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}
-            data-testid="discover-tribes-tab"
-          >
-            Tribes
-          </button>
-        </div>
+          <>
+            <div className="flex gap-2 px-4 mb-6 overflow-x-auto">
+              <button
+                onClick={() => setActiveTab("venues")}
+                className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+                  activeTab === "venues" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+                data-testid="discover-venues-tab"
+              >
+                Venues
+              </button>
+              <button
+                onClick={() => setActiveTab("events")}
+                className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+                  activeTab === "events" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+                data-testid="discover-events-tab"
+              >
+                Events
+              </button>
+              <button
+                onClick={() => setActiveTab("marketplace")}
+                className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+                  activeTab === "marketplace" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+                data-testid="discover-marketplace-tab"
+              >
+                Marketplace
+              </button>
+              <button
+                onClick={() => setActiveTab("tribes")}
+                className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+                  activeTab === "tribes" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+                data-testid="discover-tribes-tab"
+              >
+                Tribes
+              </button>
+            </div>
 
-        {/* Content */}
-        <div className="px-4">
+            {/* Content */}
+            <div className="px-4">
           {activeTab === "venues" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {venues.map(venue => (
