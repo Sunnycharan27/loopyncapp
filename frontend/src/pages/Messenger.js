@@ -138,6 +138,38 @@ const Messenger = () => {
       fetchMessages(selectedThread.id);
     } catch (error) {
       toast.error("Failed to send message");
+
+  const searchFriends = async (q) => {
+    if (!q.trim()) { setFriendResults([]); return; }
+    setSearching(true);
+    try {
+      const res = await axios.get(`${API}/friends/list?userId=${currentUser.id}&q=${encodeURIComponent(q)}&limit=20`);
+      const items = (res.data.items || []).map(it => it.user);
+      setFriendResults(items);
+    } catch (e) {
+      console.error('friend search failed', e);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const startChatWith = async (user) => {
+    try {
+      const res = await axios.post(`${API}/dm/thread?userId=${currentUser.id}&peerUserId=${user.id}`);
+      const threadId = res.data.threadId;
+      // Refresh threads and open
+      await fetchThreads();
+      const t = { id: threadId, peer: user };
+      setSelectedThread(t);
+      fetchMessages(threadId);
+      setSearchQuery("");
+      setFriendResults([]);
+      setActiveView('chats');
+    } catch (e) {
+      toast.error(e.response?.data?.detail || 'Unable to start chat');
+    }
+  };
+
       // Remove temp message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
     }
