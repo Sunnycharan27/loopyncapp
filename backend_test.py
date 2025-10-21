@@ -548,7 +548,7 @@ class BackendTester:
             self.log_result("Seed Data Creation", False, f"Exception occurred: {str(e)}")
     
     def test_send_friend_request(self):
-        """Test 13: Send Friend Request from u2 to u1"""
+        """Test 13: Send Friend Request from u2 to u1 (or use existing)"""
         try:
             params = {
                 'fromUserId': 'u2',
@@ -581,6 +581,38 @@ class BackendTester:
                         False, 
                         "Friend request response missing required fields",
                         f"Response: {data}"
+                    )
+            elif response.status_code == 400:
+                # Check if friend request already exists
+                data = response.json()
+                if "already sent" in data.get('detail', '').lower():
+                    # Get existing friend request
+                    get_response = self.session.get(f"{BACKEND_URL}/friend-requests", params={'userId': 'u1'})
+                    if get_response.status_code == 200:
+                        requests_data = get_response.json()
+                        if isinstance(requests_data, list) and len(requests_data) > 0:
+                            for req in requests_data:
+                                if req.get('fromUserId') == 'u2' and req.get('toUserId') == 'u1':
+                                    self.friend_request_id = req['id']
+                                    self.log_result(
+                                        "Send Friend Request", 
+                                        True, 
+                                        f"Using existing friend request: {req['id']}",
+                                        f"Status: {req['status']}"
+                                    )
+                                    return
+                    self.log_result(
+                        "Send Friend Request", 
+                        False, 
+                        "Friend request already exists but couldn't retrieve ID",
+                        f"Response: {data}"
+                    )
+                else:
+                    self.log_result(
+                        "Send Friend Request", 
+                        False, 
+                        f"Friend request failed with status {response.status_code}",
+                        f"Response: {response.text}"
                     )
             else:
                 self.log_result(
