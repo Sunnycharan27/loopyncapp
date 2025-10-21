@@ -61,8 +61,9 @@ connected_clients = {}
 UPLOAD_DIR = Path("/app/backend/uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-# Serve uploaded files as static
+# Serve uploaded files as static (mounted under both /uploads and /api/uploads for ingress)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads_api")
 
 # ===== MODELS =====
 
