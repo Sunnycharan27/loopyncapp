@@ -2538,16 +2538,16 @@ async def send_message(threadId: str, userId: str, payload: SendMessageInput = B
         raise HTTPException(status_code=403, detail="Cannot send message")
     
     # Validate content
-    if not text and not mediaUrl:
+    if not payload.text and not payload.mediaUrl:
         raise HTTPException(status_code=400, detail="Message must have text or media")
     
     # Create message
     message = DMMessage(
         threadId=threadId,
         senderId=userId,
-        text=text,
-        mediaUrl=mediaUrl,
-        mimeType=mimeType
+        text=payload.text,
+        mediaUrl=payload.mediaUrl,
+        mimeType=payload.mimeType
     )
     await db.messages.insert_one(message.model_dump())
     
