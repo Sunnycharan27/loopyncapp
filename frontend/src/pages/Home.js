@@ -11,7 +11,7 @@ import StreakCounter from "../components/StreakCounter";
 import MoodSelector from "../components/MoodSelector";
 import { toast } from "sonner";
 import { emergentApi } from "../services/emergentApi";
-import GuidedTours from "../components/GuidedTours";
+// import GuidedTours from "../components/GuidedTours";
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
