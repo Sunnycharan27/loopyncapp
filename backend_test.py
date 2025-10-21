@@ -1642,13 +1642,12 @@ class BackendTester:
         """Test 34: POST /api/users/{userId}/interests (onboarding)"""
         try:
             user_id = "demo_user"
-            payload = {
-                "interests": ["music", "tech", "food"],
-                "language": "en",
-                "onboardingComplete": True
+            params = {
+                "interests": "music,tech,food",
+                "language": "en"
             }
             
-            response = self.session.post(f"{BACKEND_URL}/users/{user_id}/interests", json=payload)
+            response = self.session.post(f"{BACKEND_URL}/users/{user_id}/interests", params=params)
             
             if response.status_code == 200:
                 data = response.json()
