@@ -1016,42 +1016,125 @@ agent_communication:
 backend:
   - task: "Static uploads under /api/uploads"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: |
           Mounted StaticFiles at both /uploads and /api/uploads to ensure media served correctly via ingress when frontend uses /api prefix.
+      - working: true
+        agent: "testing"
+        comment: |
+          STATIC UPLOADS TESTING COMPLETED - ALL TESTS PASSED
+          
+          ✅ File Upload via POST /api/upload:
+          - Successfully uploaded small PNG image (10x10 red test image)
+          - Returned correct response format: {url, filename, content_type}
+          - Generated unique filename with UUID
+          - Proper content-type validation (image/png)
+          
+          ✅ File Retrieval via /api/uploads:
+          - Successfully retrieved uploaded file using returned URL path
+          - Correct HTTP 200 response with proper content-type headers
+          - File served correctly through ingress routing
+          - Full URL construction working: https://vibehub-5.preview.emergentagent.com/api/uploads/{filename}
+          
+          Static file upload and retrieval system is fully functional.
 
   - task: "Friend Requests API & Flow"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: |
           Implemented send/get/accept/reject/cancel routes with block/mute checks, notifications, and WebSocket emits. Accept auto-creates DM thread.
+      - working: true
+        agent: "testing"
+        comment: |
+          FRIEND REQUESTS FLOW TESTING COMPLETED - ALL TESTS PASSED
+          
+          ✅ Seed Data Creation:
+          - Successfully created 6 test users (u1, u2, u3, u4, u5, demo_user)
+          - All user data properly seeded in MongoDB
+          
+          ✅ Friend Request Sending (u2 → u1):
+          - POST /api/friend-requests?fromUserId=u2&toUserId=u1 working
+          - Proper handling of duplicate requests ("Already friends" validation)
+          - Request ID generation and status tracking functional
+          
+          ✅ Friend Request Retrieval:
+          - GET /api/friend-requests?userId=u1 working correctly
+          - Returns proper request data with fromUser information
+          - Status tracking (pending → accepted) working
+          
+          ✅ Friend Request Acceptance:
+          - POST /api/friend-requests/{requestId}/accept working
+          - Proper status updates from pending to accepted
+          - Friendship creation in database successful
+          
+          ✅ Friends List Verification:
+          - GET /api/friends/list?userId=u1 working correctly
+          - u2 found in u1's friends list after acceptance
+          - Proper response format with nested user data structure
+          - Friend relationship bidirectional and persistent
+          
+          Complete friend request flow from send → accept → friendship verified and working.
 
   - task: "DM Threads & Messages API"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: |
           Implemented /dm/threads, create_or_get, list messages, send with media, read receipts, edit/delete. Real-time emits via Socket.IO.
+      - working: false
+        agent: "testing"
+        comment: |
+          DM THREADS & MESSAGES TESTING - CRITICAL BACKEND BUG FOUND
+          
+          ❌ CRITICAL ISSUE: GET /api/dm/threads endpoint has backend bug
+          - Returns 500 Internal Server Error
+          - Root cause: Line 2269 in server.py calls .sort() on find_one() result
+          - find_one() returns single document, not cursor - cannot call .sort()
+          - Error: AttributeError: '_asyncio.Future' object has no attribute 'sort'
+          
+          ✅ WORKAROUND SUCCESSFUL: Manual DM thread creation
+          - POST /api/dm/thread?userId=u1&peerUserId=u2 working correctly
+          - Successfully created DM thread between u1 and u2
+          - Thread ID returned: ccaebad9-fb39-493a-9236-30ed355c9ce9
+          - Friendship validation working (requires friends to create thread)
+          
+          ✅ DM MESSAGE SENDING WORKING:
+          - POST /api/dm/threads/{threadId}/messages?userId=u1&text=hello successful
+          - Returns proper response: {messageId, timestamp}
+          - Message validation working (requires text or media)
+          
+          ✅ DM MESSAGE RETRIEVAL WORKING:
+          - GET /api/dm/threads/{threadId}/messages?userId=u2 successful
+          - Found sent 'hello' message from u1
+          - Proper message data structure with sender information
+          
+          ✅ MEDIA MESSAGE SENDING WORKING:
+          - POST with mediaUrl and mimeType parameters successful
+          - External image URL handling working correctly
+          - Media message storage and retrieval functional
+          
+          URGENT FIX NEEDED: Backend bug in /dm/threads endpoint (line 2269)
+          All other DM functionality working correctly through workaround.
 
 frontend:
   - task: "Post media rendering fix (relative uploads)"
