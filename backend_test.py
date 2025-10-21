@@ -1033,14 +1033,14 @@ class BackendTester:
 
 def main():
     """Main test runner"""
-    tester = AuthTester()
+    tester = BackendTester()
     success = tester.run_all_tests()
     
     if success:
-        print("🎉 All authentication tests passed!")
+        print("🎉 All backend API tests passed!")
         return 0
     else:
-        print("⚠️  Some authentication tests failed!")
+        print("⚠️  Some backend API tests failed!")
         return 1
 
 if __name__ == "__main__":
