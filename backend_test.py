@@ -1656,7 +1656,7 @@ class BackendTester:
                         "User Interests", 
                         True, 
                         f"Successfully updated user interests",
-                        f"Interests: {payload['interests']}, Language: {payload['language']}"
+                        f"Interests: {params['interests']}, Language: {params['language']}"
                     )
                 else:
                     self.log_result(
