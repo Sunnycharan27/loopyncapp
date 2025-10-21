@@ -1027,15 +1027,15 @@ class BackendTester:
             return
             
         try:
-            params = {
-                'userId': 'u1',
+            params = {'userId': 'u1'}
+            payload = {
                 'text': 'Check out this image!',
                 'mediaUrl': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200',
                 'mimeType': 'image/jpeg'
             }
             
             response = self.session.post(f"{BACKEND_URL}/dm/threads/{self.dm_thread_id}/messages", 
-                                       params=params)
+                                       params=params, json=payload)
             
             if response.status_code == 200:
                 data = response.json()
