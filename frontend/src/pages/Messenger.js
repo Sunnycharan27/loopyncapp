@@ -116,8 +116,8 @@ const Messenger = () => {
 
     const tempMessage = {
       id: `temp-${Date.now()}`,
-      fromId: currentUser.id,
-      toId: selectedThread.peer.id,
+      threadId: selectedThread.id,
+      senderId: currentUser.id,
       text: messageText,
       createdAt: new Date().toISOString(),
       sending: true
@@ -128,14 +128,12 @@ const Messenger = () => {
     setMessageText("");
 
     try {
-      const res = await axios.post(`${API}/messages?fromId=${currentUser.id}&toId=${selectedThread.peer.id}`, {
+      const res = await axios.post(`${API}/dm/threads/${selectedThread.id}/messages?userId=${currentUser.id}`, {
         text: messageText
       });
       
-      // Replace temp message with real message
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempMessage.id ? res.data : msg
-      ));
+      // Replace temp message with real message (fetch latest for consistency)
+      fetchMessages(selectedThread.id);
     } catch (error) {
       toast.error("Failed to send message");
       // Remove temp message on error
