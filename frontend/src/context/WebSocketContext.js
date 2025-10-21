@@ -26,7 +26,11 @@ export const WebSocketProvider = ({ children }) => {
     }
 
     // Connect to WebSocket server
-    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+    const BACKEND_URL = import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL;
+    if (!BACKEND_URL) {
+      console.warn('REACT_APP_BACKEND_URL is not set. Skipping WebSocket connection.');
+      return;
+    }
     const newSocket = io(BACKEND_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
