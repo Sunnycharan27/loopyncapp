@@ -12,19 +12,16 @@ const Messenger = () => {
   const { connected, emitTyping } = useWebSocket();
   const navigate = useNavigate();
   const [threads, setThreads] = useState([]);
-  const [selectedThread, setSelectedThread] = useState(null);
+  const [selectedThread, setSelectedThread] = useState(null); // { id, peer }
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [activeView, setActiveView] = useState("chats"); // chats, search
+  const [activeView, setActiveView] = useState("chats"); // chats, rooms, circles
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
+  const [showCircles, setShowCircles] = useState(false);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -37,16 +34,18 @@ const Messenger = () => {
 
   useEffect(() => {
     fetchThreads();
-    if (threadId) {
-      // Load specific thread
-      loadThread(threadId);
+  }, []);
+
+  useEffect(() => {
+    // If URL has a threadId param, try to open it once threads are loaded/updated
+    if (threadId && threads.length > 0) {
+      const t = threads.find(t => t.id === threadId);
+      if (t) {
+        setSelectedThread(t);
+        fetchMessages(t.id);
+      }
     }
-  }, [threadId]);
-    return () => {
-      clearInterval(threadsInterval);
-      if (messagesInterval) clearInterval(messagesInterval);
-    };
-  }, [selectedThread]);
+  }, [threadId, threads]);
 
   // Mock Trust Circles data
   const trustCircles = [
