@@ -451,7 +451,10 @@ const Messenger = () => {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.map((msg, idx) => {
-              const isMe = msg.fromId === currentUser.id;
+              const isMe = (msg.senderId || msg.fromId) === currentUser.id;
+              const mime = msg.mimeType || '';
+              const isImage = mime.startsWith('image/') || (msg.mediaUrl || '').match(/\.(png|jpe?g|gif|webp)$/i);
+              const isVideo = mime.startsWith('video/') || (msg.mediaUrl || '').match(/\.(mp4|webm|mov|avi)$/i);
               return (
                 <div key={msg.id || idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-xs px-4 py-2 rounded-2xl ${
@@ -459,7 +462,7 @@ const Messenger = () => {
                   } ${msg.sending ? 'opacity-50' : ''}`}>
                     {msg.mediaUrl && (
                       <div className="mb-2">
-                        {msg.mediaType === 'image' ? (
+                        {isImage ? (
                           <img 
                             src={msg.mediaUrl} 
                             alt="Shared media" 
@@ -468,7 +471,7 @@ const Messenger = () => {
                               e.target.style.display = 'none';
                             }}
                           />
-                        ) : msg.mediaType === 'video' ? (
+                        ) : isVideo ? (
                           <video 
                             src={msg.mediaUrl} 
                             controls 
@@ -480,7 +483,7 @@ const Messenger = () => {
                         ) : null}
                       </div>
                     )}
-                    <p className="text-sm">{msg.text}</p>
+                    {msg.text && <p className="text-sm">{msg.text}</p>}
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`text-xs ${isMe ? 'text-black/70' : 'text-gray-500'}`}>
                         {new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
