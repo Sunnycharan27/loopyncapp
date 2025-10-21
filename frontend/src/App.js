@@ -91,7 +91,9 @@ function App() {
             <Route
               path="/"
               element={
-                isAuthenticated ? (
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
                   needsOnboarding ? <Navigate to="/onboarding" /> : <Home />
                 ) : (
                   <Navigate to="/auth" />
