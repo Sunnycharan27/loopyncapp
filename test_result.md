@@ -660,6 +660,31 @@ frontend:
           
           ROOT CAUSE: Same authentication context issue as Venues page.
           Direct navigation to standalone pages fails while Discover tab access works.
+      - working: true
+        agent: "testing"
+        comment: |
+          STANDALONE EVENTS PAGE TESTING COMPLETED - AUTHLOADED GATE FIX SUCCESSFUL
+          
+          ✅ NAVIGATION FIXED:
+          - Direct navigation to /events now working (no longer redirects to /auth)
+          - Event detail navigation working (/events/:eventId accessible)
+          - Mobile and desktop responsiveness confirmed working
+          
+          ✅ BOOKING FLOW VERIFIED:
+          - Events page accessible via direct URL navigation
+          - Book Tickets buttons functional when events data is present
+          - Event detail pages load correctly with BookMyShow-style components
+          - Mobile booking flow working at 393x852 viewport
+          
+          ⚠️ DATA LOADING ISSUE IDENTIFIED:
+          - Standalone Events page shows 0 events when accessed directly
+          - However, Discover > Events tab shows events properly (multiple event cards found)
+          - Book Tickets functionality works when events data is present
+          - Root cause: API data fetching issue on standalone pages vs. Discover tabs
+          
+          The authLoaded gate fix successfully resolved the authentication routing issue.
+          Events page is now accessible and booking flow works, but requires investigation
+          into data loading differences between standalone pages and Discover tab implementations.
       - working: "NA"
         agent: "main"
         comment: |
