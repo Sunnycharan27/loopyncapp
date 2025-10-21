@@ -144,7 +144,7 @@ const Home = () => {
                   toast.message('Ranking Done', { description: JSON.stringify(res.items).slice(0, 160) + '…' });
                 }}
                 className="px-3 py-2 rounded-full bg-purple-400/20 text-purple-300 border border-purple-500/30 text-xs"
-              >Rank</button>
+               data-testid="btn-ai-rank">Rank</button>
               <button
                 onClick={async () => {
                   const text = prompt('Enter text for insights or summary');
