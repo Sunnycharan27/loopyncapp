@@ -1972,8 +1972,8 @@ async def ai_insight(req: InsightRequest):
             prompt = "Return JSON {sentiment: 'positive'|'neutral'|'negative', score: number} for the following text:\n" + req.text
         else:
             prompt = "Provide key insights:\n" + req.text
-        out = chat.send_message(prompt)
-        return {"result": out.output_text}
+        out = await chat.send_message(prompt)
+        return {"result": out}
     except Exception as e:
         logging.exception("ai_insight failed")
         raise HTTPException(status_code=500, detail=str(e))
