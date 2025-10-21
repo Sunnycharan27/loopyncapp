@@ -138,6 +138,10 @@ const Messenger = () => {
       fetchMessages(selectedThread.id);
     } catch (error) {
       toast.error("Failed to send message");
+      // Remove temp message on error
+      setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
+    }
+  };
 
   const searchFriends = async (q) => {
     if (!q.trim()) { setFriendResults([]); return; }
@@ -167,11 +171,6 @@ const Messenger = () => {
       setActiveView('chats');
     } catch (e) {
       toast.error(e.response?.data?.detail || 'Unable to start chat');
-    }
-  };
-
-      // Remove temp message on error
-      setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
     }
   };
 
