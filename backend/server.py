@@ -1878,6 +1878,9 @@ async def save_user_consents(userId: str, consent_data: UserConsent):
         {"userId": userId},
         {"$set": consent_dict},
         upsert=True
+    )
+    
+    return {"success": True, "message": "Consent preferences saved"}
 
 # ===== AI ROUTES =====
 class RankRequest(BaseModel):
