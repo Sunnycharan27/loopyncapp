@@ -1191,6 +1191,11 @@ frontend:
 
 agent_communication:
   - agent: "main"
+      - working: false
+        agent: "main"
+        comment: |
+          Fixed DM threads bug: replaced find_one().sort with find().sort(limit=1) to fetch last message correctly. Ready for retest.
+
     message: |
       Debug phase started (media posts, friend requests, DMs). Implemented static upload serving under /api/uploads, prefixed media URLs on frontend, rewired Messenger to DM API, and ensured accept friend request auto-creates a DM thread. Ready for backend testing focusing on: uploads, friend request flow, DM threads/messages.
   
