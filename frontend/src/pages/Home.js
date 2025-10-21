@@ -18,6 +18,8 @@ const Home = () => {
   const [showComposer, setShowComposer] = useState(false);
   const [userMood, setUserMood] = useState("happy");
 
+import { emergentApi } from "../services/emergentApi";
+
   useEffect(() => {
     fetchPosts();
   }, []);
