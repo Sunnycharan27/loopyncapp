@@ -18,6 +18,7 @@ import Onboarding from "./pages/Onboarding";
 import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 import Auth from "./pages/Auth";
 import { Toaster } from "sonner";
 import { WebSocketProvider } from "./context/WebSocketContext";
