@@ -163,9 +163,6 @@ const Home = () => {
           <p className="text-xs text-gray-500 mb-1">Need a quick walkthrough?</p>
         </div>
 
-        {/* Guided Tours Widget */}
-        <GuidedTours />
-
         {/* Posts Feed */}
         <div className="space-y-4 px-4 mt-4">
           {loading ? (
