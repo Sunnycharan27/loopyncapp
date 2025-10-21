@@ -2,9 +2,9 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
-import { Plus, Settings, RefreshCw, ArrowUpRight, ArrowDownLeft, Shield } from "lucide-react";
+import { Plus, Settings, RefreshCw, ArrowUpRight, ArrowDownLeft, Shield, Scan } from "lucide-react";
 import { toast } from "sonner";
-import Barcode from "react-barcode";
+import { QRCodeSVG } from "qrcode.react";
 
 const Wallet = () => {
   const { currentUser } = useContext(AuthContext);
