@@ -567,13 +567,13 @@ class BackendTester:
                         f"Successfully sent friend request: {data['requestId']}",
                         f"Status: {data['status']}"
                     )
-                elif 'success' in data and data['success']:
-                    self.friend_request_id = data.get('requestId')
+                elif 'success' in data and data['success'] and 'requestId' in data:
+                    self.friend_request_id = data['requestId']
                     self.log_result(
                         "Send Friend Request", 
                         True, 
-                        f"Successfully sent friend request",
-                        f"Response: {data}"
+                        f"Successfully sent friend request: {data['requestId']}",
+                        f"Status: {data.get('status', 'pending')}"
                     )
                 else:
                     self.log_result(
