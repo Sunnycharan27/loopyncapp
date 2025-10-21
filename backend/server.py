@@ -65,6 +65,20 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads_api")
 
+# ===== AI (Emergent Integrations) =====
+try:
+    from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+    EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
+    if not EMERGENT_LLM_KEY:
+        logging.warning("EMERGENT_LLM_KEY not set; AI endpoints will return 503")
+except Exception as e:
+    logging.error(f"Failed to import emergentintegrations: {e}")
+    LlmChat = None
+    UserMessage = None
+    FileContentWithMimeType = None
+
+
+
 # ===== MODELS =====
 
 class User(BaseModel):
