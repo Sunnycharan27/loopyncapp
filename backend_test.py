@@ -725,14 +725,14 @@ class BackendTester:
                 data = response.json()
                 if 'items' in data and isinstance(data['items'], list):
                     friends = data['items']
-                    # Look for u2 in the friends list
-                    friend_ids = [friend.get('id') for friend in friends]
+                    # Look for u2 in the friends list (nested under 'user')
+                    friend_ids = [friend.get('user', {}).get('id') for friend in friends]
                     if 'u2' in friend_ids:
-                        u2_friend = next(friend for friend in friends if friend.get('id') == 'u2')
+                        u2_friend = next(friend for friend in friends if friend.get('user', {}).get('id') == 'u2')
                         self.log_result(
                             "Friends List Verification", 
                             True, 
-                            f"u2 found in u1's friends list: {u2_friend.get('name', 'Unknown')}",
+                            f"u2 found in u1's friends list: {u2_friend.get('user', {}).get('name', 'Unknown')}",
                             f"Total friends: {len(friends)}"
                         )
                     else:
