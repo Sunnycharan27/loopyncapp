@@ -25,6 +25,8 @@ class BackendTester:
         self.new_user_email = None
         self.uploaded_file_url = None
         self.friend_request_id = None
+        self.dm_thread_id = None
+        self.dm_message_id = None
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
