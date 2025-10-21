@@ -1953,8 +1953,8 @@ async def ai_translate(req: TranslateRequest):
         chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         src = req.source_language or "auto"
         prompt = f"Translate from {src} to {req.target_language}. Only output the translation.\nText: {req.text}"
-        out = chat.send_message(prompt)
-        return {"translated_text": out.output_text}
+        out = await chat.send_message(prompt)
+        return {"translated_text": out}
     except Exception as e:
         logging.exception("ai_translate failed")
         raise HTTPException(status_code=500, detail=str(e))
