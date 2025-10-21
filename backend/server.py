@@ -1909,7 +1909,7 @@ async def ai_rank(req: RankRequest):
     try:
         chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         prompt = f"Rank the following documents by relevance to: '{req.query}'. Return JSON array with objects {{index, score}} where index refers to original order. Documents: " + "\n".join([f"[{i}] {d}" for i,d in enumerate(req.documents)])
-        out = chat.completion([UserMessage(content=prompt)])
+        out = chat.send_message(prompt)
         text = out.output_text or "[]"
         import json
         try:
@@ -1933,7 +1933,7 @@ async def ai_safety(req: SafetyRequest):
         chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         # Using moderation via prompt if direct moderation unsupported; emergentintegrations may wrap moderation via litellm
         prompt = "Classify if the text violates safety (hate, violence, sexual, self-harm). Return JSON {safe:bool, categories: string[]} only. Text: " + req.text
-        out = chat.completion([UserMessage(content=prompt)])
+        out = chat.send_message(prompt)
         import json
         data = {"safe": True, "categories": []}
         try:
@@ -1953,7 +1953,7 @@ async def ai_translate(req: TranslateRequest):
         chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         src = req.source_language or "auto"
         prompt = f"Translate from {src} to {req.target_language}. Only output the translation.\nText: {req.text}"
-        out = chat.completion([UserMessage(content=prompt)])
+        out = chat.send_message(prompt)
         return {"translated_text": out.output_text}
     except Exception as e:
         logging.exception("ai_translate failed")
@@ -1972,7 +1972,7 @@ async def ai_insight(req: InsightRequest):
             prompt = "Return JSON {sentiment: 'positive'|'neutral'|'negative', score: number} for the following text:\n" + req.text
         else:
             prompt = "Provide key insights:\n" + req.text
-        out = chat.completion([UserMessage(content=prompt)])
+        out = chat.send_message(prompt)
         return {"result": out.output_text}
     except Exception as e:
         logging.exception("ai_insight failed")
