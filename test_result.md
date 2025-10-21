@@ -1225,16 +1225,34 @@ frontend:
 
   - task: "UserProfile posts media prefix"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/pages/UserProfile.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: |
           When fetching posts of a user, normalize media to full URL when it starts with /uploads; keep external and /api/uploads intact.
+      - working: true
+        agent: "testing"
+        comment: |
+          USER PROFILE MEDIA PREFIXING TESTED - WORKING CORRECTLY
+          
+          ✅ MEDIA URL NORMALIZATION VERIFIED:
+          - Code correctly checks for /uploads prefix in fetchUserPosts()
+          - Applies BACKEND_URL prefix when media starts with /uploads
+          - Leaves external URLs and /api/uploads URLs intact
+          - Profile navigation working via Discover search functionality
+          
+          ✅ PROFILE FUNCTIONALITY VERIFIED:
+          - User profile pages accessible via /profile/:userId routes
+          - Posts render correctly on profile pages
+          - Media URLs properly processed for display
+          - Friend request functionality integrated (Add Friend, Message buttons)
+          
+          Media prefixing logic is correctly implemented in UserProfile component.
 
   - task: "WebSocketContext env handling"
     implemented: true
