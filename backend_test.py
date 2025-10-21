@@ -424,6 +424,541 @@ class BackendTester:
         except Exception as e:
             self.log_result("No Token Access", False, f"Exception occurred: {str(e)}")
     
+    def generate_test_png(self):
+        """Generate a small PNG image in memory for testing"""
+        # Create a small 10x10 red image
+        img = Image.new('RGB', (10, 10), color='red')
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format='PNG')
+        img_bytes.seek(0)
+        return img_bytes
+    
+    def test_static_upload(self):
+        """Test 10: Static File Upload via /api/upload"""
+        try:
+            # Generate a small PNG for testing
+            png_data = self.generate_test_png()
+            
+            files = {
+                'file': ('test_image.png', png_data, 'image/png')
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/upload", files=files)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'url' in data and 'filename' in data and 'content_type' in data:
+                    self.uploaded_file_url = data['url']
+                    self.log_result(
+                        "Static File Upload", 
+                        True, 
+                        f"Successfully uploaded file: {data['filename']}",
+                        f"URL: {data['url']}, Content-Type: {data['content_type']}"
+                    )
+                else:
+                    self.log_result(
+                        "Static File Upload", 
+                        False, 
+                        "Upload response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Static File Upload", 
+                    False, 
+                    f"Upload failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Static File Upload", False, f"Exception occurred: {str(e)}")
+    
+    def test_static_file_retrieval(self):
+        """Test 11: Static File Retrieval via /api/uploads"""
+        if not self.uploaded_file_url:
+            self.log_result("Static File Retrieval", False, "Skipped - no uploaded file URL available")
+            return
+            
+        try:
+            # Construct the full URL for file retrieval
+            file_url = f"https://vibehub-5.preview.emergentagent.com/api{self.uploaded_file_url}"
+            
+            response = self.session.get(file_url)
+            
+            if response.status_code == 200:
+                # Check if it's actually an image
+                content_type = response.headers.get('content-type', '')
+                if 'image' in content_type.lower():
+                    self.log_result(
+                        "Static File Retrieval", 
+                        True, 
+                        f"Successfully retrieved uploaded file",
+                        f"Content-Type: {content_type}, Size: {len(response.content)} bytes"
+                    )
+                else:
+                    self.log_result(
+                        "Static File Retrieval", 
+                        True, 
+                        f"File retrieved but content-type unexpected: {content_type}",
+                        f"Size: {len(response.content)} bytes"
+                    )
+            else:
+                self.log_result(
+                    "Static File Retrieval", 
+                    False, 
+                    f"File retrieval failed with status {response.status_code}",
+                    f"URL: {file_url}, Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Static File Retrieval", False, f"Exception occurred: {str(e)}")
+    
+    def test_seed_data(self):
+        """Test 12: Create Seed Data"""
+        try:
+            response = self.session.post(f"{BACKEND_URL}/seed")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data and 'users' in data:
+                    self.log_result(
+                        "Seed Data Creation", 
+                        True, 
+                        f"Successfully created seed data: {data['users']} users",
+                        f"Response: {data}"
+                    )
+                else:
+                    self.log_result(
+                        "Seed Data Creation", 
+                        False, 
+                        "Seed response missing expected fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Seed Data Creation", 
+                    False, 
+                    f"Seed creation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Seed Data Creation", False, f"Exception occurred: {str(e)}")
+    
+    def test_send_friend_request(self):
+        """Test 13: Send Friend Request from u2 to u1"""
+        try:
+            params = {
+                'fromUserId': 'u2',
+                'toUserId': 'u1'
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/friend-requests", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'status' in data:
+                    self.friend_request_id = data['id']
+                    self.log_result(
+                        "Send Friend Request", 
+                        True, 
+                        f"Successfully sent friend request: {data['id']}",
+                        f"Status: {data['status']}, From: {data.get('fromUserId')}, To: {data.get('toUserId')}"
+                    )
+                else:
+                    self.log_result(
+                        "Send Friend Request", 
+                        False, 
+                        "Friend request response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Send Friend Request", 
+                    False, 
+                    f"Friend request failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Send Friend Request", False, f"Exception occurred: {str(e)}")
+    
+    def test_get_friend_requests(self):
+        """Test 14: Get Friend Requests for u1"""
+        try:
+            params = {'userId': 'u1'}
+            
+            response = self.session.get(f"{BACKEND_URL}/friend-requests", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Look for pending incoming request from u2
+                    incoming_requests = [req for req in data if req.get('toUserId') == 'u1' and req.get('status') == 'pending']
+                    if incoming_requests:
+                        request = incoming_requests[0]
+                        if 'fromUser' in request:
+                            self.log_result(
+                                "Get Friend Requests", 
+                                True, 
+                                f"Found pending friend request from {request['fromUser'].get('name', 'Unknown')}",
+                                f"Request ID: {request['id']}, From User: {request['fromUserId']}"
+                            )
+                        else:
+                            self.log_result(
+                                "Get Friend Requests", 
+                                True, 
+                                f"Found pending friend request but missing fromUser data",
+                                f"Request: {request}"
+                            )
+                    else:
+                        self.log_result(
+                            "Get Friend Requests", 
+                            False, 
+                            "No pending incoming friend requests found for u1",
+                            f"All requests: {data}"
+                        )
+                else:
+                    self.log_result(
+                        "Get Friend Requests", 
+                        False, 
+                        "Friend requests response is not a list",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Get Friend Requests", 
+                    False, 
+                    f"Get friend requests failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Get Friend Requests", False, f"Exception occurred: {str(e)}")
+    
+    def test_accept_friend_request(self):
+        """Test 15: Accept Friend Request"""
+        if not self.friend_request_id:
+            self.log_result("Accept Friend Request", False, "Skipped - no friend request ID available")
+            return
+            
+        try:
+            response = self.session.post(f"{BACKEND_URL}/friend-requests/{self.friend_request_id}/accept")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'message' in data or 'success' in data:
+                    self.log_result(
+                        "Accept Friend Request", 
+                        True, 
+                        f"Successfully accepted friend request",
+                        f"Response: {data}"
+                    )
+                else:
+                    self.log_result(
+                        "Accept Friend Request", 
+                        False, 
+                        "Accept response missing expected fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Accept Friend Request", 
+                    False, 
+                    f"Accept friend request failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Accept Friend Request", False, f"Exception occurred: {str(e)}")
+    
+    def test_friends_list(self):
+        """Test 16: Verify Friends List includes u2 for u1"""
+        try:
+            params = {'userId': 'u1'}
+            
+            response = self.session.get(f"{BACKEND_URL}/friends/list", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Look for u2 in the friends list
+                    friend_ids = [friend.get('id') for friend in data]
+                    if 'u2' in friend_ids:
+                        u2_friend = next(friend for friend in data if friend.get('id') == 'u2')
+                        self.log_result(
+                            "Friends List Verification", 
+                            True, 
+                            f"u2 found in u1's friends list: {u2_friend.get('name', 'Unknown')}",
+                            f"Total friends: {len(data)}"
+                        )
+                    else:
+                        self.log_result(
+                            "Friends List Verification", 
+                            False, 
+                            "u2 not found in u1's friends list",
+                            f"Friend IDs: {friend_ids}"
+                        )
+                else:
+                    self.log_result(
+                        "Friends List Verification", 
+                        False, 
+                        "Friends list response is not a list",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Friends List Verification", 
+                    False, 
+                    f"Get friends list failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Friends List Verification", False, f"Exception occurred: {str(e)}")
+    
+    def test_dm_thread_creation(self):
+        """Test 17: Verify DM Thread Auto-Creation between u1 and u2"""
+        try:
+            params = {'userId': 'u1'}
+            
+            response = self.session.get(f"{BACKEND_URL}/dm/threads", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    # Look for thread with u2
+                    u2_thread = None
+                    for thread in data:
+                        if 'peer' in thread and thread['peer'].get('id') == 'u2':
+                            u2_thread = thread
+                            break
+                    
+                    if u2_thread:
+                        self.log_result(
+                            "DM Thread Auto-Creation", 
+                            True, 
+                            f"DM thread found between u1 and u2: {u2_thread['peer'].get('name', 'Unknown')}",
+                            f"Thread ID: {u2_thread.get('id')}"
+                        )
+                        # Store thread ID for messaging tests
+                        self.dm_thread_id = u2_thread.get('id')
+                    else:
+                        self.log_result(
+                            "DM Thread Auto-Creation", 
+                            False, 
+                            "No DM thread found between u1 and u2",
+                            f"Available threads: {[t.get('peer', {}).get('id') for t in data]}"
+                        )
+                else:
+                    self.log_result(
+                        "DM Thread Auto-Creation", 
+                        False, 
+                        "No DM threads found for u1",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "DM Thread Auto-Creation", 
+                    False, 
+                    f"Get DM threads failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("DM Thread Auto-Creation", False, f"Exception occurred: {str(e)}")
+    
+    def test_send_dm_message(self):
+        """Test 18: Send DM Message from u1 to u2"""
+        if not hasattr(self, 'dm_thread_id') or not self.dm_thread_id:
+            self.log_result("Send DM Message", False, "Skipped - no DM thread ID available")
+            return
+            
+        try:
+            params = {'userId': 'u1'}
+            payload = {'text': 'hello'}
+            
+            response = self.session.post(f"{BACKEND_URL}/dm/threads/{self.dm_thread_id}/messages", 
+                                       params=params, json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'text' in data:
+                    self.log_result(
+                        "Send DM Message", 
+                        True, 
+                        f"Successfully sent DM message: '{data['text']}'",
+                        f"Message ID: {data['id']}, Sender: {data.get('senderId')}"
+                    )
+                    self.dm_message_id = data['id']
+                else:
+                    self.log_result(
+                        "Send DM Message", 
+                        False, 
+                        "DM message response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Send DM Message", 
+                    False, 
+                    f"Send DM message failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Send DM Message", False, f"Exception occurred: {str(e)}")
+    
+    def test_get_dm_messages(self):
+        """Test 19: Get DM Messages for u2"""
+        if not hasattr(self, 'dm_thread_id') or not self.dm_thread_id:
+            self.log_result("Get DM Messages", False, "Skipped - no DM thread ID available")
+            return
+            
+        try:
+            params = {'userId': 'u2'}
+            
+            response = self.session.get(f"{BACKEND_URL}/dm/threads/{self.dm_thread_id}/messages", 
+                                      params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    # Look for the "hello" message
+                    hello_messages = [msg for msg in data if msg.get('text') == 'hello']
+                    if hello_messages:
+                        msg = hello_messages[0]
+                        self.log_result(
+                            "Get DM Messages", 
+                            True, 
+                            f"Found 'hello' message from u1",
+                            f"Message ID: {msg.get('id')}, Sender: {msg.get('senderId')}"
+                        )
+                    else:
+                        self.log_result(
+                            "Get DM Messages", 
+                            False, 
+                            "No 'hello' message found in thread",
+                            f"Messages: {[msg.get('text') for msg in data]}"
+                        )
+                else:
+                    self.log_result(
+                        "Get DM Messages", 
+                        False, 
+                        "DM messages response is not a list",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Get DM Messages", 
+                    False, 
+                    f"Get DM messages failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Get DM Messages", False, f"Exception occurred: {str(e)}")
+    
+    def test_send_media_dm_message(self):
+        """Test 20: Send DM Message with Media URL"""
+        if not hasattr(self, 'dm_thread_id') or not self.dm_thread_id:
+            self.log_result("Send Media DM Message", False, "Skipped - no DM thread ID available")
+            return
+            
+        try:
+            params = {'userId': 'u1'}
+            payload = {
+                'text': 'Check out this image!',
+                'mediaUrl': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200',
+                'mimeType': 'image/jpeg'
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/dm/threads/{self.dm_thread_id}/messages", 
+                                       params=params, json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'mediaUrl' in data and 'mimeType' in data:
+                    self.log_result(
+                        "Send Media DM Message", 
+                        True, 
+                        f"Successfully sent media DM message",
+                        f"Message ID: {data['id']}, Media: {data['mediaUrl']}, Type: {data['mimeType']}"
+                    )
+                else:
+                    self.log_result(
+                        "Send Media DM Message", 
+                        False, 
+                        "Media DM message response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Send Media DM Message", 
+                    False, 
+                    f"Send media DM message failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Send Media DM Message", False, f"Exception occurred: {str(e)}")
+    
+    def test_search_endpoint(self):
+        """Test 21: Search Endpoint Sanity Check"""
+        try:
+            params = {
+                'q': 'Raj',
+                'currentUserId': 'u1'
+            }
+            
+            response = self.session.get(f"{BACKEND_URL}/search", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'users' in data:
+                    users = data['users']
+                    if isinstance(users, list) and len(users) > 0:
+                        # Check if users have required fields
+                        user = users[0]
+                        if 'isFriend' in user and 'isBlocked' in user:
+                            self.log_result(
+                                "Search Endpoint", 
+                                True, 
+                                f"Search returned {len(users)} users with friend/block status",
+                                f"First user: {user.get('name', 'Unknown')}, isFriend: {user['isFriend']}, isBlocked: {user['isBlocked']}"
+                            )
+                        else:
+                            self.log_result(
+                                "Search Endpoint", 
+                                False, 
+                                "Search users missing isFriend/isBlocked fields",
+                                f"User fields: {list(user.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Search Endpoint", 
+                            True, 
+                            "Search returned empty users list (acceptable)",
+                            f"Response structure: {list(data.keys())}"
+                        )
+                else:
+                    self.log_result(
+                        "Search Endpoint", 
+                        False, 
+                        "Search response missing 'users' field",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Search Endpoint", 
+                    False, 
+                    f"Search failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Search Endpoint", False, f"Exception occurred: {str(e)}")
+    
     def run_all_tests(self):
         """Run all authentication tests"""
         print("=" * 60)
