@@ -171,7 +171,7 @@ const Messenger = () => {
       });
       
       const relativeUrl = uploadRes.data.url; // starts with /uploads
-      const mediaUrl = `${import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}${relativeUrl}`;
+      const mediaUrl = `${API}${relativeUrl}`; // ensure /api/uploads for ingress
       
       // Send message with media via DM API
       await axios.post(`${API}/dm/threads/${selectedThread.id}/messages?userId=${currentUser.id}`, {
