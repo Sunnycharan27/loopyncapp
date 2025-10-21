@@ -931,7 +931,15 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if 'id' in data and 'text' in data:
+                if 'messageId' in data and 'timestamp' in data:
+                    self.log_result(
+                        "Send DM Message", 
+                        True, 
+                        f"Successfully sent DM message: 'hello'",
+                        f"Message ID: {data['messageId']}, Timestamp: {data['timestamp']}"
+                    )
+                    self.dm_message_id = data['messageId']
+                elif 'id' in data and 'text' in data:
                     self.log_result(
                         "Send DM Message", 
                         True, 
