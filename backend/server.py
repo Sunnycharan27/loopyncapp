@@ -2513,6 +2513,12 @@ async def get_thread_messages(threadId: str, userId: str, cursor: str = "", limi
     
     return {"items": messages, "nextCursor": next_cursor}
 
+class SendMessageInput(BaseModel):
+    text: Optional[str] = None
+    mediaUrl: Optional[str] = None
+    mimeType: Optional[str] = None
+
+
 @api_router.post("/dm/threads/{threadId}/messages")
 async def send_message(threadId: str, userId: str, text: str = None, mediaUrl: str = None, mimeType: str = None):
     """Send a message in a thread"""
