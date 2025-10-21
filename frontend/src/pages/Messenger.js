@@ -143,7 +143,7 @@ const Messenger = () => {
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !selectedThread) return;
 
     // Validate file type
     const isImage = file.type.startsWith('image/');
@@ -170,16 +170,17 @@ const Messenger = () => {
         headers: { "Content-Type": "multipart/form-data" }
       });
       
-      const mediaUrl = `${BACKEND_URL}${uploadRes.data.url}`;
+      const relativeUrl = uploadRes.data.url; // starts with /uploads
+      const mediaUrl = `${import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL}${relativeUrl}`;
       
-      // Send message with media
-      const res = await axios.post(`${API}/messages?fromId=${currentUser.id}&toId=${selectedThread.peer.id}`, {
+      // Send message with media via DM API
+      await axios.post(`${API}/dm/threads/${selectedThread.id}/messages?userId=${currentUser.id}`, {
         text: isVideo ? "📹 Video" : "📷 Photo",
-        mediaUrl: mediaUrl,
-        mediaType: isVideo ? "video" : "image"
+        mediaUrl,
+        mimeType: file.type
       });
       
-      setMessages([...messages, res.data]);
+      await fetchMessages(selectedThread.id);
       toast.success(`${isVideo ? 'Video' : 'Photo'} sent!`);
     } catch (error) {
       toast.error("Failed to upload media");
