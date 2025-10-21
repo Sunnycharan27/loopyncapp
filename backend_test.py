@@ -755,10 +755,17 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list) and len(data) > 0:
+                threads = []
+                
+                if 'items' in data and isinstance(data['items'], list):
+                    threads = data['items']
+                elif isinstance(data, list):
+                    threads = data
+                
+                if len(threads) > 0:
                     # Look for thread with u2
                     u2_thread = None
-                    for thread in data:
+                    for thread in threads:
                         if 'peer' in thread and thread['peer'].get('id') == 'u2':
                             u2_thread = thread
                             break
@@ -777,7 +784,7 @@ class BackendTester:
                             "DM Thread Auto-Creation", 
                             False, 
                             "No DM thread found between u1 and u2",
-                            f"Available threads: {[t.get('peer', {}).get('id') for t in data]}"
+                            f"Available threads: {[t.get('peer', {}).get('id') for t in threads]}"
                         )
                 else:
                     self.log_result(
