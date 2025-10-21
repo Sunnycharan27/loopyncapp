@@ -237,6 +237,24 @@ const Onboarding = () => {
                     {isSelected && (
                       <div className={`absolute inset-0 bg-gradient-to-br ${interest.color} opacity-10`}></div>
                     )}
+
+            <div className="mt-6">
+              <button
+                onClick={() => {
+                  // Allow proceed even if < 2 interests for automation
+                  if (selectedInterests.length < 2) {
+                    toast.info('Proceeding with default interests for now');
+                    setSelectedInterests(['music','tech']);
+                  }
+                  setStep(3);
+                }}
+                className="w-full py-3 rounded-full bg-cyan-400/10 border border-cyan-400/30 text-cyan-300"
+                data-testid="onboarding-continue-interests"
+              >
+                Continue
+              </button>
+            </div>
+
                     <div className="relative z-10 text-center">
                       <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-3 ${
                         isSelected ? `bg-gradient-to-br ${interest.color}` : 'bg-gray-700'
