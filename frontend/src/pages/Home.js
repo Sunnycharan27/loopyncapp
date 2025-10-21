@@ -133,7 +133,7 @@ const Home = () => {
                   toast.success(res.translated_text || 'No result');
                 }}
                 className="px-3 py-2 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-500/30 text-xs"
-              >Translate</button>
+               data-testid="btn-ai-translate">Translate</button>
               <button
                 onClick={async () => {
                   const query = prompt('Enter ranking query');
