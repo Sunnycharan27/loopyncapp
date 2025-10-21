@@ -1,4 +1,6 @@
 import React, { useState, useRef } from "react";
+import MusicPicker from "./MusicPicker";
+
 import axios from "axios";
 import { API } from "../App";
 import { X, Video, Upload } from "lucide-react";
