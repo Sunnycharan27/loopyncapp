@@ -381,14 +381,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "BookMyShow-style Ticket Booking Flow"
-    - "Standalone Events Page"
+    - "Final API Smoke Tests for Go-Live"
   stuck_tasks:
     - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
     - "Standalone Events Page"
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 frontend:
   - task: "BookMyShow-style Ticket Booking Flow"
