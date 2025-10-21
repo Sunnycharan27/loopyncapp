@@ -604,6 +604,13 @@ frontend:
           
           ROOT CAUSE: Same authentication context issue as Venues page.
           Direct navigation to standalone pages fails while Discover tab access works.
+      - working: "NA"
+        agent: "main"
+        comment: |
+          FIXED: Added authLoaded gate to /events and /events/:eventId routes in App.js
+          - Routes now wait for authentication to load before redirecting
+          - Should resolve direct navigation and event booking flow issues
+          - Needs retesting to verify complete BookMyShow flow works
 
 backend:
   - task: "User Consent Management API"
