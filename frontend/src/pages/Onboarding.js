@@ -189,6 +189,8 @@ const Onboarding = () => {
             <button
               onClick={() => setStep(2)}
               className="w-full py-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-bold text-lg hover:opacity-90"
+              data-testid="onboarding-continue-language"
+
             >
               Continue
             </button>
