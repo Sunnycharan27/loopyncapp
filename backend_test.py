@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-Backend Authentication Testing Suite
-Tests all authentication endpoints and functionality for the Loopync app.
+Backend API Testing Suite
+Tests authentication, uploads, friend requests, DM threads, and search functionality for the Loopync app.
 """
 
 import requests
 import json
 import uuid
+import io
 from datetime import datetime
+from PIL import Image
 
 # Configuration
 BACKEND_URL = "https://vibehub-5.preview.emergentagent.com/api"
