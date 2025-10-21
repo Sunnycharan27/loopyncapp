@@ -2263,10 +2263,13 @@ async def get_dm_threads(userId: str, cursor: str = "0", limit: int = 50):
             continue
         
         # Get last message
-        last_message = await db.messages.find_one(
+        # Get last message (newest)
+        last_message_cursor = db.messages.find(
             {"threadId": thread["id"], "deletedAt": None},
             {"_id": 0}
-        ).sort("createdAt", -1)
+        ).sort("createdAt", -1).limit(1)
+        last_message_docs = await last_message_cursor.to_list(length=1)
+        last_message = last_message_docs[0] if last_message_docs else None
         
         # Get unread count
         read_receipt = await db.message_reads.find_one({
