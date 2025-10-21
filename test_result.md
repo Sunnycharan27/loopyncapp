@@ -569,6 +569,14 @@ frontend:
           
           ROOT CAUSE: Authentication context or protected route configuration issue
           preventing direct access to standalone pages while allowing access via Discover tabs.
+      - working: "NA"
+        agent: "main"
+        comment: |
+          FIXED: Added authLoaded gate to /venues route in App.js
+          - Route now waits for authentication to load before redirecting
+          - Same fix applied to /venues/:venueId route
+          - Should now be accessible via direct navigation
+          - Needs retesting to verify fix
 
   - task: "Standalone Events Page"
     implemented: true
