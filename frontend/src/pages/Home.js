@@ -153,7 +153,7 @@ const Home = () => {
                   toast.message('Insights', { description: (res.result || '').slice(0, 180) + '…' });
                 }}
                 className="px-3 py-2 rounded-full bg-yellow-400/20 text-yellow-300 border border-yellow-500/30 text-xs"
-              >Insights</button>
+               data-testid="btn-ai-insights">Insights</button>
             </div>
           </div>
         </div>
