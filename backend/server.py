@@ -1423,6 +1423,54 @@ async def topup_wallet(request: TopUpRequest, userId: str):
     
     return {"balance": new_balance, "success": True}
 
+@api_router.post("/wallet/payment")
+async def make_payment(request: PaymentRequest, userId: str):
+    """Process payment at venue using wallet balance"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    current_balance = user.get("walletBalance", 0.0)
+    
+    # Check sufficient balance
+    if current_balance < request.amount:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+    
+    # Deduct amount
+    new_balance = current_balance - request.amount
+    await db.users.update_one({"id": userId}, {"$set": {"walletBalance": new_balance}})
+    
+    # Record transaction
+    transaction = WalletTransaction(
+        userId=userId,
+        type="payment",
+        amount=request.amount,
+        description=request.description or f"Payment at {request.venueName or 'venue'}",
+        metadata={"venueId": request.venueId, "venueName": request.venueName}
+    )
+    await db.wallet_transactions.insert_one(transaction.model_dump())
+    
+    # Award Loop Credits (2% cashback)
+    credits_earned = int(request.amount * 0.02)
+    if credits_earned > 0:
+        credit_entry = {
+            "id": str(uuid.uuid4()),
+            "userId": userId,
+            "amount": credits_earned,
+            "type": "earn",
+            "source": "payment_cashback",
+            "description": f"2% cashback on ₹{request.amount} payment",
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.loop_credits.insert_one(credit_entry)
+    
+    return {
+        "success": True,
+        "balance": new_balance,
+        "creditsEarned": credits_earned,
+        "transactionId": transaction.id
+    }
+
 
 # ===== LOOP CREDITS ROUTES =====
 
