@@ -1,87 +1,104 @@
 <analysis>
-The AI engineer has progressed Loopync, a full-stack social superapp, from an MVP. Initial efforts included fixing MongoDB serialization and integrating Cloudinary for media, and Razorpay for payments. Key tasks completed include implementing Google Sheets-based user authentication and ensuring MongoDB user creation upon login. The LoopPay Wallet was redesigned to a Starbucks-style interface. A BookMyShow-style ticket booking system, including event details, seat selection, payment, and QR ticket generation, was successfully integrated and tested. Recent work focused on fixing critical frontend issues like post media not displaying (due to incorrect API proxy URL generation) and onboarding preference saving. Additionally, a post deletion feature, a friend request system, and notification routes were added, along with navigation improvements. The trajectory concludes with the user providing an extensive new Product Requirements Document, and the AI engineer seeking clarification on the expanded scope.
+The AI engineer has significantly evolved Loopync, a full-stack social superapp. Initially, the focus was on core MVP features, including Google Sheets-based authentication, Cloudinary and Razorpay integrations, a Starbucks-style wallet, and a BookMyShow-like ticketing system. Recent work addressed critical frontend bugs like post media display and onboarding preference saving, while adding post deletion, a friend request system, and notification routes. A major pivot occurred when the user provided an extensive PRD, suggesting a tech stack migration. However, the user opted to adapt new features to the existing FastAPI, MongoDB, React stack. Consequently, the engineer implemented an enhanced onboarding flow with mock eKYC and DPDP consent, fixed a critical double login issue, and built a real-time friend request and messaging system using WebSockets. Username uniqueness validation was added to signup, and numerous unique features like Vibe Score, Live Activity Feed, and Post Reactions were integrated. Debugging primarily focused on frontend JSX errors and correctly mounting the WebSocket server. The trajectory concludes with the user reporting issues with media posts, friend requests, and chats not displaying, prompting the engineer to begin debugging and further enhancing the Messenger and user profile views.
 </analysis>
 
 <product_requirements>
-Loopync is India’s Free-Speech Social × Vibe Video × Venues × Fintech Superapp, a mobile-first (iPhone 15) and desktop web application with a neon glass/cyber-aurora theme. Core features include Timeline (posts), VibeZone (reels), Tribes (groups), LoopPay Wallet (UPI, balance, history), Venues (QR, menu, split bill), Events/Ticketing (QR pass), Creator Marketplace, Messenger (DMs, spaces), Discover/Search, and user profiles/settings. Compliance (India-specific badges, DPDP Consent Center) and mock AI features (Parallels AI, Safety AI, Sculpture AI) are also required. Integrations with Cloudinary and Razorpay are essential. The current build includes functional Timeline, VibeZone, Tribes, a Starbucks-style LoopPay wallet, Messenger, Discover, Notifications, and Search pages. Recent additions include Google Sheets-based authentication, a BookMyShow-style event ticketing system with QR codes, post deletion, and a friend request system. The overall goal is to create a fully functional, production-ready social media platform.
+Loopync aims to be India’s Free-Speech Social × Vibe Video × Venues × Fintech Superapp, a mobile-first (iPhone 15) and desktop web application with a neon glass/cyber-aurora theme. Core features include Timeline (posts), VibeZone (reels), Tribes (groups), LoopPay Wallet, Venues (QR, menu, split bill), Events/Ticketing (QR pass), Creator Marketplace, Messenger (DMs, spaces), Discover/Search, user profiles/settings. It also requires India-specific compliance (badges, DPDP Consent Center) and mock AI features (Parallels AI, Safety AI, Sculpture AI). Cloudinary and Razorpay integrations are essential.
+
+**Implementation Done So Far:**
+Functional Timeline, VibeZone, Tribes, Starbucks-style LoopPay wallet, Messenger, Discover, Notifications, and Search pages are present. Google Sheets-based authentication, a BookMyShow-style event ticketing system with QR codes, post deletion, and a friend request system are implemented. The onboarding flow was enhanced with Aadhaar eKYC (mock) and DPDP Consent. Real-time friend requests and messaging are being implemented, along with a search bar on the Discover page, and unique social features like Vibe Score, Streak Counter, Mood Selector, Live Activity Feed, and enhanced PostCard reactions. Username uniqueness validation for signup is also implemented.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-Stack:** FastAPI (Python backend), React (JavaScript frontend).
--   **Database:** MongoDB (NoSQL), Google Sheets (for user authentication data).
+-   **Database:** MongoDB (NoSQL), Google Sheets (user auth).
 -   **UI/Styling:** Shadcn UI, Tailwind CSS, Neon glass/cyber-aurora theming.
 -   **Package Managers:** Yarn (frontend), Pip (backend).
--   **Integrations:** Cloudinary (media upload), Razorpay (payments), gspread/google-auth (Google Sheets).
--   **Data Handling:** Pydantic for API models, JWT for authentication, UUIDs for IDs.
+-   **Integrations:** Cloudinary (media), Razorpay (payments), / (Google Sheets), ,  (WebSockets), Emergent LLM key.
+-   **Data Handling:** Pydantic (API models), JWT (authentication), UUIDs (IDs).
 </key_technical_concepts>
 
 <code_architecture>
 
 -   **/app/backend/server.py**: Main FastAPI app.
-    -   **Summary**: Handles all API routes for various features (User, Post, Reel, Tribe, Wallet, Message, Notification, Venue, Event, Creator, Credits, Checkins, Offers, Polls, Friend Requests).
-    -   **Changes**: Extensive modifications for Google Sheets authentication, JWT token generation/validation, MongoDB user creation on login, post deletion, friend request management, notification endpoints, and new models/routes for Loop Credits, Check-ins, Offers, Polls, etc. Corrected static file serving for uploads.
--   **/app/backend/sheets_db.py**: New module.
-    -   **Summary**: Handles interaction with Google Sheets for user data storage and retrieval during authentication.
--   **/app/frontend/src/App.js**: Central React router.
-    -   **Summary**: Defines application navigation, manages authentication redirects.
-    -   **Changes**: Added routes for , , , , , . Fixed duplicate  import.
+    -   **Summary**: Handles all API routes.
+    -   **Changes**: Extensive modifications including Google Sheets authentication, JWT, MongoDB user creation, post deletion, friend request management, notification endpoints, and new models for Loop Credits, Check-ins, Offers, Polls, etc. Corrected static file serving. New , , , , , , ,  models added. WebSocket (Socket.IO) server setup and event handlers added. Friend request endpoints enhanced with block/mute checks and real-time WebSocket updates. DM endpoints added for threads, messages, read receipts. User search endpoint added for Discover page. Handle uniqueness validation added to signup endpoint, and an availability checker endpoint. WebSocket app mounted to a specific path for uvicorn compatibility.
+-   **/app/backend/sheets_db.py**: New module for Google Sheets interaction for user auth.
+-   **/app/frontend/src/App.js**: Central React router and .
+    -   **Summary**: Defines navigation and manages authentication state.
+    -   **Changes**: Added routes for , , , , , , and . Fixed duplicate  import.  added to . Wrapped with .
 -   **/app/frontend/src/pages/Auth.js**: Authentication page.
-    -   **Summary**: Provides UI for user login/signup.
-    -   **Changes**: Updated to support email-based authentication integrating with the new backend Google Sheets auth.
+    -   **Summary**: UI for user login/signup.
+    -   **Changes**: Updated to support email-based auth, integrated with Google Sheets. Enhanced to show real-time username availability and consistent styling.
 -   **/app/frontend/src/pages/Wallet.js**: LoopPay wallet.
-    -   **Summary**: Displays user balance, QR/barcode, and transaction history.
-    -   **Changes**: Redesigned to match a Starbucks-style UI, including layout and color theme adjustments.
+    -   **Summary**: Displays user balance, QR/barcode.
+    -   **Changes**: Redesigned to Starbucks-style UI.
 -   **/app/frontend/src/components/ComposerModal.js**: Post creation modal.
-    -   **Summary**: Handles text and media input for new posts.
-    -   **Changes**: Fixed media URL generation to include the  prefix, ensuring proper routing for uploaded images ().
--   **/app/frontend/src/components/PostCard.js**: Component for displaying individual posts.
-    -   **Summary**: Renders post content, including text and media.
-    -   **Changes**: Added a delete button and associated logic for removing posts.
--   **/app/frontend/src/pages/Discover.js**: Page for content discovery.
-    -   **Summary**: Displays various content sections like Tribes, Marketplace, Events, Venues.
-    -   **Changes**: Ensured Marketplace tab exists. Updated Get Tickets button navigation to .
+    -   **Summary**: Handles text and media input.
+    -   **Changes**: Fixed media URL generation ( prefix).
+-   **/app/frontend/src/components/PostCard.js**: Displays individual posts.
+    -   **Summary**: Renders post content.
+    -   **Changes**: Added delete button. Enhanced with quick actions and animated emoji reactions. Fixed JSX closing tag errors.
+-   **/app/frontend/src/pages/Discover.js**: Content discovery page.
+    -   **Summary**: Displays Tribes, Marketplace, Events, Venues.
+    -   **Changes**: Ensured Marketplace tab exists. Updated Get Tickets button. Added search bar and functionality to search users, navigating to . Fixed JSX compilation errors related to search result conditional rendering.
 -   **/app/frontend/src/pages/Events.js**: Lists available events.
     -   **Summary**: Shows events and allows navigation to event details.
-    -   **Changes**: Modified to navigate directly to  upon clicking an event, replacing a previous toast message.
--   **/app/frontend/src/pages/Venues.js**: New page for venue listings.
-    -   **Summary**: Provides an overview of available venues.
--   **/app/frontend/src/pages/EventDetail.js**: New page for individual event details.
-    -   **Summary**: Implements BookMyShow-style features like event info, tier selection, ticket quantity, and theater-style seat selection.
--   **/app/frontend/src/pages/Payment.js**: New page for payment processing.
-    -   **Summary**: Manages booking summary, payment method selection, processing, and success/QR code generation. Button text changed from Browse More Events to Browse Events.
--   **/app/frontend/src/pages/Onboarding.js**: New page for user onboarding.
-    -   **Summary**: Handles initial user setup, including preference selection.
-    -   **Changes**: Frontend logic updated to send interests as a comma-separated string for backend compatibility.
--   **/app/frontend/src/pages/Marketplace.js**: New page for creator marketplace.
-    -   **Summary**: Displays courses, eBooks, digital packs, and merch listings.
+    -   **Changes**: Modified to navigate directly to .
+-   **/app/frontend/src/pages/EventDetail.js**: Individual event details.
+    -   **Summary**: BookMyShow-style features.
+-   **/app/frontend/src/pages/Payment.js**: Payment processing.
+    -   **Summary**: Booking summary, payment method.
+    -   **Changes**: Button text changed.
+-   **/app/frontend/src/pages/Onboarding.js**: User onboarding.
+    -   **Summary**: Initial user setup.
+    -   **Changes**: Frontend logic updated to send interests as comma-separated string. Enhanced with mock Aadhaar eKYC and DPDP Consent Center (4 steps). Fixed double-login issue by using React Router's  and updating  state.
+-   **/app/frontend/src/pages/Marketplace.js**: Creator marketplace.
+    -   **Summary**: Displays courses, eBooks, digital packs, merch.
 -   **/app/frontend/src/pages/Profile.js**: User profile page.
-    -   **Summary**: Displays user information, posts, and credits balance.
-    -   **Changes**: Updated to an enhanced version, potentially including analytics (though not fully detailed in the trajectory).
+    -   **Summary**: Displays user information, posts, credits.
+    -   **Changes**: Updated to an enhanced version.
+-   **/app/frontend/src/pages/Notifications.js**: Notifications page.
+    -   **Summary**: Displays notifications.
+    -   **Changes**: Enhanced to include friend request UI with handling functions, and updated to use real-time WebSockets for friend requests. Removed duplicate code.
+-   **/app/frontend/src/pages/Messenger.js**: Messenger page.
+    -   **Summary**: Direct messages.
+    -   **Changes**: Enhanced with photo/video sharing functionality (connecting existing logic), Trust Circles, Vibe Rooms, Context Cards. Polling for messages improved with real-time indicators, unread counters, and auto-scroll to bottom. Updated to use new DM API for threads and messages.
+-   **/app/frontend/src/pages/UserProfile.js** (new): User Profile Page.
+    -   **Summary**: Displays public profile of other users.
+-   **/app/frontend/src/components/VibeScore.js** (new): Component for Vibe Score system.
+-   **/app/frontend/src/components/StreakCounter.js** (new): Component for Streak system.
+-   **/app/frontend/src/components/MoodSelector.js** (new): Component for Mood/Status system.
+-   **/app/frontend/src/components/LiveActivityFeed.js** (new): Component for Live Activity Feed.
+-   **/app/frontend/src/context/WebSocketContext.js** (new): Provides WebSocket context to the frontend.
+-   **/app/frontend/src/index.css**: Global CSS.
+    -   **Changes**: Added CSS animations.
 </code_architecture>
 
 <pending_tasks>
--   Implement real-time updates for posts/media on the timeline (beyond initial image display fix).
--   Enable photo/video sharing functionality within Messenger.
--   Complete the full onboarding flow (e.g., Aadhaar eKYC, Consent Center).
--   Implement advanced Messenger features (Trust Circles, Vibe Rooms, Context Cards).
--   Integrate full AI wiring as specified (e.g., /ai/rank, /ai/safety, translate AI, insight AI).
+-   Implement full AI wiring as specified (e.g., /ai/rank, /ai/safety, translate AI, insight AI) beyond initial OpenAI GPT-5 setup.
 -   Build the Analytics panel and emit all specified events.
 -   Configure the two guided demo tours.
--   Implement remaining features from the latest comprehensive PRD (Chat 370).
+-   Debug why posts with media are not visible on the timeline.
+-   Debug why friend requests are not showing.
+-   Debug why chats/DMs are not visible.
+-   Implement search functionality within the messenger.
+-   Ensure friend requests fully connect to DM functionality.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was engaged in expanding core social media functionality and addressing critical bugs. This involved:
-1.  **Post Management:** Adding a delete option for user posts, including frontend UI in  and , and a corresponding backend  endpoint in .
-2.  **Social Interactions:** Implementing a friend request system, which included adding new models and API routes in  for sending, accepting, and rejecting requests.
-3.  **Notifications:** Adding backend routes in  for real-time notifications related to likes, comments, and shares.
-4.  **Navigation Refinements:** Updating the Discover page to correctly navigate to  when clicking Get Tickets on event cards, and changing the Browse More Events button text on the Payment page to Browse Events.
-5.  **Debugging & Fixes (recently resolved):**
-    *   Resolved the Failed to save preferences error on the  page by correcting the API parameter mismatch (frontend sending array, backend expecting comma-separated string) in both  and .
-    *   Fixed the persistent issue of Post media placeholder text showing instead of actual images on the timeline by correctly prepending the  prefix to the Cloudinary/upload URLs in  (e.g., changing  to ).
-This work was immediately followed by the user submitting a highly detailed, extensive new Product Requirements Document, prompting the AI to seek clarification on the new project scope.
+Immediately before this summary request, the AI engineer was addressing a critical bug reported by the user regarding posts with media, friend requests, and chats/DMs not being visible, along with additional feature requests for profile viewing from search and search within Messenger.
+
+**Specifically:**
+1.  **Posts with Media:** Backend API for posts () showed data was present, indicating a frontend rendering issue likely related to media URLs.
+2.  **User Profile Page:** A new React component  was created to allow users to view other user profiles. The corresponding route was added to .
+    
+3.  **Discover Search Navigation:** The search functionality on the  page was updated to navigate to the new  page when a user result is clicked.
+4.  **Messenger Enhancements:** The  component was being updated to utilize the newly implemented DM API, and to include search functionality for conversations. The existing polling mechanism for messages was being adapted to the new real-time WebSocket infrastructure.
+
+The engineer had just finished updating Messenger to use the new DM API and was about to provide a comprehensive summary, implying this was the current focus and immediate next step.
 </current_work>
 
 <optional_next_step>
-I am awaiting user clarification on the extensive new Product Requirements Document provided.
+Complete debugging and implement search within the Messenger and ensure posts with media, friend requests, and chats/DMs are fully visible and functional.
 </optional_next_step>
