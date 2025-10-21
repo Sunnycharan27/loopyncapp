@@ -65,6 +65,7 @@ const Tooltip = ({ targetEl, step, index, total, onNext, onPrev, onClose }) => {
   );
 };
 
+/* Guided tours disabled per request */
 export const GuidedTours = () => {
   const [active, setActive] = useState(null); // 'new' | 'power' | null
   const [index, setIndex] = useState(0);
