@@ -130,14 +130,29 @@ const Messenger = () => {
     setMessageText("");
 
     try {
-      const res = await axios.post(`${API}/dm/threads/${selectedThread.id}/messages?userId=${currentUser.id}`, {
+      await axios.post(`${API}/dm/threads/${selectedThread.id}/messages?userId=${currentUser.id}`, {
         text: messageText
       });
-      
-      // Replace temp message with real message (fetch latest for consistency)
-      fetchMessages(selectedThread.id);
+      await fetchMessages(selectedThread.id);
     } catch (error) {
-      toast.error("Failed to send message");
+      // If thread was missing for some reason, auto-create and retry once
+      const status = error?.response?.status;
+      const detail = error?.response?.data?.detail;
+      if ((status === 404 || status === 403) && selectedThread?.peer?.id) {
+        try {
+          const create = await axios.post(`${API}/dm/thread?userId=${currentUser.id}&peerUserId=${selectedThread.peer.id}`);
+          const newThreadId = create.data.threadId;
+          setSelectedThread({ ...selectedThread, id: newThreadId });
+          await axios.post(`${API}/dm/threads/${newThreadId}/messages?userId=${currentUser.id}`, { text: messageText });
+          await fetchThreads();
+          await fetchMessages(newThreadId);
+          return;
+        } catch (e2) {
+          toast.error(e2?.response?.data?.detail || 'Unable to create thread');
+        }
+      } else {
+        toast.error(detail || "Failed to send message");
+      }
       // Remove temp message on error
       setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id));
     }
