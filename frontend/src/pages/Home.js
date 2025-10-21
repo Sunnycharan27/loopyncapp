@@ -10,6 +10,7 @@ import LiveActivityFeed from "../components/LiveActivityFeed";
 import StreakCounter from "../components/StreakCounter";
 import MoodSelector from "../components/MoodSelector";
 import { toast } from "sonner";
+import { emergentApi } from "../services/emergentApi";
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
