@@ -1965,7 +1965,7 @@ async def ai_insight(req: InsightRequest):
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
         model = "gpt-5.1" if req.task == "summarize" else "gpt-5.1-mini"
-        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model=model)
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, model="gpt-4o-mini")
         if req.task == "summarize":
             prompt = "Summarize concisely in 3 bullets:\n" + req.text
         elif req.task == "sentiment":
