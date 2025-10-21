@@ -222,12 +222,12 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if 'id' in data and 'email' in data:
+                if 'id' in data and 'name' in data:
                     self.log_result(
                         "JWT Token Validation", 
                         True, 
                         f"Token validated successfully for user {data.get('name', 'Unknown')}",
-                        f"User data: {data}"
+                        f"User ID: {data['id']}"
                     )
                 else:
                     self.log_result(
