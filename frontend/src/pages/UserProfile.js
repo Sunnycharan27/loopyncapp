@@ -35,7 +35,14 @@ const UserProfile = () => {
   const fetchUserPosts = async () => {
     try {
       const res = await axios.get(`${API}/posts`);
-      const userPosts = res.data.filter(p => p.authorId === userId);
+      const userPosts = res.data
+        .filter(p => p.authorId === userId)
+        .map(p => ({
+          ...p,
+          media: p.media && p.media.startsWith('/uploads')
+            ? `${process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL}${p.media}`
+            : p.media
+        }));
       setPosts(userPosts);
     } catch (error) {
       console.error("Failed to load posts");
