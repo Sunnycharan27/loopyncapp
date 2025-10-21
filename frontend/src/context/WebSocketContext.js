@@ -6,7 +6,8 @@ const WebSocketContext = createContext(null);
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);
   if (!context) {
-    throw new Error('useWebSocket must be used within WebSocketProvider');
+    console.warn('useWebSocket called outside WebSocketProvider, returning null');
+    return null;
   }
   return context;
 };
