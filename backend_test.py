@@ -1129,6 +1129,556 @@ class BackendTester:
         except Exception as e:
             self.log_result("Search Endpoint", False, f"Exception occurred: {str(e)}")
     
+    def test_posts_timeline(self):
+        """Test 22: GET /api/posts (timeline feed)"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/posts")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        post = data[0]
+                        if 'id' in post and 'authorId' in post and 'text' in post and 'author' in post:
+                            self.log_result(
+                                "Posts Timeline", 
+                                True, 
+                                f"Successfully retrieved {len(data)} posts",
+                                f"First post by: {post['author'].get('name', 'Unknown')}"
+                            )
+                        else:
+                            self.log_result(
+                                "Posts Timeline", 
+                                False, 
+                                "Posts missing required fields",
+                                f"Post fields: {list(post.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Posts Timeline", 
+                            True, 
+                            "Posts endpoint working but no posts found",
+                            "Empty timeline is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "Posts Timeline", 
+                        False, 
+                        "Posts response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "Posts Timeline", 
+                    False, 
+                    f"Posts endpoint failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Posts Timeline", False, f"Exception occurred: {str(e)}")
+    
+    def test_create_post(self):
+        """Test 23: POST /api/posts (create new post)"""
+        try:
+            payload = {
+                "text": "Test post from backend testing suite",
+                "audience": "public"
+            }
+            params = {"authorId": "demo_user"}
+            
+            response = self.session.post(f"{BACKEND_URL}/posts", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'text' in data and 'authorId' in data:
+                    self.log_result(
+                        "Create Post", 
+                        True, 
+                        f"Successfully created post: {data['id']}",
+                        f"Text: {data['text'][:50]}..."
+                    )
+                else:
+                    self.log_result(
+                        "Create Post", 
+                        False, 
+                        "Create post response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Create Post", 
+                    False, 
+                    f"Create post failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Create Post", False, f"Exception occurred: {str(e)}")
+    
+    def test_reels_vibezone(self):
+        """Test 24: GET /api/reels (VibeZone content)"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/reels")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        reel = data[0]
+                        if 'id' in reel and 'authorId' in reel and 'videoUrl' in reel and 'author' in reel:
+                            self.log_result(
+                                "Reels VibeZone", 
+                                True, 
+                                f"Successfully retrieved {len(data)} reels",
+                                f"First reel by: {reel['author'].get('name', 'Unknown')}"
+                            )
+                        else:
+                            self.log_result(
+                                "Reels VibeZone", 
+                                False, 
+                                "Reels missing required fields",
+                                f"Reel fields: {list(reel.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Reels VibeZone", 
+                            True, 
+                            "Reels endpoint working but no reels found",
+                            "Empty VibeZone is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "Reels VibeZone", 
+                        False, 
+                        "Reels response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "Reels VibeZone", 
+                    False, 
+                    f"Reels endpoint failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Reels VibeZone", False, f"Exception occurred: {str(e)}")
+    
+    def test_create_reel(self):
+        """Test 25: POST /api/reels (upload reel)"""
+        try:
+            payload = {
+                "videoUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                "thumb": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400",
+                "caption": "Test reel from backend testing suite"
+            }
+            params = {"authorId": "demo_user"}
+            
+            response = self.session.post(f"{BACKEND_URL}/reels", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'videoUrl' in data and 'authorId' in data:
+                    self.log_result(
+                        "Create Reel", 
+                        True, 
+                        f"Successfully created reel: {data['id']}",
+                        f"Caption: {data.get('caption', 'No caption')}"
+                    )
+                else:
+                    self.log_result(
+                        "Create Reel", 
+                        False, 
+                        "Create reel response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Create Reel", 
+                    False, 
+                    f"Create reel failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Create Reel", False, f"Exception occurred: {str(e)}")
+    
+    def test_global_search(self):
+        """Test 26: GET /api/search/global?q=test (user search)"""
+        try:
+            params = {
+                'q': 'test',
+                'currentUserId': 'demo_user'
+            }
+            
+            response = self.session.get(f"{BACKEND_URL}/search", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'users' in data and 'posts' in data and 'tribes' in data:
+                    self.log_result(
+                        "Global Search", 
+                        True, 
+                        f"Global search working - found {len(data['users'])} users, {len(data['posts'])} posts, {len(data['tribes'])} tribes",
+                        f"Search categories: {list(data.keys())}"
+                    )
+                else:
+                    self.log_result(
+                        "Global Search", 
+                        False, 
+                        "Global search response missing expected categories",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Global Search", 
+                    False, 
+                    f"Global search failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Global Search", False, f"Exception occurred: {str(e)}")
+    
+    def test_events_list(self):
+        """Test 27: GET /api/events (all events)"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/events")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        event = data[0]
+                        if 'id' in event and 'name' in event and 'date' in event and 'location' in event:
+                            self.log_result(
+                                "Events List", 
+                                True, 
+                                f"Successfully retrieved {len(data)} events",
+                                f"First event: {event['name']} on {event['date']}"
+                            )
+                        else:
+                            self.log_result(
+                                "Events List", 
+                                False, 
+                                "Events missing required fields",
+                                f"Event fields: {list(event.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Events List", 
+                            True, 
+                            "Events endpoint working but no events found",
+                            "Empty events list is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "Events List", 
+                        False, 
+                        "Events response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "Events List", 
+                    False, 
+                    f"Events endpoint failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Events List", False, f"Exception occurred: {str(e)}")
+    
+    def test_event_details(self):
+        """Test 28: GET /api/events/{eventId} (event details)"""
+        try:
+            # Use event ID from seed data
+            event_id = "e1"
+            response = self.session.get(f"{BACKEND_URL}/events/{event_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'name' in data and 'date' in data and 'tiers' in data:
+                    self.log_result(
+                        "Event Details", 
+                        True, 
+                        f"Successfully retrieved event details: {data['name']}",
+                        f"Date: {data['date']}, Location: {data.get('location', 'Unknown')}, Tiers: {len(data['tiers'])}"
+                    )
+                else:
+                    self.log_result(
+                        "Event Details", 
+                        False, 
+                        "Event details missing required fields",
+                        f"Event fields: {list(data.keys())}"
+                    )
+            else:
+                self.log_result(
+                    "Event Details", 
+                    False, 
+                    f"Event details failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Event Details", False, f"Exception occurred: {str(e)}")
+    
+    def test_venues_list(self):
+        """Test 29: GET /api/venues (all venues)"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/venues")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        venue = data[0]
+                        if 'id' in venue and 'name' in venue and 'location' in venue and 'rating' in venue:
+                            self.log_result(
+                                "Venues List", 
+                                True, 
+                                f"Successfully retrieved {len(data)} venues",
+                                f"First venue: {venue['name']} at {venue['location']} (Rating: {venue['rating']})"
+                            )
+                        else:
+                            self.log_result(
+                                "Venues List", 
+                                False, 
+                                "Venues missing required fields",
+                                f"Venue fields: {list(venue.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Venues List", 
+                            True, 
+                            "Venues endpoint working but no venues found",
+                            "Empty venues list is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "Venues List", 
+                        False, 
+                        "Venues response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "Venues List", 
+                    False, 
+                    f"Venues endpoint failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Venues List", False, f"Exception occurred: {str(e)}")
+    
+    def test_venue_details(self):
+        """Test 30: GET /api/venues/{venueId} (venue details)"""
+        try:
+            # Use venue ID from seed data
+            venue_id = "v1"
+            response = self.session.get(f"{BACKEND_URL}/venues/{venue_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'id' in data and 'name' in data and 'location' in data and 'menuItems' in data:
+                    self.log_result(
+                        "Venue Details", 
+                        True, 
+                        f"Successfully retrieved venue details: {data['name']}",
+                        f"Location: {data['location']}, Menu Items: {len(data['menuItems'])}"
+                    )
+                else:
+                    self.log_result(
+                        "Venue Details", 
+                        False, 
+                        "Venue details missing required fields",
+                        f"Venue fields: {list(data.keys())}"
+                    )
+            else:
+                self.log_result(
+                    "Venue Details", 
+                    False, 
+                    f"Venue details failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Venue Details", False, f"Exception occurred: {str(e)}")
+    
+    def test_wallet_balance(self):
+        """Test 31: GET /api/wallet?userId={userId} (wallet balance)"""
+        try:
+            params = {'userId': 'demo_user'}
+            response = self.session.get(f"{BACKEND_URL}/wallet", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'balance' in data and 'kycTier' in data and 'transactions' in data:
+                    self.log_result(
+                        "Wallet Balance", 
+                        True, 
+                        f"Successfully retrieved wallet: Balance ₹{data['balance']}, KYC Tier {data['kycTier']}",
+                        f"Transactions: {len(data['transactions'])}"
+                    )
+                else:
+                    self.log_result(
+                        "Wallet Balance", 
+                        False, 
+                        "Wallet response missing required fields",
+                        f"Wallet fields: {list(data.keys())}"
+                    )
+            else:
+                self.log_result(
+                    "Wallet Balance", 
+                    False, 
+                    f"Wallet endpoint failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Wallet Balance", False, f"Exception occurred: {str(e)}")
+    
+    def test_music_search(self):
+        """Test 32: GET /api/music/search?q=love (mock JioSaavn search)"""
+        try:
+            params = {'q': 'love', 'limit': 5}
+            response = self.session.get(f"{BACKEND_URL}/music/search", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'items' in data and isinstance(data['items'], list):
+                    items = data['items']
+                    if len(items) > 0:
+                        item = items[0]
+                        if 'id' in item and 'title' in item and 'artists' in item and 'previewUrl' in item:
+                            self.log_result(
+                                "Music Search", 
+                                True, 
+                                f"Successfully retrieved {len(items)} music tracks",
+                                f"First track: {item['title']} by {', '.join(item['artists'])}"
+                            )
+                        else:
+                            self.log_result(
+                                "Music Search", 
+                                False, 
+                                "Music items missing required fields",
+                                f"Item fields: {list(item.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Music Search", 
+                            True, 
+                            "Music search working but no tracks found",
+                            "Empty music results is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "Music Search", 
+                        False, 
+                        "Music search response missing 'items' field",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Music Search", 
+                    False, 
+                    f"Music search failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Music Search", False, f"Exception occurred: {str(e)}")
+    
+    def test_tribes_list(self):
+        """Test 33: GET /api/tribes (tribes/groups)"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/tribes")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        tribe = data[0]
+                        if 'id' in tribe and 'name' in tribe and 'memberCount' in tribe and 'ownerId' in tribe:
+                            self.log_result(
+                                "Tribes List", 
+                                True, 
+                                f"Successfully retrieved {len(data)} tribes",
+                                f"First tribe: {tribe['name']} with {tribe['memberCount']} members"
+                            )
+                        else:
+                            self.log_result(
+                                "Tribes List", 
+                                False, 
+                                "Tribes missing required fields",
+                                f"Tribe fields: {list(tribe.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Tribes List", 
+                            True, 
+                            "Tribes endpoint working but no tribes found",
+                            "Empty tribes list is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "Tribes List", 
+                        False, 
+                        "Tribes response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "Tribes List", 
+                    False, 
+                    f"Tribes endpoint failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Tribes List", False, f"Exception occurred: {str(e)}")
+    
+    def test_user_interests(self):
+        """Test 34: POST /api/users/{userId}/interests (onboarding)"""
+        try:
+            user_id = "demo_user"
+            payload = {
+                "interests": ["music", "tech", "food"],
+                "language": "en",
+                "onboardingComplete": True
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/users/{user_id}/interests", json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'success' in data or 'userId' in data:
+                    self.log_result(
+                        "User Interests", 
+                        True, 
+                        f"Successfully updated user interests",
+                        f"Interests: {payload['interests']}, Language: {payload['language']}"
+                    )
+                else:
+                    self.log_result(
+                        "User Interests", 
+                        False, 
+                        "User interests response missing expected fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "User Interests", 
+                    False, 
+                    f"User interests failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("User Interests", False, f"Exception occurred: {str(e)}")
+    
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 60)
