@@ -1041,7 +1041,14 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if 'id' in data and 'mediaUrl' in data and 'mimeType' in data:
+                if 'messageId' in data and 'timestamp' in data:
+                    self.log_result(
+                        "Send Media DM Message", 
+                        True, 
+                        f"Successfully sent media DM message",
+                        f"Message ID: {data['messageId']}, Timestamp: {data['timestamp']}"
+                    )
+                elif 'id' in data and 'mediaUrl' in data and 'mimeType' in data:
                     self.log_result(
                         "Send Media DM Message", 
                         True, 
