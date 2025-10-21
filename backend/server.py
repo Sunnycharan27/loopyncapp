@@ -1907,7 +1907,7 @@ async def ai_rank(req: RankRequest):
     if not LlmChat or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
-        chat = LlmChat()
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         prompt = f"Rank the following documents by relevance to: '{req.query}'. Return JSON array with objects {{index, score}} where index refers to original order. Documents: " + "\n".join([f"[{i}] {d}" for i,d in enumerate(req.documents)])
         out = chat.completion([UserMessage(content=prompt)])
         text = out.output_text or "[]"
@@ -1930,7 +1930,7 @@ async def ai_safety(req: SafetyRequest):
     if not LlmChat or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
-        chat = LlmChat()
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         # Using moderation via prompt if direct moderation unsupported; emergentintegrations may wrap moderation via litellm
         prompt = "Classify if the text violates safety (hate, violence, sexual, self-harm). Return JSON {safe:bool, categories: string[]} only. Text: " + req.text
         out = chat.completion([UserMessage(content=prompt)])
@@ -1950,7 +1950,7 @@ async def ai_translate(req: TranslateRequest):
     if not LlmChat or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
-        chat = LlmChat()
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         src = req.source_language or "auto"
         prompt = f"Translate from {src} to {req.target_language}. Only output the translation.\nText: {req.text}"
         out = chat.completion([UserMessage(content=prompt)])
@@ -1965,7 +1965,7 @@ async def ai_insight(req: InsightRequest):
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
         model = "gpt-5.1" if req.task == "summarize" else "gpt-5.1-mini"
-        chat = LlmChat()
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         if req.task == "summarize":
             prompt = "Summarize concisely in 3 bullets:\n" + req.text
         elif req.task == "sentiment":
