@@ -157,6 +157,11 @@ const Home = () => {
             </div>
           </div>
         </div>
+        {/* Guided Tours Launcher */}
+        <div className="px-4 mt-2">
+          <p className="text-xs text-gray-500 mb-1">Need a quick walkthrough?</p>
+        </div>
+
 
         {/* Posts Feed */}
         <div className="space-y-4 px-4 mt-4">
