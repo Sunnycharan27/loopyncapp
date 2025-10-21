@@ -6,7 +6,7 @@ import { API } from "../App";
 import { X, Video, Upload } from "lucide-react";
 import { toast } from "sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 const ReelComposerModal = ({ currentUser, onClose, onReelCreated }) => {
   const [videoUrl, setVideoUrl] = useState("");
