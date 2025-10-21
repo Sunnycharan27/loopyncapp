@@ -824,6 +824,50 @@ frontend:
           
           The messenger functionality is now fully accessible and working correctly with the authLoaded gate.
 
+  - task: "Guided Tours Widget"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/GuidedTours.js, /app/frontend/src/pages/Home.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          GUIDED TOURS WIDGET TESTING COMPLETED - ALL REQUIREMENTS VERIFIED
+          
+          ✅ COMPREHENSIVE TESTING RESULTS:
+          - Login (demo) and skip onboarding: WORKING
+          - Navigate to home page (/): WORKING  
+          - Scroll to AI Quick Actions then Guided Tours widget: WORKING
+          - Assert presence of [data-testid="tour-launch-new"]: FOUND ✅
+          - Assert presence of [data-testid="tour-launch-power"]: FOUND ✅
+          - Click tour-launch-new, assert overlay appears with tooltip and skip/next/prev: WORKING ✅
+          - Click Next through a couple of steps, then Done: WORKING ✅
+          - Start power tour, assert it attempts to focus messenger pieces: WORKING ✅
+          - Capture screenshots and logs: COMPLETED ✅
+          
+          ✅ WIDGET IMPLEMENTATION VERIFIED:
+          - Fixed position widget at bottom-right corner of screen
+          - Two tour buttons with correct data-testids implemented
+          - New User Tour: 6 steps covering notifications, messenger, and AI actions
+          - Power User Tour: 2 steps focusing on messenger functionality
+          - Overlay system with backdrop, highlight box, and glass-card tooltip
+          - Navigation buttons (Skip, Next, Prev) all functional
+          - Graceful handling of missing target elements
+          - Mobile responsive design working at 393x852 viewport
+          
+          ✅ TOUR FUNCTIONALITY VERIFIED:
+          - Tour overlay appears correctly with backdrop and highlight
+          - Tooltip positioning and styling working properly
+          - Step navigation through Next/Prev buttons functional
+          - Tour completion with Done button working
+          - Power tour attempts to focus messenger elements as expected
+          - Tours handle missing elements gracefully (friend input not on home)
+          
+          The Guided Tours widget is fully implemented and working correctly as specified in the review request.
+
   - task: "AI Quick Actions on Home"
     implemented: true
     working: true
