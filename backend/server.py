@@ -900,12 +900,13 @@ async def create_post_comment(postId: str, comment: CommentCreate, authorId: str
 @api_router.get("/reels")
 async def get_reels(limit: int = 50):
     """Get all reels for VibeZone."""
-    reels = list(db.reels.find().sort("createdAt", -1).limit(limit))
+    cursor = db.reels.find().sort("createdAt", -1).limit(limit)
+    reels = await cursor.to_list(length=limit)
     for reel in reels:
         reel["_id"] = str(reel["_id"])
         # Add author info
         if "authorId" in reel:
-            author = db.users.find_one({"id": reel["authorId"]})
+            author = await db.users.find_one({"id": reel["authorId"]})
             if author:
                 reel["author"] = {
                     "id": author["id"],
