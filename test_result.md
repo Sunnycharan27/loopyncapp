@@ -1389,6 +1389,36 @@ agent_communication:
 
   - agent: "testing"
     message: |
+      🎉 DM SEND/RECEIVE REGRESSION TESTS COMPLETE - ALL TESTS PASSED (8/8)
+      
+      COMPREHENSIVE DM REGRESSION TESTING COMPLETED for body payload changes:
+      
+      ✅ REGRESSION TEST SEQUENCE VERIFIED:
+      1. Seed baseline data: POST /api/seed (200 OK) - 6 users created
+      2. Friend request u2→u1: POST /api/friend-requests (idempotent - already friends)
+      3. Accept friend request: POST /api/friend-requests/{id}/accept (idempotent - already accepted)
+      4. Retrieve/create thread: POST /api/dm/thread?userId=u1&peerUserId=u2 (thread ID captured)
+      5. Send text message via Body: POST /api/dm/threads/{threadId}/messages with JSON {"text":"body hello"} ✅
+      6. Verify message received: GET /api/dm/threads/{threadId}/messages?userId=u2 (message found) ✅
+      7. Send media message via Body: POST /api/dm/threads/{threadId}/messages with JSON {"mediaUrl":"https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=200","mimeType":"image/jpeg"} ✅
+      8. Verify media message received: GET /api/dm/threads/{threadId}/messages?userId=u2 (media message found) ✅
+      
+      🔧 CRITICAL BUG FIXED DURING TESTING:
+      - Fixed NameError in /app/backend/server.py line 2581: `text` → `payload.text`
+      - Backend DM message sending now working correctly with JSON body payloads
+      - Both text and media messages successfully sent and received
+      
+      ✅ DM FUNCTIONALITY VERIFIED:
+      - JSON body payload support working correctly
+      - Text messages with {"text": "content"} format working
+      - Media messages with {"mediaUrl": "url", "mimeType": "type"} format working
+      - Message retrieval and verification working for both users
+      - Idempotent friend request flow working correctly
+      
+      **DM SEND/RECEIVE REGRESSION TESTS PASSED** - Body payload changes working correctly after bug fix.
+
+  - agent: "testing"
+    message: |
       🎯 VENUES AND EVENTS PAGES TESTING COMPLETE - MIXED RESULTS
       
       COMPREHENSIVE TESTING COMPLETED for newly added Venues and Events functionality:
