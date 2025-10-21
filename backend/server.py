@@ -1907,7 +1907,7 @@ async def ai_rank(req: RankRequest):
     if not LlmChat or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
-        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model="gpt-5.1-mini")
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, model="gpt-4o-mini")
         prompt = f"Rank the following documents by relevance to: '{req.query}'. Return JSON array with objects {{index, score}} where index refers to original order. Documents: " + "\n".join([f"[{i}] {d}" for i,d in enumerate(req.documents)])
         out = chat.completion([UserMessage(content=prompt)])
         text = out.output_text or "[]"
@@ -1950,7 +1950,7 @@ async def ai_translate(req: TranslateRequest):
     if not LlmChat or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
-        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model="gpt-5.1-mini")
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, model="gpt-4o-mini")
         src = req.source_language or "auto"
         prompt = f"Translate from {src} to {req.target_language}. Only output the translation.\nText: {req.text}"
         out = chat.completion([UserMessage(content=prompt)])
