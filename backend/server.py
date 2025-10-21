@@ -899,6 +899,24 @@ async def create_post_comment(postId: str, comment: CommentCreate, authorId: str
 
 @api_router.get("/reels")
 async def get_reels(limit: int = 50):
+
+@api_router.get("/music/search")
+async def search_music(q: str, limit: int = 10):
+    """Mock JioSaavn-like search returning preview streams only (no downloads)."""
+    sample = [
+        {
+            "id": f"mock-{i}",
+            "title": f"{q.title()} Track {i+1}",
+            "artists": ["Mock Artist"],
+            "artwork": f"https://picsum.photos/seed/{q}{i}/200/200",
+            "duration": 30,
+            "previewUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        }
+        for i in range(min(limit, 10))
+    ]
+    return {"items": sample}
+
+
     reels = await db.reels.find({}, {"_id": 0}).sort("createdAt", -1).to_list(limit)
     for reel in reels:
         author = await db.users.find_one({"id": reel["authorId"]}, {"_id": 0})
