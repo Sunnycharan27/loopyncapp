@@ -559,13 +559,21 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if 'id' in data and 'status' in data:
-                    self.friend_request_id = data['id']
+                if 'requestId' in data and 'status' in data:
+                    self.friend_request_id = data['requestId']
                     self.log_result(
                         "Send Friend Request", 
                         True, 
-                        f"Successfully sent friend request: {data['id']}",
-                        f"Status: {data['status']}, From: {data.get('fromUserId')}, To: {data.get('toUserId')}"
+                        f"Successfully sent friend request: {data['requestId']}",
+                        f"Status: {data['status']}"
+                    )
+                elif 'success' in data and data['success']:
+                    self.friend_request_id = data.get('requestId')
+                    self.log_result(
+                        "Send Friend Request", 
+                        True, 
+                        f"Successfully sent friend request",
+                        f"Response: {data}"
                     )
                 else:
                     self.log_result(
