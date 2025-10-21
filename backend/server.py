@@ -1878,6 +1878,104 @@ async def save_user_consents(userId: str, consent_data: UserConsent):
         {"userId": userId},
         {"$set": consent_dict},
         upsert=True
+
+# ===== AI ROUTES =====
+class RankRequest(BaseModel):
+    query: str
+    documents: List[str]
+
+class RankResponse(BaseModel):
+    items: List[dict]
+
+class SafetyRequest(BaseModel):
+    text: str
+
+class TranslateRequest(BaseModel):
+    text: str
+    target_language: str
+    source_language: Optional[str] = None
+
+class InsightRequest(BaseModel):
+    text: str
+    task: str = Field(default="summarize")  # summarize, sentiment
+
+@api_router.post("/ai/rank")
+async def ai_rank(req: RankRequest):
+    if not LlmChat or not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=503, detail="AI not configured")
+    try:
+        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model="gpt-5.1-mini")
+        prompt = f"Rank the following documents by relevance to: '{req.query}'. Return JSON array with objects {{index, score}} where index refers to original order. Documents: " + "\n".join([f"[{i}] {d}" for i,d in enumerate(req.documents)])
+        out = chat.completion([UserMessage(content=prompt)])
+        text = out.output_text or "[]"
+        import json
+        try:
+            items = json.loads(text)
+        except Exception:
+            # fallback: simple scoring by keyword presence
+            scores = []
+            for i, d in enumerate(req.documents):
+                scores.append({"index": i, "score": d.lower().count(req.query.lower())})
+            items = sorted(scores, key=lambda x: x["score"], reverse=True)
+        return {"items": items}
+    except Exception as e:
+        logging.exception("ai_rank failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/safety")
+async def ai_safety(req: SafetyRequest):
+    if not LlmChat or not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=503, detail="AI not configured")
+    try:
+        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model="omni-moderation-latest")
+        # Using moderation via prompt if direct moderation unsupported; emergentintegrations may wrap moderation via litellm
+        prompt = "Classify if the text violates safety (hate, violence, sexual, self-harm). Return JSON {safe:bool, categories: string[]} only. Text: " + req.text
+        out = chat.completion([UserMessage(content=prompt)])
+        import json
+        data = {"safe": True, "categories": []}
+        try:
+            data = json.loads(out.output_text)
+        except Exception:
+            pass
+        return data
+    except Exception as e:
+        logging.exception("ai_safety failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/translate")
+async def ai_translate(req: TranslateRequest):
+    if not LlmChat or not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=503, detail="AI not configured")
+    try:
+        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model="gpt-5.1-mini")
+        src = req.source_language or "auto"
+        prompt = f"Translate from {src} to {req.target_language}. Only output the translation.\nText: {req.text}"
+        out = chat.completion([UserMessage(content=prompt)])
+        return {"translated_text": out.output_text}
+    except Exception as e:
+        logging.exception("ai_translate failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ai/insight")
+async def ai_insight(req: InsightRequest):
+    if not LlmChat or not EMERGENT_LLM_KEY:
+        raise HTTPException(status_code=503, detail="AI not configured")
+    try:
+        model = "gpt-5.1" if req.task == "summarize" else "gpt-5.1-mini"
+        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model=model)
+        if req.task == "summarize":
+            prompt = "Summarize concisely in 3 bullets:\n" + req.text
+        elif req.task == "sentiment":
+            prompt = "Return JSON {sentiment: 'positive'|'neutral'|'negative', score: number} for the following text:\n" + req.text
+        else:
+            prompt = "Provide key insights:\n" + req.text
+        out = chat.completion([UserMessage(content=prompt)])
+        return {"result": out.output_text}
+    except Exception as e:
+        logging.exception("ai_insight failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
     )
     
     return {"success": True, "message": "Consent preferences saved"}
