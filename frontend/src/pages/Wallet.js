@@ -12,7 +12,10 @@ const Wallet = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pay");
   const [showTopUp, setShowTopUp] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [topUpAmount, setTopUpAmount] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDescription, setPaymentDescription] = useState("");
 
   useEffect(() => {
     fetchWalletData();
