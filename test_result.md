@@ -1063,7 +1063,7 @@ frontend:
     file: "/app/frontend/src/components/MusicPicker.js, /app/frontend/src/components/ReelComposerModal.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
