@@ -16,13 +16,15 @@ BACKEND_URL = "https://vibehub-5.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@loopync.com"
 DEMO_PASSWORD = "password123"
 
-class AuthTester:
+class BackendTester:
     def __init__(self):
         self.session = requests.Session()
         self.test_results = []
         self.demo_token = None
         self.new_user_token = None
         self.new_user_email = None
+        self.uploaded_file_url = None
+        self.friend_request_id = None
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
