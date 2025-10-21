@@ -29,7 +29,16 @@ const VibeZone = () => {
   };
 
   const handleReelCreated = (newReel) => {
-    setReels([newReel, ...reels]);
+    // Normalize local upload URLs for playback
+    const normalize = (url) => (url && url.startsWith('/uploads'))
+      ? `${(import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)}/api${url}`
+      : url;
+    const hydrated = {
+      ...newReel,
+      videoUrl: normalize(newReel.videoUrl),
+      thumb: normalize(newReel.thumb),
+    };
+    setReels([hydrated, ...reels]);
     setShowComposer(false);
   };
 
