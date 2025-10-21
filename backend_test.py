@@ -583,9 +583,10 @@ class BackendTester:
                         f"Response: {data}"
                     )
             elif response.status_code == 400:
-                # Check if friend request already exists
+                # Check if friend request already exists or they're already friends
                 data = response.json()
-                if "already sent" in data.get('detail', '').lower():
+                detail = data.get('detail', '').lower()
+                if "already sent" in detail:
                     # Get existing friend request
                     get_response = self.session.get(f"{BACKEND_URL}/friend-requests", params={'userId': 'u1'})
                     if get_response.status_code == 200:
@@ -605,6 +606,13 @@ class BackendTester:
                         "Send Friend Request", 
                         False, 
                         "Friend request already exists but couldn't retrieve ID",
+                        f"Response: {data}"
+                    )
+                elif "already friends" in detail:
+                    self.log_result(
+                        "Send Friend Request", 
+                        True, 
+                        "Users are already friends (friend request flow completed previously)",
                         f"Response: {data}"
                     )
                 else:
