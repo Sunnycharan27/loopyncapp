@@ -960,15 +960,17 @@ class BackendTester:
             self.log_result("Search Endpoint", False, f"Exception occurred: {str(e)}")
     
     def run_all_tests(self):
-        """Run all authentication tests"""
+        """Run all backend API tests"""
         print("=" * 60)
-        print("BACKEND AUTHENTICATION TESTING SUITE")
+        print("BACKEND API TESTING SUITE")
         print("=" * 60)
         print(f"Backend URL: {BACKEND_URL}")
         print(f"Demo Credentials: {DEMO_EMAIL} / {DEMO_PASSWORD}")
         print("=" * 60)
         
-        # Run tests in order
+        # Run authentication tests first
+        print("\n🔐 AUTHENTICATION TESTS")
+        print("-" * 40)
         self.test_demo_login()
         self.test_new_user_signup()
         self.test_new_user_login()
@@ -978,6 +980,34 @@ class BackendTester:
         self.test_duplicate_email_signup()
         self.test_invalid_token_access()
         self.test_no_token_access()
+        
+        # Run static upload tests
+        print("\n📁 STATIC UPLOAD TESTS")
+        print("-" * 40)
+        self.test_static_upload()
+        self.test_static_file_retrieval()
+        
+        # Run friend request flow tests
+        print("\n👥 FRIEND REQUEST FLOW TESTS")
+        print("-" * 40)
+        self.test_seed_data()
+        self.test_send_friend_request()
+        self.test_get_friend_requests()
+        self.test_accept_friend_request()
+        self.test_friends_list()
+        self.test_dm_thread_creation()
+        
+        # Run DM messaging tests
+        print("\n💬 DM MESSAGING TESTS")
+        print("-" * 40)
+        self.test_send_dm_message()
+        self.test_get_dm_messages()
+        self.test_send_media_dm_message()
+        
+        # Run search tests
+        print("\n🔍 SEARCH TESTS")
+        print("-" * 40)
+        self.test_search_endpoint()
         
         # Summary
         print("\n" + "=" * 60)
