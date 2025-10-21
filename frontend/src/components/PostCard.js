@@ -27,7 +27,8 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://loopync.app/post/${post.id}`);
+    const base = window?.location?.origin || '';
+    navigator.clipboard.writeText(`${base}/post/${post.id}`);
     toast.success("Link copied to clipboard!");
     setShowQuickActions(false);
   };
