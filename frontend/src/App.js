@@ -246,15 +246,39 @@ function App() {
             />
             <Route
               path="/notifications"
-              element={isAuthenticated ? <Notifications /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Notifications />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/profile"
-              element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Profile />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/profile/:userId"
-              element={isAuthenticated ? <UserProfile /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <UserProfile />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
           </Routes>
         </BrowserRouter>
