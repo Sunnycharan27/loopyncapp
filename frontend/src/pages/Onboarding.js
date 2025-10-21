@@ -83,6 +83,14 @@ const Onboarding = () => {
   const handleSkipKYC = () => {
     toast.info("You can complete eKYC later from Settings");
     setStep(4); // Skip to consent step
+            <button
+              onClick={handleSkipKYC}
+              className="w-full mt-3 py-3 rounded-full border border-gray-700 text-gray-300 hover:border-cyan-400 hover:text-cyan-400"
+              data-testid="onboarding-skip-kyc"
+            >
+              Skip eKYC
+            </button>
+
   };
 
   const handleComplete = async () => {
