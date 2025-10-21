@@ -147,12 +147,21 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
           <p className="text-gray-200 mb-3">{post.text}</p>
 
           {post.media && (
-            <img
-              src={post.media}
-              alt="Post media"
-              className="rounded-2xl w-full mb-3 hover:scale-[1.01] transition-transform cursor-pointer"
-              onClick={() => setShowReactions(true)}
-            />
+            post.media.match(/\.(mp4|webm|mov)$/i) ? (
+              <video
+                src={post.media.startsWith('/uploads') ? `${process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL}${post.media}` : post.media}
+                controls
+                className="rounded-2xl w-full mb-3"
+                onClick={() => setShowReactions(true)}
+              />
+            ) : (
+              <img
+                src={post.media.startsWith('/uploads') ? `${process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL}${post.media}` : post.media}
+                alt="Post media"
+                className="rounded-2xl w-full mb-3 hover:scale-[1.01] transition-transform cursor-pointer"
+                onClick={() => setShowReactions(true)}
+              />
+            )
           )}
 
           {/* Selected Reaction Display */}
