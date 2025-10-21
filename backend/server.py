@@ -1904,26 +1904,21 @@ class InsightRequest(BaseModel):
 
 @api_router.post("/ai/rank")
 async def ai_rank(req: RankRequest):
-    if not LlmChat or not EMERGENT_LLM_KEY:
-        raise HTTPException(status_code=503, detail="AI not configured")
-    try:
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
-        prompt = f"Rank the following documents by relevance to: '{req.query}'. Return JSON array with objects {{index, score}} where index refers to original order. Documents: " + "\n".join([f"[{i}] {d}" for i,d in enumerate(req.documents)])
-        out = await chat.send_message(prompt)
-        text = out or "[]"
-        import json
-        try:
-            items = json.loads(text)
-        except Exception:
-            # fallback: simple scoring by keyword presence
-            scores = []
-            for i, d in enumerate(req.documents):
-                scores.append({"index": i, "score": d.lower().count(req.query.lower())})
-            items = sorted(scores, key=lambda x: x["score"], reverse=True)
-        return {"items": items}
-    except Exception as e:
-        logging.exception("ai_rank failed")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Mock implementation - ranks by keyword relevance
+    scores = []
+    query_lower = req.query.lower()
+    
+    for i, doc in enumerate(req.documents):
+        doc_lower = doc.lower()
+        # Simple scoring: count query word occurrences + exact matches
+        score = doc_lower.count(query_lower)
+        if query_lower in doc_lower:
+            score += 2  # Bonus for containing the query
+        scores.append({"index": i, "score": score, "document": doc})
+    
+    # Sort by score descending
+    items = sorted(scores, key=lambda x: x["score"], reverse=True)
+    return {"items": items}
 
 @api_router.post("/ai/safety")
 async def ai_safety(req: SafetyRequest):
