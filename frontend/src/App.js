@@ -146,7 +146,15 @@ function App() {
             />
             <Route
               path="/messenger"
-              element={isAuthenticated ? <Messenger /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Messenger />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/notifications"
