@@ -283,6 +283,54 @@ const Messenger = () => {
                 Trust Circles
               </button>
             </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setSearchQuery(v);
+                    searchFriends(v);
+                  }}
+                  placeholder="Search chats or friends..."
+                  className="w-full pl-10 pr-3 py-2 rounded-full bg-black/30 border border-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                />
+                {searchQuery && (
+                  <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white" onClick={() => { setSearchQuery(""); setFriendResults([]); }}>
+                    <X size={16} />
+                  </button>
+                )}
+
+                {/* Friend search results dropdown */}
+                {searchQuery && friendResults.length > 0 && (
+                  <div className="absolute z-10 mt-2 w-full max-h-72 overflow-auto rounded-xl bg-black/80 border border-gray-800 backdrop-blur p-2 space-y-2">
+                    {friendResults.map((u) => (
+                      <div key={u.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer" onClick={() => startChatWith(u)}>
+                        <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full" />
+                        <div className="flex-1">
+                          <p className="text-sm text-white font-semibold">{u.name}</p>
+                          <p className="text-xs text-gray-400">@{u.handle}</p>
+                        </div>
+                        <button className="px-2 py-1 rounded-full bg-cyan-400 text-black text-xs font-semibold">Message</button>
+                      </div>
+                    ))}
+                    {searching && (
+                      <div className="text-center text-xs text-gray-500 py-2">Searching…</div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setActiveView("rooms")}
+                className="p-2 rounded-full hover:bg-cyan-400/10 text-cyan-400"
+                title="Browse rooms"
+              >
+                <Users size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Chats View */}
