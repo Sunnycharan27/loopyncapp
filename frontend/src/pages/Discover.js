@@ -167,7 +167,11 @@ const Discover = () => {
                 </h3>
                 <div className="space-y-2">
                   {searchResults.users.map(user => (
-                    <div key={user.id} className="glass-card p-4 flex items-center justify-between">
+                    <div 
+                      key={user.id} 
+                      className="glass-card p-4 flex items-center justify-between cursor-pointer hover:bg-cyan-400/5 transition-all"
+                      onClick={() => navigate(`/profile/${user.id}`)}
+                    >
                       <div className="flex items-center gap-3">
                         <img src={user.avatar} alt={user.name} className="w-12 h-12 rounded-full" />
                         <div>
@@ -177,7 +181,10 @@ const Discover = () => {
                       </div>
                       {!user.isFriend && !user.isBlocked && !user.requestSent && user.id !== currentUser.id && (
                         <button
-                          onClick={() => sendFriendRequest(user.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sendFriendRequest(user.id);
+                          }}
                           className="px-4 py-2 rounded-full bg-cyan-400 text-black font-semibold hover:bg-cyan-500 transition-all flex items-center gap-2"
                         >
                           <UserPlus size={16} />
