@@ -691,8 +691,27 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list):
+                if 'items' in data and isinstance(data['items'], list):
+                    friends = data['items']
                     # Look for u2 in the friends list
+                    friend_ids = [friend.get('id') for friend in friends]
+                    if 'u2' in friend_ids:
+                        u2_friend = next(friend for friend in friends if friend.get('id') == 'u2')
+                        self.log_result(
+                            "Friends List Verification", 
+                            True, 
+                            f"u2 found in u1's friends list: {u2_friend.get('name', 'Unknown')}",
+                            f"Total friends: {len(friends)}"
+                        )
+                    else:
+                        self.log_result(
+                            "Friends List Verification", 
+                            False, 
+                            "u2 not found in u1's friends list",
+                            f"Friend IDs: {friend_ids}, Total friends: {len(friends)}"
+                        )
+                elif isinstance(data, list):
+                    # Handle direct list response
                     friend_ids = [friend.get('id') for friend in data]
                     if 'u2' in friend_ids:
                         u2_friend = next(friend for friend in data if friend.get('id') == 'u2')
@@ -707,13 +726,13 @@ class BackendTester:
                             "Friends List Verification", 
                             False, 
                             "u2 not found in u1's friends list",
-                            f"Friend IDs: {friend_ids}"
+                            f"Friend IDs: {friend_ids}, Total friends: {len(data)}"
                         )
                 else:
                     self.log_result(
                         "Friends List Verification", 
                         False, 
-                        "Friends list response is not a list",
+                        "Friends list response format unexpected",
                         f"Response: {data}"
                     )
             else:
