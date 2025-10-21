@@ -195,6 +195,19 @@ const ReelComposerModal = ({ currentUser, onClose, onReelCreated }) => {
             />
           </div>
 
+          {/* Music Picker (Mock JioSaavn) */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2 text-gray-400">
+              Add Music (Preview Only)
+            </label>
+            <MusicPicker onSelect={(track) => {
+              setCaption(prev => `${prev} ♪ ${track.title} - ${track.artists?.[0] || ''}`.trim());
+              toast.info(`Attached preview: ${track.title}`);
+            }} />
+            <p className="text-xs text-gray-500 mt-2">Preview streaming only (≤30s). Music by JioSaavn (mock).</p>
+          </div>
+
+
           <div className="flex gap-3">
             <button
               type="button"
