@@ -53,6 +53,36 @@ const Wallet = () => {
     }
   };
 
+  const handlePayment = async () => {
+    const amount = parseFloat(paymentAmount);
+    if (!amount || amount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    if (!paymentDescription) {
+      toast.error("Please enter payment description");
+      return;
+    }
+
+    try {
+      const res = await axios.post(`${API}/wallet/payment?userId=${currentUser.id}`, {
+        amount,
+        description: paymentDescription,
+        venueName: paymentDescription
+      });
+      
+      toast.success(`₹${amount} paid successfully! ${res.data.creditsEarned > 0 ? `Earned ${res.data.creditsEarned} Loop Credits!` : ''}`);
+      setWalletData({ ...walletData, balance: res.data.balance });
+      setShowPayment(false);
+      setPaymentAmount("");
+      setPaymentDescription("");
+      fetchWalletData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Payment failed");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
