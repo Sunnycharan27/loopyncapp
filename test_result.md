@@ -1249,16 +1249,15 @@ agent_communication:
       - System ready for production with bug fix
 
 metadata:
-  test_sequence: 2
+  test_sequence: 3
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Static uploads under /api/uploads"
-    - "Friend Requests API & Flow"
-    - "DM Threads & Messages API"
+    - "DM Threads endpoint backend bug fix"
   stuck_tasks:
     - "Standalone Events Page"
     - "Standalone Venues Page"
+    - "DM Threads endpoint (backend bug)"
   test_all: false
   test_priority: "high_first"
