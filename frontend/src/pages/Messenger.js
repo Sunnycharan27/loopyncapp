@@ -78,21 +78,17 @@ const Messenger = () => {
 
   const fetchThreads = async () => {
     try {
-      const res = await axios.get(`${API}/messages?userId=${currentUser.id}`);
-      // Group messages by peer
-      const threadMap = {};
-      res.data.forEach(msg => {
-        const peer = msg.peer;
-        if (!threadMap[peer.id]) {
-          threadMap[peer.id] = {
-            peer,
-            lastMessage: msg.text,
-            timestamp: msg.createdAt,
-            unread: !msg.read && msg.toId === currentUser.id
-          };
-        }
-      });
-      setThreads(Object.values(threadMap));
+      // Use DM threads API
+      const res = await axios.get(`${API}/dm/threads?userId=${currentUser.id}`);
+      const items = res.data.items || [];
+      const normalized = items.map(it => ({
+        id: it.id,
+        peer: it.peer,
+        lastMessage: it.lastMessage?.text || '',
+        timestamp: it.updatedAt,
+        unread: (it.unreadCount || 0) > 0
+      }));
+      setThreads(normalized);
     } catch (error) {
       console.error("Failed to load threads", error);
     } finally {
