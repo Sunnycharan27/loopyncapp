@@ -1231,6 +1231,145 @@ frontend:
           The AI Quick Actions feature is fully implemented and working correctly by data-testid.
 
 frontend:
+  - task: "WebSocket Provider Environment Variable Fix"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/context/WebSocketContext.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          WEBSOCKET PROVIDER CRITICAL ERROR IDENTIFIED AND PARTIALLY FIXED
+          
+          ❌ CRITICAL ERROR FOUND:
+          - Error: "Cannot read properties of undefined (reading 'REACT_APP_BACKEND_URL')"
+          - Root cause: Using import.meta.env.REACT_APP_BACKEND_URL in browser context
+          - Impact: WebSocket connections failing, real-time features not working
+          
+          ✅ PARTIAL FIX APPLIED:
+          - Changed import.meta.env to process.env in WebSocketContext.js line 29
+          - Fixed the environment variable access issue
+          
+          ❌ REMAINING ISSUES:
+          - WebSocket connections still failing: "WebSocket is closed before the connection is established"
+          - Console warnings: "An error occurred in the <WebSocketProvider> component"
+          - Real-time messaging, notifications, and friend requests not working
+          
+          🔧 ADDITIONAL FIXES NEEDED:
+          - Investigate WebSocket server configuration
+          - Check if backend WebSocket server is running properly
+          - Verify WebSocket connection URL and authentication
+          - Add proper error boundaries for WebSocket provider
+
+  - task: "Home Page Data Loading Issues"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/Home.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          HOME PAGE CRITICAL DATA LOADING ISSUES IDENTIFIED
+          
+          ❌ CRITICAL ISSUES FOUND:
+          - No posts loading on home page (found 0 posts)
+          - No bottom navigation visible on home page
+          - Posts API calls may be failing or returning empty data
+          - Navigation components not rendering properly
+          
+          🔍 TESTING RESULTS:
+          - Home page loads and displays correctly structurally
+          - Authentication working and user can access the page
+          - But core content (posts, navigation) not displaying
+          - Mobile responsiveness working for page structure
+          
+          🔧 ROOT CAUSE INVESTIGATION NEEDED:
+          - Check if /api/posts endpoint is returning data
+          - Verify posts component rendering logic
+          - Check if API calls are being made from frontend
+          - Investigate bottom navigation component implementation
+          
+          This is blocking the core social media functionality of the app.
+
+  - task: "VibeZone Reels Loading Issues"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/VibeZone.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          VIBEZONE REELS CRITICAL DATA LOADING ISSUES IDENTIFIED
+          
+          ❌ CRITICAL ISSUES FOUND:
+          - No reels loading in VibeZone (found 0 reels)
+          - Create reel button not found
+          - Multiple failed video file requests (.mov files, Google Cloud Storage)
+          - Network errors: net::ERR_ABORTED for video resources
+          
+          🔍 TESTING RESULTS:
+          - VibeZone page accessible after authLoaded gate fix
+          - Page structure loads correctly
+          - But no reels content displaying
+          - Video loading failures affecting reel playback
+          
+          🔧 ROOT CAUSE INVESTIGATION NEEDED:
+          - Check if /api/reels endpoint is returning data
+          - Fix video file loading issues (failed .mov requests)
+          - Verify reel component rendering logic
+          - Check create reel button implementation
+          - Investigate video hosting and serving configuration
+          
+          This is blocking the core video content functionality of the app.
+
+  - task: "Standalone Pages Data Loading vs Discover Tabs"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/pages/Events.js, /app/frontend/src/pages/Venues.js, /app/frontend/src/pages/Discover.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: |
+          DATA LOADING INCONSISTENCY BETWEEN STANDALONE PAGES AND DISCOVER TABS
+          
+          ❌ INCONSISTENT BEHAVIOR IDENTIFIED:
+          - Standalone Events page: 0 events found
+          - Discover > Events tab: Multiple events displaying correctly
+          - Standalone Venues page: 0 venues found  
+          - Discover > Venues tab: 6 venues displaying correctly
+          
+          ✅ WORKING COMPONENTS:
+          - Discover page tabs working perfectly
+          - Tab switching functionality working
+          - Event and venue cards display properly in Discover tabs
+          - Navigation between tabs working
+          
+          🔍 ROOT CAUSE ANALYSIS:
+          - Different API calling patterns between standalone pages and Discover tabs
+          - Possible different data fetching logic or endpoints
+          - May be related to component lifecycle or state management
+          - Could be authentication context differences
+          
+          🔧 INVESTIGATION NEEDED:
+          - Compare API calls between standalone pages and Discover tab components
+          - Check if different endpoints are being used
+          - Verify data fetching timing and authentication context
+          - Ensure consistent data loading patterns across all pages
+          
+          This affects user experience as standalone pages appear empty while Discover tabs work.
+
   - task: "Mock JioSaavn Music Picker Testing"
     implemented: true
     working: false
