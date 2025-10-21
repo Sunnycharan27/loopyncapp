@@ -240,6 +240,12 @@ class WalletTransaction(BaseModel):
 class TopUpRequest(BaseModel):
     amount: float
 
+class PaymentRequest(BaseModel):
+    amount: float
+    venueId: str = None
+    venueName: str = None
+    description: str
+
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
