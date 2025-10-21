@@ -835,19 +835,24 @@ class BackendTester:
                 )
                 # Try to create a thread manually for testing
                 try:
-                    create_response = self.session.post(f"{BACKEND_URL}/dm/threads/create-or-get", 
-                                                      params={'user1Id': 'u1', 'user2Id': 'u2'})
+                    create_response = self.session.post(f"{BACKEND_URL}/dm/thread", 
+                                                      params={'userId': 'u1', 'peerUserId': 'u2'})
                     if create_response.status_code == 200:
                         thread_data = create_response.json()
-                        self.dm_thread_id = thread_data.get('id')
+                        self.dm_thread_id = thread_data.get('threadId')
                         self.log_result(
                             "DM Thread Manual Creation", 
                             True, 
                             f"Manually created DM thread: {self.dm_thread_id}",
-                            "Workaround for backend bug"
+                            "Workaround for backend bug in /dm/threads endpoint"
                         )
-                except:
-                    pass
+                except Exception as e:
+                    self.log_result(
+                        "DM Thread Manual Creation", 
+                        False, 
+                        f"Failed to create DM thread manually: {str(e)}",
+                        "Could not work around backend bug"
+                    )
             else:
                 self.log_result(
                     "DM Thread Auto-Creation", 
