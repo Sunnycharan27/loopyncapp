@@ -1933,11 +1933,11 @@ async def ai_safety(req: SafetyRequest):
         chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         # Using moderation via prompt if direct moderation unsupported; emergentintegrations may wrap moderation via litellm
         prompt = "Classify if the text violates safety (hate, violence, sexual, self-harm). Return JSON {safe:bool, categories: string[]} only. Text: " + req.text
-        out = chat.send_message(prompt)
+        out = await chat.send_message(prompt)
         import json
         data = {"safe": True, "categories": []}
         try:
-            data = json.loads(out.output_text)
+            data = json.loads(out)
         except Exception:
             pass
         return data
