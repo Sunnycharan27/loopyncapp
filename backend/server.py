@@ -1909,8 +1909,8 @@ async def ai_rank(req: RankRequest):
     try:
         chat = LlmChat(api_key=EMERGENT_LLM_KEY or "dummy", session_id="ai-session", system_message="You are a helpful AI assistant.")
         prompt = f"Rank the following documents by relevance to: '{req.query}'. Return JSON array with objects {{index, score}} where index refers to original order. Documents: " + "\n".join([f"[{i}] {d}" for i,d in enumerate(req.documents)])
-        out = chat.send_message(prompt)
-        text = out.output_text or "[]"
+        out = await chat.send_message(prompt)
+        text = out or "[]"
         import json
         try:
             items = json.loads(text)
