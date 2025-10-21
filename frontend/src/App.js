@@ -149,6 +149,10 @@ function App() {
               path="/profile"
               element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />}
             />
+            <Route
+              path="/profile/:userId"
+              element={isAuthenticated ? <UserProfile /> : <Navigate to="/auth" />}
+            />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-center" richColors />
