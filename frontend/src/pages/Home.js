@@ -123,7 +123,7 @@ const Home = () => {
                   toast.info(res.safe ? 'Looks safe ✅' : `Flagged ❗ Categories: ${res.categories?.join(', ')}`);
                 }}
                 className="px-3 py-2 rounded-full bg-red-400/20 text-red-300 border border-red-500/30 text-xs"
-              >Safety Check</button>
+               data-testid="btn-ai-safety">Safety Check</button>
               <button
                 onClick={async () => {
                   const text = prompt('Enter text to translate');
