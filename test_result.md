@@ -1267,6 +1267,33 @@ agent_communication:
          - GET /api/uploads/{filename}: File retrieval working through ingress
          - Generated test PNG successfully uploaded and retrieved
          - Proper response format: {url, filename, content_type}
+  
+  - agent: "testing"
+    message: |
+      🎉 DM THREADS LISTING FIX VERIFICATION COMPLETE - ALL TESTS PASSED (8/8)
+      
+      **FOCUSED RETEST COMPLETED** as requested for DM threads listing fix:
+      
+      ✅ **BACKEND BUG SUCCESSFULLY RESOLVED**:
+      - GET /api/dm/threads?userId=u1 now returns 200 status (previously 500 error)
+      - Response contains proper items array structure
+      - Found thread where peer.id === 'u2' as expected
+      - No more 500 Internal Server Errors
+      
+      ✅ **COMPLETE FLOW VERIFIED**:
+      1. Seed data: POST /api/seed ✅
+      2. Friend request u2→u1: POST /api/friend-requests ✅  
+      3. Accept request: POST /api/friend-requests/{id}/accept ✅
+      4. DM threads listing: GET /api/dm/threads?userId=u1 returns 200 with items array ✅
+      5. Thread includes peer.id === 'u2' ✅
+      6. Send message: POST /api/dm/threads/{threadId}/messages?userId=u1&text=hello-again ✅
+      7. Verify message: GET messages returns 'hello-again' message ✅
+      8. Final check: No 500 errors remain on /api/dm/threads ✅
+      
+      **BACKEND STATUS UPDATE**: DM Threads & Messages API task status changed from working: false to working: true
+      
+      The critical backend bug in the DM threads endpoint has been completely resolved.
+      All DM functionality is now production-ready and fully functional.
       
       3. **FRIEND REQUESTS FLOW** (5/5 tests passed):
          - Seed data creation: 6 users successfully created
