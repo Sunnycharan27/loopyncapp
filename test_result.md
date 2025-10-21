@@ -392,11 +392,11 @@ test_plan:
 frontend:
   - task: "BookMyShow-style Ticket Booking Flow"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/pages/Events.js, /app/frontend/src/pages/EventDetail.js, /app/frontend/src/pages/Payment.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
