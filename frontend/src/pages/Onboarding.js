@@ -193,6 +193,19 @@ const Onboarding = () => {
               Continue
             </button>
           </div>
+            <button
+              onClick={() => {
+                // Minimal skip for automation/testing
+                setNeedsOnboarding(false);
+                toast.info('Onboarding skipped. You can complete it later from Settings');
+                navigate('/');
+              }}
+              className="w-full mt-3 py-3 rounded-full border border-gray-700 text-gray-300 hover:border-cyan-400 hover:text-cyan-400"
+              data-testid="onboarding-skip"
+            >
+              Skip for now
+            </button>
+
         )}
 
         {/* Step 2: Interest Selection */}
