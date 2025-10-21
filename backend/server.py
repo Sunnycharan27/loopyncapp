@@ -2578,7 +2578,7 @@ async def send_message(threadId: str, userId: str, payload: SendMessageInput = B
         notification = Notification(
             userId=peer_id,
             type="dm",
-            content=text[:50] if text else "Sent a photo",
+            content=payload.text[:50] if payload.text else "Sent a photo",
             link=f"/messenger/{threadId}",
             payload={"sender": sender, "threadId": threadId}
         )
