@@ -53,13 +53,13 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
           {/* Video */}
           <video
             ref={el => videoRefs.current[idx] = el}
-            src={reel.videoUrl}
+            src={reel.videoUrl?.startsWith('/uploads') ? `${(import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)}/api${reel.videoUrl}` : reel.videoUrl}
             className="w-full h-full object-cover"
             loop
             autoPlay={idx === currentIndex}
             muted={muted}
             playsInline
-            poster={reel.thumb}
+            poster={reel.thumb?.startsWith('/uploads') ? `${(import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)}/api${reel.thumb}` : reel.thumb}
           />
 
           {/* Overlay Info */}
