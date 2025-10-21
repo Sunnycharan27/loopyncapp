@@ -1978,11 +1978,6 @@ async def ai_insight(req: InsightRequest):
         logging.exception("ai_insight failed")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-    )
-    
-    return {"success": True, "message": "Consent preferences saved"}
-
 @api_router.get("/users/{userId}/consents")
 async def get_user_consents(userId: str):
     """Get user consent preferences"""
