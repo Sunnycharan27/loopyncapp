@@ -1106,6 +1106,38 @@ frontend:
           - Protected route guards redirecting authenticated users
           
           URGENT FIX NEEDED: Authentication system must be resolved before music picker can be tested.
+      - working: "NA"
+        agent: "main"
+        comment: |
+          AUTHENTICATION ROUTING BUGS FIXED - COMPREHENSIVE AUTHLOADED GATE IMPLEMENTATION
+          
+          🔧 FIXES APPLIED TO /app/frontend/src/App.js:
+          - Added authLoaded gate to ALL protected routes:
+            * /vibezone
+            * /tribes & /tribes/:tribeId
+            * /wallet
+            * /discover
+            * /marketplace
+            * /venues & /venues/:venueId
+            * /events & /events/:eventId
+            * /payment
+            * /notifications
+            * /profile & /profile/:userId
+          
+          🎯 ROOT CAUSE RESOLVED:
+          - Routes were checking isAuthenticated before authLoaded completed
+          - This caused premature redirects to /auth while tokens were being validated
+          - Now all routes wait for authLoaded before checking authentication
+          - Loading screen displays while authentication state loads
+          
+          ✅ EXPECTED BEHAVIOR AFTER FIX:
+          - Direct navigation to /venues, /events, /events/:id, /vibezone will no longer redirect to /auth
+          - All protected routes will wait for authentication to load before making routing decisions
+          - Users with valid JWT tokens will access pages correctly
+          - Music picker in /vibezone should now be accessible
+          - BookMyShow ticket booking flow should now work end-to-end
+          
+          Frontend restarted successfully. All tasks need retesting to verify fixes.
 
 agent_communication:
   - agent: "testing"
