@@ -2520,7 +2520,7 @@ class SendMessageInput(BaseModel):
 
 
 @api_router.post("/dm/threads/{threadId}/messages")
-async def send_message(threadId: str, userId: str, text: str = None, mediaUrl: str = None, mimeType: str = None):
+async def send_message(threadId: str, userId: str, payload: SendMessageInput = Body(...)):
     """Send a message in a thread"""
     # Verify thread exists and user is participant
     thread = await db.dm_threads.find_one({"id": threadId}, {"_id": 0})
