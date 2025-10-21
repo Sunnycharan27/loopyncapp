@@ -1012,3 +1012,116 @@ agent_communication:
       
       💡 RECOMMENDATION:
       The BookMyShow-style booking system is fully implemented and ready. Only navigation fixes are needed to enable the complete user journey from event discovery to ticket confirmation with QR codes.
+
+backend:
+  - task: "Static uploads under /api/uploads"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Mounted StaticFiles at both /uploads and /api/uploads to ensure media served correctly via ingress when frontend uses /api prefix.
+
+  - task: "Friend Requests API & Flow"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Implemented send/get/accept/reject/cancel routes with block/mute checks, notifications, and WebSocket emits. Accept auto-creates DM thread.
+
+  - task: "DM Threads & Messages API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Implemented /dm/threads, create_or_get, list messages, send with media, read receipts, edit/delete. Real-time emits via Socket.IO.
+
+frontend:
+  - task: "Post media rendering fix (relative uploads)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/PostCard.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Prefixed relative /uploads with BACKEND_URL; handle video vs image; leave /api/uploads as-is.
+
+  - task: "UserProfile posts media prefix"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/UserProfile.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          When fetching posts of a user, normalize media to full URL when it starts with /uploads; keep external and /api/uploads intact.
+
+  - task: "WebSocketContext env handling"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/context/WebSocketContext.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Use import.meta.env.REACT_APP_BACKEND_URL fallback to process.env. Guard when not set.
+
+  - task: "Messenger migrated to DM API + media send"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Messenger.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Threads now from /api/dm/threads; messages from /api/dm/threads/:id/messages; send via /api/dm/threads/:id/messages; media upload uses /api/upload and passes /api/uploads URL. Fixed broken useEffect and missing imports. Auto-open thread via URL param.
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Debug phase started (media posts, friend requests, DMs). Implemented static upload serving under /api/uploads, prefixed media URLs on frontend, rewired Messenger to DM API, and ensured accept friend request auto-creates a DM thread. Ready for backend testing focusing on: uploads, friend request flow, DM threads/messages.
+
+metadata:
+  test_sequence: 2
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Static uploads under /api/uploads"
+    - "Friend Requests API & Flow"
+    - "DM Threads & Messages API"
+  stuck_tasks:
+    - "Standalone Events Page"
+    - "Standalone Venues Page"
+  test_all: false
+  test_priority: "high_first"
