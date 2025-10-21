@@ -825,6 +825,29 @@ class BackendTester:
                         "No DM threads found for u1",
                         f"Response: {data}"
                     )
+            elif response.status_code == 500:
+                # Backend has a bug in DM threads endpoint, try to create/get thread manually
+                self.log_result(
+                    "DM Thread Auto-Creation", 
+                    False, 
+                    "DM threads endpoint has backend bug (500 error)",
+                    "Backend error: AttributeError in sort() method on find_one() result"
+                )
+                # Try to create a thread manually for testing
+                try:
+                    create_response = self.session.post(f"{BACKEND_URL}/dm/threads/create-or-get", 
+                                                      params={'user1Id': 'u1', 'user2Id': 'u2'})
+                    if create_response.status_code == 200:
+                        thread_data = create_response.json()
+                        self.dm_thread_id = thread_data.get('id')
+                        self.log_result(
+                            "DM Thread Manual Creation", 
+                            True, 
+                            f"Manually created DM thread: {self.dm_thread_id}",
+                            "Workaround for backend bug"
+                        )
+                except:
+                    pass
             else:
                 self.log_result(
                     "DM Thread Auto-Creation", 
