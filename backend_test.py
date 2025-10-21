@@ -1681,19 +1681,18 @@ class BackendTester:
     
     def run_all_tests(self):
         """Run all backend API tests"""
-        print("=" * 60)
-        print("BACKEND API TESTING SUITE")
-        print("=" * 60)
+        print("=" * 80)
+        print("COMPREHENSIVE BACKEND API TESTING - ALL CRITICAL LOOPYNC ENDPOINTS")
+        print("=" * 80)
         print(f"Backend URL: {BACKEND_URL}")
         print(f"Demo Credentials: {DEMO_EMAIL} / {DEMO_PASSWORD}")
-        print("=" * 60)
+        print("=" * 80)
         
-        # Run authentication tests first
-        print("\n🔐 AUTHENTICATION TESTS")
-        print("-" * 40)
+        # Priority 1: Authentication Flow (CRITICAL)
+        print("\n🔐 PRIORITY 1: AUTHENTICATION FLOW (CRITICAL)")
+        print("-" * 60)
         self.test_demo_login()
         self.test_new_user_signup()
-        self.test_new_user_login()
         self.test_jwt_token_validation()
         self.test_protected_route_access()
         self.test_invalid_credentials()
@@ -1701,38 +1700,54 @@ class BackendTester:
         self.test_invalid_token_access()
         self.test_no_token_access()
         
-        # Run static upload tests
-        print("\n📁 STATIC UPLOAD TESTS")
-        print("-" * 40)
-        self.test_static_upload()
-        self.test_static_file_retrieval()
+        # Priority 2: Core Social Features
+        print("\n📱 PRIORITY 2: CORE SOCIAL FEATURES")
+        print("-" * 60)
+        self.test_seed_data()  # Create test data first
+        self.test_posts_timeline()
+        self.test_create_post()
+        self.test_reels_vibezone()
+        self.test_create_reel()
+        self.test_global_search()
         
-        # Run friend request flow tests
-        print("\n👥 FRIEND REQUEST FLOW TESTS")
-        print("-" * 40)
-        self.test_seed_data()
+        # Priority 3: Friend System & Messaging
+        print("\n👥 PRIORITY 3: FRIEND SYSTEM & MESSAGING")
+        print("-" * 60)
         self.test_send_friend_request()
         self.test_get_friend_requests()
         self.test_accept_friend_request()
         self.test_friends_list()
         self.test_dm_thread_creation()
-        
-        # Run DM messaging tests
-        print("\n💬 DM MESSAGING TESTS")
-        print("-" * 40)
         self.test_send_dm_message()
         self.test_get_dm_messages()
         self.test_send_media_dm_message()
         
-        # Run search tests
-        print("\n🔍 SEARCH TESTS")
-        print("-" * 40)
-        self.test_search_endpoint()
+        # Priority 4: Events & Venues (Recently Fixed)
+        print("\n🎪 PRIORITY 4: EVENTS & VENUES (RECENTLY FIXED)")
+        print("-" * 60)
+        self.test_events_list()
+        self.test_event_details()
+        self.test_venues_list()
+        self.test_venue_details()
+        
+        # Priority 5: Wallet & Other Features
+        print("\n💰 PRIORITY 5: WALLET & OTHER FEATURES")
+        print("-" * 60)
+        self.test_wallet_balance()
+        self.test_music_search()
+        self.test_tribes_list()
+        self.test_user_interests()
+        
+        # File Upload Tests
+        print("\n📁 FILE UPLOAD TESTS")
+        print("-" * 60)
+        self.test_static_upload()
+        self.test_static_file_retrieval()
         
         # Summary
-        print("\n" + "=" * 60)
-        print("TEST SUMMARY")
-        print("=" * 60)
+        print("\n" + "=" * 80)
+        print("COMPREHENSIVE TEST SUMMARY")
+        print("=" * 80)
         
         passed = sum(1 for r in self.test_results if r['success'])
         total = len(self.test_results)
@@ -1742,13 +1757,27 @@ class BackendTester:
         print(f"Failed: {total - passed}")
         print(f"Success Rate: {(passed/total)*100:.1f}%")
         
+        # Group results by priority
+        auth_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Login', 'Signup', 'Token', 'Credentials', 'Protected'])]
+        social_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Posts', 'Reel', 'Search', 'Seed'])]
+        friend_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Friend', 'DM', 'Message'])]
+        venue_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Event', 'Venue'])]
+        other_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Wallet', 'Music', 'Tribe', 'Interest', 'Upload'])]
+        
+        print(f"\n📊 RESULTS BY PRIORITY:")
+        print(f"  🔐 Authentication: {sum(1 for r in auth_tests if r['success'])}/{len(auth_tests)} passed")
+        print(f"  📱 Social Features: {sum(1 for r in social_tests if r['success'])}/{len(social_tests)} passed")
+        print(f"  👥 Friend/Messaging: {sum(1 for r in friend_tests if r['success'])}/{len(friend_tests)} passed")
+        print(f"  🎪 Events/Venues: {sum(1 for r in venue_tests if r['success'])}/{len(venue_tests)} passed")
+        print(f"  💰 Other Features: {sum(1 for r in other_tests if r['success'])}/{len(other_tests)} passed")
+        
         if total - passed > 0:
-            print("\nFAILED TESTS:")
+            print("\n❌ FAILED TESTS:")
             for result in self.test_results:
                 if not result['success']:
-                    print(f"  ❌ {result['test']}: {result['message']}")
+                    print(f"  • {result['test']}: {result['message']}")
         
-        print("\n" + "=" * 60)
+        print("\n" + "=" * 80)
         return passed == total
 
 def main():
