@@ -19,6 +19,8 @@ const Messenger = () => {
   const [uploading, setUploading] = useState(false);
   const [activeView, setActiveView] = useState("chats"); // chats, rooms, circles
   const [searchQuery, setSearchQuery] = useState("");
+  const [friendResults, setFriendResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const [showCircles, setShowCircles] = useState(false);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
