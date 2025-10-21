@@ -198,28 +198,46 @@ const Wallet = () => {
         {activeTab === "pay" ? (
           <div className="glass-card mt-6 p-6">
             <h3 className="text-center text-white font-semibold text-base mb-2 neon-text">
-              Scan at Venue
+              Scan QR Code at Venue
             </h3>
             <p className="text-center text-gray-400 text-sm mb-6">
-              Show this barcode at Loopync partner venues
+              Show this QR code at Loopync partner venues to pay
             </p>
             
             <div className="bg-white flex flex-col items-center justify-center py-8 px-4 rounded-2xl">
               <div className="bg-white p-4 rounded-lg">
-                <Barcode
-                  value={currentUser.id.toUpperCase().replace(/-/g, '').substring(0, 16)}
-                  format="CODE128"
-                  width={2.5}
-                  height={80}
-                  displayValue={true}
-                  fontSize={16}
-                  fontOptions="bold"
-                  background="#ffffff"
-                  lineColor="#000000"
-                  margin={0}
+                <QRCodeSVG
+                  value={JSON.stringify({
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    handle: currentUser.handle,
+                    balance: walletData?.balance || 0,
+                    type: "loopync_wallet"
+                  })}
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                  imageSettings={{
+                    src: "/logo.jpg",
+                    height: 40,
+                    width: 40,
+                    excavate: true,
+                  }}
                 />
               </div>
+              <p className="mt-4 text-sm text-gray-700 font-semibold">@{currentUser.handle}</p>
+              <p className="text-xs text-gray-500">Balance: ₹{walletData?.balance?.toFixed(2)}</p>
             </div>
+
+            {/* Test Payment Button */}
+            <button
+              onClick={() => setShowPayment(true)}
+              className="w-full mt-6 py-3 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-semibold hover:opacity-90 flex items-center justify-center gap-2"
+              data-testid="make-payment-btn"
+            >
+              <Scan size={18} />
+              Make Test Payment
+            </button>
 
             <div className="mt-6 pt-6 border-t border-gray-700">
               <div className="flex gap-3 justify-center flex-wrap">
