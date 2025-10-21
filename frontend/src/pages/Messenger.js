@@ -297,6 +297,7 @@ const Messenger = () => {
                   }}
                   placeholder="Search chats or friends..."
                   className="w-full pl-10 pr-3 py-2 rounded-full bg-black/30 border border-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  data-testid="friend-search-input"
                 />
                 {searchQuery && (
                   <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white" onClick={() => { setSearchQuery(""); setFriendResults([]); }}>
