@@ -921,11 +921,13 @@ class BackendTester:
             return
             
         try:
-            params = {'userId': 'u1'}
-            payload = {'text': 'hello'}
+            params = {
+                'userId': 'u1',
+                'text': 'hello'
+            }
             
             response = self.session.post(f"{BACKEND_URL}/dm/threads/{self.dm_thread_id}/messages", 
-                                       params=params, json=payload)
+                                       params=params)
             
             if response.status_code == 200:
                 data = response.json()
