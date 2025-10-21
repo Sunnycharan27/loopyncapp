@@ -1930,7 +1930,7 @@ async def ai_safety(req: SafetyRequest):
     if not LlmChat or not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=503, detail="AI not configured")
     try:
-        chat = LlmChat(provider="openai", api_key=EMERGENT_LLM_KEY, model="omni-moderation-latest")
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, model="gpt-4o-mini")
         # Using moderation via prompt if direct moderation unsupported; emergentintegrations may wrap moderation via litellm
         prompt = "Classify if the text violates safety (hate, violence, sexual, self-harm). Return JSON {safe:bool, categories: string[]} only. Text: " + req.text
         out = chat.completion([UserMessage(content=prompt)])
