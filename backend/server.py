@@ -235,6 +235,7 @@ class WalletTransaction(BaseModel):
     amount: float
     status: str = "completed"
     description: str = ""
+    metadata: dict = {}
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class TopUpRequest(BaseModel):
