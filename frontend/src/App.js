@@ -102,47 +102,135 @@ function App() {
             />
             <Route
               path="/vibezone"
-              element={isAuthenticated ? <VibeZone /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <VibeZone />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/tribes"
-              element={isAuthenticated ? <Tribes /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Tribes />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/tribes/:tribeId"
-              element={isAuthenticated ? <TribeDetail /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <TribeDetail />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/wallet"
-              element={isAuthenticated ? <Wallet /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Wallet />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/discover"
-              element={isAuthenticated ? <Discover /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Discover />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/marketplace"
-              element={isAuthenticated ? <Marketplace /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Marketplace />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/venues"
-              element={isAuthenticated ? <Venues /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Venues />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/venues/:venueId"
-              element={isAuthenticated ? <VenueDetail /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <VenueDetail />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/events"
-              element={isAuthenticated ? <Events /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Events />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/events/:eventId"
-              element={isAuthenticated ? <EventDetail /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <EventDetail />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/payment"
-              element={isAuthenticated ? <Payment /> : <Navigate to="/auth" />}
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Payment />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
             />
             <Route
               path="/messenger"
