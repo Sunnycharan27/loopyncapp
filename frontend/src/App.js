@@ -38,9 +38,11 @@ function App() {
     const token = localStorage.getItem("loopync_token");
     const user = localStorage.getItem("loopync_user");
     if (token && user) {
-      setCurrentUser(JSON.parse(user));
+      const parsed = JSON.parse(user);
+      setCurrentUser(parsed);
       setIsAuthenticated(true);
-      checkOnboardingStatus(JSON.parse(user).id);
+      // Treat as authenticated unless onboarding explicitly incomplete
+      checkOnboardingStatus(parsed.id);
     }
   }, []);
 
