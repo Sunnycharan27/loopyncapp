@@ -15,7 +15,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://vibehub-5.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopync-dev.preview.emergentagent.com/api"
 
 class SmokeTestRunner:
     def __init__(self):
