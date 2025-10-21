@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
-import { ArrowLeft, Send, Image as ImageIcon, Mic, Users, Shield, Video, FileText, MapPin, Calendar, Music, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Users, Shield, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useWebSocket } from "../context/WebSocketContext";
 
 const Messenger = () => {
+  const { threadId } = useParams();
   const { currentUser } = useContext(AuthContext);
+  const { connected, emitTyping } = useWebSocket();
   const navigate = useNavigate();
   const [threads, setThreads] = useState([]);
   const [selectedThread, setSelectedThread] = useState(null);
@@ -14,12 +17,12 @@ const Messenger = () => {
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [showRooms, setShowRooms] = useState(false);
-  const [showCircles, setShowCircles] = useState(false);
-  const [activeView, setActiveView] = useState("chats"); // chats, rooms, circles
+  const [activeView, setActiveView] = useState("chats"); // chats, search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const [isTyping, setIsTyping] = useState(false);
   
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -34,20 +37,11 @@ const Messenger = () => {
 
   useEffect(() => {
     fetchThreads();
-    
-    // Poll for new threads every 10 seconds
-    const threadsInterval = setInterval(() => {
-      fetchThreads();
-    }, 10000);
-    
-    // Auto-refresh messages every 3 seconds when viewing a thread
-    let messagesInterval;
-    if (selectedThread) {
-      messagesInterval = setInterval(() => {
-        fetchMessages(selectedThread.peer.id);
-      }, 3000);
+    if (threadId) {
+      // Load specific thread
+      loadThread(threadId);
     }
-    
+  }, [threadId]);
     return () => {
       clearInterval(threadsInterval);
       if (messagesInterval) clearInterval(messagesInterval);
