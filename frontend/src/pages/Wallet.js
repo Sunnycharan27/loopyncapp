@@ -357,6 +357,77 @@ const Wallet = () => {
           </div>
         </div>
       )}
+
+      {/* Payment Modal - Cyber Theme */}
+      {showPayment && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold neon-text mb-4">Make Payment</h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl text-cyan-400">₹</span>
+                <input
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full pl-12 pr-4 py-4 text-3xl font-bold bg-gray-900/50 border-2 border-cyan-400/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white"
+                  data-testid="payment-amount-input"
+                />
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-2">Payment For</label>
+              <input
+                type="text"
+                value={paymentDescription}
+                onChange={(e) => setPaymentDescription(e.target.value)}
+                placeholder="e.g., Café Mondegar, Movie Tickets"
+                className="w-full px-4 py-3 bg-gray-900/50 border-2 border-cyan-400/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white"
+                data-testid="payment-description-input"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 mb-6">
+              {[50, 100, 250, 500, 1000, 2000].map((amt) => (
+                <button
+                  key={amt}
+                  onClick={() => setPaymentAmount(amt.toString())}
+                  className="py-3 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 text-sm font-semibold text-white border border-cyan-400/20"
+                >
+                  ₹{amt}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-cyan-400/10 border border-cyan-400/30 rounded-xl p-3 mb-6">
+              <p className="text-xs text-cyan-400 mb-1">💰 Earn 2% Loop Credits Cashback!</p>
+              <p className="text-xs text-gray-400">
+                Current Balance: ₹{walletData?.balance?.toFixed(2) || '0.00'}
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPayment(false)}
+                className="flex-1 py-3 rounded-full border-2 border-gray-600 text-gray-300 font-semibold hover:bg-gray-800/50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePayment}
+                className="flex-1 py-3 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-purple-500 hover:opacity-90"
+                data-testid="payment-confirm-btn"
+              >
+                Pay Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
