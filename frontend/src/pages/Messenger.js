@@ -96,10 +96,10 @@ const Messenger = () => {
     }
   };
 
-  const fetchMessages = async (peerId) => {
+  const fetchMessages = async (threadIdToLoad) => {
     try {
-      const res = await axios.get(`${API}/messages/thread?userId=${currentUser.id}&peerId=${peerId}`);
-      setMessages(res.data);
+      const res = await axios.get(`${API}/dm/threads/${threadIdToLoad}/messages?userId=${currentUser.id}`);
+      setMessages(res.data.items || []);
     } catch (error) {
       console.error("Failed to load messages", error);
     }
