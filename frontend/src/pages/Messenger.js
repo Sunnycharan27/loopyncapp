@@ -107,7 +107,7 @@ const Messenger = () => {
 
   const handleThreadClick = (thread) => {
     setSelectedThread(thread);
-    fetchMessages(thread.peer.id);
+    fetchMessages(thread.id);
   };
 
   const handleSendMessage = async (e) => {
