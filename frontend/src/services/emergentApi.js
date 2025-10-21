@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API } from "../App";
 
-export const ai = {
+export const emergentApi = {
   safety: async (text) => {
     const res = await axios.post(`${API}/ai/safety`, { text });
     return res.data;
