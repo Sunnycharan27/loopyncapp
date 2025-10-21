@@ -32,6 +32,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [authLoaded, setAuthLoaded] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -42,7 +43,9 @@ function App() {
       setCurrentUser(parsed);
       setIsAuthenticated(true);
       // Treat as authenticated unless onboarding explicitly incomplete
-      checkOnboardingStatus(parsed.id);
+      checkOnboardingStatus(parsed.id).finally(() => setAuthLoaded(true));
+    } else {
+      setAuthLoaded(true);
     }
   }, []);
 
