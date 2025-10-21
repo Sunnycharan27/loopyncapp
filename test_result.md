@@ -1334,10 +1334,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "DM Threads endpoint backend bug fix"
+    - "Standalone Events Page"
+    - "Standalone Venues Page"
   stuck_tasks:
     - "Standalone Events Page"
     - "Standalone Venues Page"
-    - "DM Threads endpoint (backend bug)"
   test_all: false
   test_priority: "high_first"
