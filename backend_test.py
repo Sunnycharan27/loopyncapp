@@ -1923,6 +1923,12 @@ class BackendTester:
         self.test_tribes_list()
         self.test_user_interests()
         
+        # Priority 6: User Profile Endpoint (NEW)
+        print("\n👤 PRIORITY 6: USER PROFILE ENDPOINT (NEW)")
+        print("-" * 60)
+        self.test_user_profile_endpoint()
+        self.test_user_profile_with_demo_user()
+        
         # File Upload Tests
         print("\n📁 FILE UPLOAD TESTS")
         print("-" * 60)
