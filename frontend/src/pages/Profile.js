@@ -16,6 +16,8 @@ const Profile = () => {
   const [tickets, setTickets] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [userContent, setUserContent] = useState({ posts: [], reels: [], products: [] });
+  const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
