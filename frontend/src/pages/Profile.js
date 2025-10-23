@@ -3,7 +3,7 @@ import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
 import TopHeader from "../components/TopHeader";
-import { Settings, LogOut, Award, TrendingUp, Zap, Calendar, Ticket, Bookmark, Trophy, Wallet, CreditCard, ArrowRight } from "lucide-react";
+import { Settings, LogOut, Award, TrendingUp, Zap, Calendar, Ticket, Bookmark, Trophy, Wallet, CreditCard, ArrowRight, Edit, Film, ShoppingBag, FileText, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
