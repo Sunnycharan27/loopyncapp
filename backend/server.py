@@ -1329,6 +1329,135 @@ async def promote_moderator(roomId: str, userId: str, targetUserId: str):
     
     return {"message": "User promoted to moderator", "moderators": moderators}
 
+@api_router.post("/rooms/{roomId}/kick")
+async def kick_user(roomId: str, userId: str, targetUserId: str):
+    """Kick user from room (moderator/host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    if userId not in room.get("moderators", []):
+        raise HTTPException(status_code=403, detail="Only moderators can kick users")
+    
+    # Remove participant
+    participants = room.get("participants", [])
+    participants = [p for p in participants if p["userId"] != targetUserId]
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    # Log action
+    message = RoomMessage(
+        roomId=roomId,
+        userId="system",
+        userName="System",
+        message=f"User was removed from the room",
+        type="system"
+    )
+    await db.room_messages.insert_one(message.model_dump())
+    
+    return {"message": "User kicked", "participants": participants}
+
+@api_router.post("/rooms/{roomId}/handRaise")
+async def toggle_hand_raise(roomId: str, userId: str):
+    """Toggle hand raise for user"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    participants = room.get("participants", [])
+    for p in participants:
+        if p["userId"] == userId:
+            p["handRaised"] = not p.get("handRaised", False)
+            break
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    return {"message": "Hand raise toggled", "participants": participants}
+
+@api_router.post("/rooms/{roomId}/reaction")
+async def add_reaction(roomId: str, userId: str, emoji: str):
+    """Add emoji reaction in room"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Get user info
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    
+    # Add reaction message
+    message = RoomMessage(
+        roomId=roomId,
+        userId=userId,
+        userName=user.get("name", "User"),
+        avatar=user.get("avatar", ""),
+        message=emoji,
+        type="emoji"
+    )
+    await db.room_messages.insert_one(message.model_dump())
+    
+    return {"message": "Reaction added"}
+
+# ===== ROOM CHAT ROUTES =====
+
+@api_router.post("/rooms/{roomId}/messages")
+async def send_room_message(roomId: str, userId: str, message: str):
+    """Send chat message in room"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Check if user is in room
+    participants = room.get("participants", [])
+    if not any(p["userId"] == userId for p in participants):
+        raise HTTPException(status_code=403, detail="Not in room")
+    
+    # Get user info
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    
+    # Create message
+    room_message = RoomMessage(
+        roomId=roomId,
+        userId=userId,
+        userName=user.get("name", "User"),
+        avatar=user.get("avatar", ""),
+        message=message,
+        type="text"
+    )
+    await db.room_messages.insert_one(room_message.model_dump())
+    
+    return room_message
+
+@api_router.get("/rooms/{roomId}/messages")
+async def get_room_messages(roomId: str, limit: int = 50):
+    """Get chat messages for room"""
+    messages = await db.room_messages.find(
+        {"roomId": roomId},
+        {"_id": 0}
+    ).sort("createdAt", -1).limit(limit).to_list(limit)
+    
+    # Reverse to show oldest first
+    return list(reversed(messages))
+
+@api_router.delete("/rooms/{roomId}/messages/{messageId}")
+async def delete_room_message(roomId: str, messageId: str, userId: str):
+    """Delete chat message (moderator/host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    if userId not in room.get("moderators", []):
+        raise HTTPException(status_code=403, detail="Only moderators can delete messages")
+    
+    await db.room_messages.delete_one({"id": messageId, "roomId": roomId})
+    
+    return {"message": "Message deleted"}
+
 # ===== SEED DATA ROUTE =====
 
 @api_router.post("/seed")
