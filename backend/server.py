@@ -2200,6 +2200,100 @@ async def get_event(eventId: str):
         raise HTTPException(status_code=404, detail="Event not found")
     return event
 
+@api_router.post("/events/{eventId}/book")
+async def book_event_ticket(eventId: str, userId: str, tier: str = "General", quantity: int = 1):
+    """Book event tickets using wallet balance"""
+    # Get event
+    event = await db.events.find_one({"id": eventId}, {"_id": 0})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Get user
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Find tier price
+    tiers = event.get("tiers", [])
+    tier_data = next((t for t in tiers if t.get("name") == tier), None)
+    if not tier_data:
+        raise HTTPException(status_code=400, detail="Invalid tier")
+    
+    price_per_ticket = tier_data.get("price", 0)
+    total_amount = price_per_ticket * quantity
+    
+    # Check balance
+    current_balance = user.get("walletBalance", 0.0)
+    if current_balance < total_amount:
+        raise HTTPException(status_code=400, detail="Insufficient wallet balance")
+    
+    # Deduct from wallet
+    new_balance = current_balance - total_amount
+    await db.users.update_one({"id": userId}, {"$set": {"walletBalance": new_balance}})
+    
+    # Create tickets
+    tickets = []
+    for i in range(quantity):
+        ticket = EventTicket(
+            eventId=eventId,
+            userId=userId,
+            tier=tier,
+            qrCode=str(uuid.uuid4()),
+            status="active"
+        )
+        ticket_dict = ticket.model_dump()
+        ticket_dict["eventName"] = event.get("name", "Event")
+        ticket_dict["eventDate"] = event.get("date", "")
+        ticket_dict["eventLocation"] = event.get("location", "")
+        ticket_dict["eventImage"] = event.get("image", "")
+        ticket_dict["price"] = price_per_ticket
+        await db.event_tickets.insert_one(ticket_dict)
+        tickets.append(ticket_dict)
+    
+    # Record transaction
+    transaction = WalletTransaction(
+        userId=userId,
+        type="payment",
+        amount=total_amount,
+        description=f"Ticket purchase: {event.get('name', 'Event')} ({quantity}x {tier})",
+        metadata={"eventId": eventId, "tier": tier, "quantity": quantity}
+    )
+    await db.wallet_transactions.insert_one(transaction.model_dump())
+    
+    # Award Loop Credits (bonus for ticket purchase)
+    credits_earned = 20 * quantity  # 20 credits per ticket
+    if credits_earned > 0:
+        credit_entry = LoopCredit(
+            userId=userId,
+            amount=credits_earned,
+            type="earn",
+            source="event",
+            description=f"Bonus for buying {quantity} ticket(s)"
+        )
+        await db.loop_credits.insert_one(credit_entry.model_dump())
+    
+    return {
+        "success": True,
+        "tickets": tickets,
+        "balance": new_balance,
+        "creditsEarned": credits_earned,
+        "message": f"Successfully booked {quantity} ticket(s)!"
+    }
+
+@api_router.get("/tickets/{userId}")
+async def get_user_tickets(userId: str):
+    """Get all tickets for a user"""
+    tickets = await db.event_tickets.find({"userId": userId}, {"_id": 0}).sort("purchasedAt", -1).to_list(100)
+    return tickets
+
+@api_router.get("/tickets/{userId}/{ticketId}")
+async def get_ticket_details(userId: str, ticketId: str):
+    """Get specific ticket details"""
+    ticket = await db.event_tickets.find_one({"id": ticketId, "userId": userId}, {"_id": 0})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return ticket
+
 # ===== CREATOR ROUTES =====
 
 @api_router.get("/creators")
