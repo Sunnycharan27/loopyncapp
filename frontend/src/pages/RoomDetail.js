@@ -6,9 +6,20 @@ import DailyIframe from "@daily-co/daily-js";
 import { DailyProvider, useDaily, useParticipantIds, useLocalParticipant, useParticipantProperty } from "@daily-co/daily-react";
 import { 
   ArrowLeft, Mic, MicOff, Crown, Shield, LogOut, Users, 
-  Send, Smile, Hand, UserX, MessageCircle, Loader
+  Send, Smile, Hand, UserX, MessageCircle, Loader, UserPlus, Share2
 } from "lucide-react";
 import { toast } from "sonner";
+import InviteFriendsModal from "../components/InviteFriendsModal";
+
+const RoomDetail = () => {
+  const { roomId } = useParams();
+  const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [room, setRoom] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [callObject, setCallObject] = useState(null);
+  const [joiningCall, setJoiningCall] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
 const RoomDetail = () => {
   const { roomId } = useParams();
