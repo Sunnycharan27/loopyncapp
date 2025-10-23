@@ -258,15 +258,15 @@ const UserProfile = () => {
                     currentUser={currentUser}
                     onLike={async (postId) => {
                       await axios.post(`${API}/posts/${postId}/like?userId=${currentUser.id}`);
-                      fetchUserPosts();
+                      fetchUserProfile();
                     }}
                     onRepost={async (postId) => {
                       await axios.post(`${API}/posts/${postId}/repost?userId=${currentUser.id}`);
-                      fetchUserPosts();
+                      fetchUserProfile();
                     }}
                     onDelete={async (postId) => {
                       await axios.delete(`${API}/posts/${postId}?userId=${currentUser.id}`);
-                      fetchUserPosts();
+                      fetchUserProfile();
                     }}
                   />
                 ))}
