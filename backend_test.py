@@ -1864,6 +1864,312 @@ class BackendTester:
         except Exception as e:
             self.log_result("User Profile Demo User", False, f"Exception occurred: {str(e)}")
     
+    def test_wallet_and_ticket_booking_system(self):
+        """Test complete wallet and ticket booking system as per review request"""
+        print("\n🎫 TESTING WALLET AND TICKET BOOKING SYSTEM")
+        print("=" * 60)
+        
+        # Get demo user ID for testing
+        demo_user_id = "demo_user"
+        
+        # Step 1: Top-up wallet
+        self.test_wallet_topup(demo_user_id, 1000.0)
+        
+        # Step 2: Test ticket booking
+        self.test_event_ticket_booking(demo_user_id)
+        
+        # Step 3: Verify tickets
+        self.test_user_tickets_retrieval(demo_user_id)
+        
+        # Step 4: Check wallet transaction
+        self.test_wallet_transaction_verification(demo_user_id)
+        
+        print("🎫 Wallet and Ticket Booking System Testing Complete")
+        print("=" * 60)
+    
+    def test_wallet_topup(self, user_id: str, amount: float):
+        """Test wallet top-up functionality"""
+        try:
+            payload = {"amount": amount}
+            params = {"userId": user_id}
+            
+            response = self.session.post(f"{BACKEND_URL}/wallet/topup", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'balance' in data and 'success' in data and data['success']:
+                    self.log_result(
+                        "Wallet Top-up", 
+                        True, 
+                        f"Successfully topped up wallet with ₹{amount}",
+                        f"New balance: ₹{data['balance']}"
+                    )
+                    return data['balance']
+                else:
+                    self.log_result(
+                        "Wallet Top-up", 
+                        False, 
+                        "Top-up response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Wallet Top-up", 
+                    False, 
+                    f"Wallet top-up failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Wallet Top-up", False, f"Exception occurred: {str(e)}")
+        
+        return None
+    
+    def test_event_ticket_booking(self, user_id: str):
+        """Test event ticket booking functionality"""
+        try:
+            # First get available events
+            events_response = self.session.get(f"{BACKEND_URL}/events")
+            
+            if events_response.status_code != 200:
+                self.log_result(
+                    "Event Ticket Booking", 
+                    False, 
+                    "Could not retrieve events for booking test",
+                    f"Events API status: {events_response.status_code}"
+                )
+                return
+            
+            events = events_response.json()
+            if not events or len(events) == 0:
+                self.log_result(
+                    "Event Ticket Booking", 
+                    False, 
+                    "No events available for booking test",
+                    "Events list is empty"
+                )
+                return
+            
+            # Pick the first event
+            event = events[0]
+            event_id = event['id']
+            
+            # Book tickets
+            params = {
+                "userId": user_id,
+                "tier": "General",
+                "quantity": 2
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/events/{event_id}/book", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['success', 'tickets', 'balance', 'creditsEarned']
+                
+                if all(field in data for field in required_fields) and data['success']:
+                    tickets = data['tickets']
+                    if len(tickets) == 2:  # Should have 2 tickets
+                        # Verify ticket structure
+                        ticket = tickets[0]
+                        ticket_fields = ['id', 'eventId', 'userId', 'qrCode', 'tier', 'status', 'eventName', 'eventDate', 'eventLocation']
+                        
+                        if all(field in ticket for field in ticket_fields):
+                            self.log_result(
+                                "Event Ticket Booking", 
+                                True, 
+                                f"Successfully booked 2 tickets for {ticket['eventName']}",
+                                f"Balance: ₹{data['balance']}, Credits earned: {data['creditsEarned']}, QR codes generated"
+                            )
+                            # Store ticket info for later tests
+                            self.booked_tickets = tickets
+                            self.booked_event_id = event_id
+                        else:
+                            self.log_result(
+                                "Event Ticket Booking", 
+                                False, 
+                                "Tickets missing required fields",
+                                f"Ticket fields: {list(ticket.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "Event Ticket Booking", 
+                            False, 
+                            f"Expected 2 tickets but got {len(tickets)}",
+                            f"Tickets: {tickets}"
+                        )
+                else:
+                    self.log_result(
+                        "Event Ticket Booking", 
+                        False, 
+                        "Booking response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Event Ticket Booking", 
+                    False, 
+                    f"Ticket booking failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Event Ticket Booking", False, f"Exception occurred: {str(e)}")
+    
+    def test_user_tickets_retrieval(self, user_id: str):
+        """Test retrieving all tickets for a user"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/tickets/{user_id}")
+            
+            if response.status_code == 200:
+                tickets = response.json()
+                if isinstance(tickets, list):
+                    if len(tickets) > 0:
+                        ticket = tickets[0]
+                        required_fields = ['id', 'eventName', 'eventDate', 'eventLocation', 'qrCode', 'status', 'tier']
+                        
+                        if all(field in ticket for field in required_fields):
+                            active_tickets = [t for t in tickets if t.get('status') == 'active']
+                            self.log_result(
+                                "User Tickets Retrieval", 
+                                True, 
+                                f"Successfully retrieved {len(tickets)} tickets ({len(active_tickets)} active)",
+                                f"First ticket: {ticket['eventName']} - {ticket['tier']} - QR: {ticket['qrCode'][:8]}..."
+                            )
+                            
+                            # Test specific ticket retrieval
+                            if hasattr(self, 'booked_tickets') and self.booked_tickets:
+                                self.test_specific_ticket_retrieval(user_id, self.booked_tickets[0]['id'])
+                        else:
+                            self.log_result(
+                                "User Tickets Retrieval", 
+                                False, 
+                                "Tickets missing required fields",
+                                f"Ticket fields: {list(ticket.keys())}"
+                            )
+                    else:
+                        self.log_result(
+                            "User Tickets Retrieval", 
+                            True, 
+                            "No tickets found for user (acceptable if no bookings made)",
+                            "Empty tickets list"
+                        )
+                else:
+                    self.log_result(
+                        "User Tickets Retrieval", 
+                        False, 
+                        "Tickets response is not a list",
+                        f"Response type: {type(tickets)}"
+                    )
+            else:
+                self.log_result(
+                    "User Tickets Retrieval", 
+                    False, 
+                    f"Get tickets failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("User Tickets Retrieval", False, f"Exception occurred: {str(e)}")
+    
+    def test_specific_ticket_retrieval(self, user_id: str, ticket_id: str):
+        """Test retrieving specific ticket details"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/tickets/{user_id}/{ticket_id}")
+            
+            if response.status_code == 200:
+                ticket = response.json()
+                required_fields = ['id', 'eventName', 'eventDate', 'eventLocation', 'qrCode', 'status', 'tier', 'price']
+                
+                if all(field in ticket for field in required_fields):
+                    self.log_result(
+                        "Specific Ticket Retrieval", 
+                        True, 
+                        f"Successfully retrieved ticket details: {ticket['eventName']}",
+                        f"Tier: {ticket['tier']}, Price: ₹{ticket['price']}, Status: {ticket['status']}"
+                    )
+                else:
+                    self.log_result(
+                        "Specific Ticket Retrieval", 
+                        False, 
+                        "Ticket details missing required fields",
+                        f"Ticket fields: {list(ticket.keys())}"
+                    )
+            else:
+                self.log_result(
+                    "Specific Ticket Retrieval", 
+                    False, 
+                    f"Get ticket details failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Specific Ticket Retrieval", False, f"Exception occurred: {str(e)}")
+    
+    def test_wallet_transaction_verification(self, user_id: str):
+        """Test wallet transaction verification"""
+        try:
+            params = {"userId": user_id}
+            response = self.session.get(f"{BACKEND_URL}/wallet", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'balance' in data and 'transactions' in data:
+                    transactions = data['transactions']
+                    if isinstance(transactions, list) and len(transactions) > 0:
+                        # Look for ticket purchase transaction
+                        ticket_transactions = [t for t in transactions if t.get('type') == 'payment' and 'ticket' in t.get('description', '').lower()]
+                        
+                        if ticket_transactions:
+                            transaction = ticket_transactions[0]
+                            self.log_result(
+                                "Wallet Transaction Verification", 
+                                True, 
+                                f"Found ticket purchase transaction: ₹{transaction['amount']}",
+                                f"Description: {transaction['description']}, Status: {transaction['status']}"
+                            )
+                        else:
+                            # Check for any payment transactions
+                            payment_transactions = [t for t in transactions if t.get('type') == 'payment']
+                            if payment_transactions:
+                                self.log_result(
+                                    "Wallet Transaction Verification", 
+                                    True, 
+                                    f"Found {len(payment_transactions)} payment transaction(s)",
+                                    f"Latest: {payment_transactions[0]['description']}"
+                                )
+                            else:
+                                self.log_result(
+                                    "Wallet Transaction Verification", 
+                                    False, 
+                                    "No payment transactions found",
+                                    f"Transaction types: {[t.get('type') for t in transactions]}"
+                                )
+                    else:
+                        self.log_result(
+                            "Wallet Transaction Verification", 
+                            True, 
+                            "No transactions found (acceptable for new wallet)",
+                            f"Current balance: ₹{data['balance']}"
+                        )
+                else:
+                    self.log_result(
+                        "Wallet Transaction Verification", 
+                        False, 
+                        "Wallet response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Wallet Transaction Verification", 
+                    False, 
+                    f"Get wallet failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Wallet Transaction Verification", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
