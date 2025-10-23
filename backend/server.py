@@ -1602,6 +1602,130 @@ async def delete_room_message(roomId: str, messageId: str, userId: str):
     
     return {"message": "Message deleted"}
 
+# ===== ROOM INVITATION ROUTES =====
+
+@api_router.post("/rooms/{roomId}/invite")
+async def invite_to_room(roomId: str, fromUserId: str, toUserId: str):
+    """Invite a friend to a Vibe Room"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Check if user is in room
+    if not any(p["userId"] == fromUserId for p in room.get("participants", [])):
+        raise HTTPException(status_code=403, detail="Must be in room to invite")
+    
+    # Get users
+    from_user = await db.users.find_one({"id": fromUserId}, {"_id": 0})
+    to_user = await db.users.find_one({"id": toUserId}, {"_id": 0})
+    
+    if not to_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Create invite
+    invite = RoomInvite(
+        roomId=roomId,
+        fromUserId=fromUserId,
+        toUserId=toUserId,
+        status="pending"
+    )
+    await db.room_invites.insert_one(invite.model_dump())
+    
+    # Create notification
+    notification = {
+        "id": str(uuid.uuid4()),
+        "userId": toUserId,
+        "type": "room_invite",
+        "fromUserId": fromUserId,
+        "fromUserName": from_user.get("name", "Someone"),
+        "roomId": roomId,
+        "roomName": room.get("name", "a room"),
+        "message": f"{from_user.get('name', 'Someone')} invited you to join {room.get('name', 'a room')}",
+        "read": False,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    
+    return {"message": "Invitation sent", "inviteId": invite.id}
+
+@api_router.get("/rooms/invites/{userId}")
+async def get_room_invites(userId: str):
+    """Get all room invitations for user"""
+    invites = await db.room_invites.find(
+        {"toUserId": userId, "status": "pending"},
+        {"_id": 0}
+    ).to_list(None)
+    
+    # Enrich with room and user info
+    enriched = []
+    for invite in invites:
+        room = await db.vibe_rooms.find_one({"id": invite["roomId"]}, {"_id": 0})
+        from_user = await db.users.find_one({"id": invite["fromUserId"]}, {"_id": 0})
+        
+        if room and from_user:
+            enriched.append({
+                **invite,
+                "roomName": room.get("name"),
+                "roomCategory": room.get("category"),
+                "fromUserName": from_user.get("name"),
+                "fromUserAvatar": from_user.get("avatar", "")
+            })
+    
+    return enriched
+
+@api_router.post("/rooms/invites/{inviteId}/accept")
+async def accept_room_invite(inviteId: str, userId: str):
+    """Accept room invitation"""
+    invite = await db.room_invites.find_one({"id": inviteId}, {"_id": 0})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    if invite["toUserId"] != userId:
+        raise HTTPException(status_code=403, detail="Not your invite")
+    
+    # Update invite status
+    await db.room_invites.update_one(
+        {"id": inviteId},
+        {"$set": {"status": "accepted"}}
+    )
+    
+    # Return room details
+    room = await db.vibe_rooms.find_one({"id": invite["roomId"]}, {"_id": 0})
+    return {"message": "Invite accepted", "room": room}
+
+@api_router.post("/rooms/invites/{inviteId}/decline")
+async def decline_room_invite(inviteId: str, userId: str):
+    """Decline room invitation"""
+    invite = await db.room_invites.find_one({"id": inviteId}, {"_id": 0})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    if invite["toUserId"] != userId:
+        raise HTTPException(status_code=403, detail="Not your invite")
+    
+    await db.room_invites.update_one(
+        {"id": inviteId},
+        {"$set": {"status": "declined"}}
+    )
+    
+    return {"message": "Invite declined"}
+
+@api_router.get("/rooms/{roomId}/share-link")
+async def get_room_share_link(roomId: str):
+    """Get shareable link for room"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # In production, use actual domain
+    share_link = f"https://loopync.app/rooms/{roomId}"
+    
+    return {
+        "shareLink": share_link,
+        "roomName": room.get("name"),
+        "roomId": roomId
+    }
+
 # ===== SEED DATA ROUTE =====
 
 @api_router.post("/seed")
