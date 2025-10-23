@@ -294,29 +294,7 @@ const Profile = () => {
           <div className="space-y-4">
             {tickets.length > 0 ? (
               tickets.map((ticket) => (
-                <div key={ticket.id} className="glass-card p-4">
-                  <div className="flex gap-4">
-                    <img
-                      src={ticket.event?.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400'}
-                      alt={ticket.event?.name}
-                      className="w-20 h-20 rounded-xl object-cover"
-                    />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white mb-1">{ticket.event?.name || 'Event'}</h4>
-                      <p className="text-sm text-gray-400 mb-2">{ticket.event?.location}</p>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          ticket.status === 'active' 
-                            ? 'bg-green-500/20 text-green-400 border border-green-400'
-                            : 'bg-gray-700 text-gray-400'
-                        }`}>
-                          {ticket.status.toUpperCase()}
-                        </span>
-                        <span className="text-xs text-gray-400">{ticket.tier}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <TicketCard key={ticket.id} ticket={ticket} />
               ))
             ) : (
               <div className="glass-card p-12 text-center">
