@@ -1676,6 +1676,194 @@ class BackendTester:
         except Exception as e:
             self.log_result("User Interests", False, f"Exception occurred: {str(e)}")
     
+    def test_user_profile_endpoint(self):
+        """Test 33: GET /api/users/{userId}/profile?currentUserId={currentUserId} (new user profile endpoint)"""
+        try:
+            # Test with seeded users u1 and u2
+            user_id = "u1"
+            current_user_id = "u2"
+            
+            params = {
+                'currentUserId': current_user_id
+            }
+            
+            response = self.session.get(f"{BACKEND_URL}/users/{user_id}/profile", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required fields in response
+                required_fields = ['user', 'posts', 'followersCount', 'followingCount', 'postsCount', 'relationshipStatus']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    user_info = data['user']
+                    posts = data['posts']
+                    followers_count = data['followersCount']
+                    following_count = data['followingCount']
+                    posts_count = data['postsCount']
+                    relationship_status = data['relationshipStatus']
+                    
+                    # Validate user info
+                    if 'id' in user_info and 'name' in user_info and 'handle' in user_info:
+                        self.log_result(
+                            "User Profile Endpoint", 
+                            True, 
+                            f"Successfully retrieved profile for {user_info['name']} (@{user_info['handle']})",
+                            f"Posts: {posts_count}, Followers: {followers_count}, Following: {following_count}, Relationship: {relationship_status}"
+                        )
+                        
+                        # Validate posts structure
+                        if isinstance(posts, list):
+                            if len(posts) > 0:
+                                post = posts[0]
+                                if 'author' in post and post['author']['id'] == user_id:
+                                    self.log_result(
+                                        "User Profile Posts", 
+                                        True, 
+                                        f"Posts correctly filtered for user {user_id}",
+                                        f"Found {len(posts)} posts with proper author data"
+                                    )
+                                else:
+                                    self.log_result(
+                                        "User Profile Posts", 
+                                        False, 
+                                        "Posts missing author data or incorrect author",
+                                        f"Post author: {post.get('author', {}).get('id', 'Missing')}"
+                                    )
+                            else:
+                                self.log_result(
+                                    "User Profile Posts", 
+                                    True, 
+                                    "No posts found for user (acceptable)",
+                                    "Empty posts array is valid"
+                                )
+                        else:
+                            self.log_result(
+                                "User Profile Posts", 
+                                False, 
+                                "Posts field is not an array",
+                                f"Posts type: {type(posts)}"
+                            )
+                        
+                        # Validate relationship status
+                        valid_statuses = [None, "friends", "pending_sent", "pending_received"]
+                        if relationship_status in valid_statuses:
+                            self.log_result(
+                                "User Profile Relationship", 
+                                True, 
+                                f"Relationship status is valid: {relationship_status}",
+                                f"Between users {current_user_id} and {user_id}"
+                            )
+                        else:
+                            self.log_result(
+                                "User Profile Relationship", 
+                                False, 
+                                f"Invalid relationship status: {relationship_status}",
+                                f"Expected one of: {valid_statuses}"
+                            )
+                    else:
+                        self.log_result(
+                            "User Profile Endpoint", 
+                            False, 
+                            "User info missing required fields",
+                            f"User fields: {list(user_info.keys())}"
+                        )
+                else:
+                    self.log_result(
+                        "User Profile Endpoint", 
+                        False, 
+                        f"Profile response missing required fields: {missing_fields}",
+                        f"Available fields: {list(data.keys())}"
+                    )
+            else:
+                self.log_result(
+                    "User Profile Endpoint", 
+                    False, 
+                    f"User profile failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("User Profile Endpoint", False, f"Exception occurred: {str(e)}")
+    
+    def test_user_profile_with_demo_user(self):
+        """Test 34: GET /api/users/{userId}/profile with demo_user ID from MongoDB"""
+        try:
+            # First, get the demo user ID from auth/me endpoint
+            if not self.demo_token:
+                self.log_result("User Profile Demo User", False, "Skipped - no demo token available")
+                return
+                
+            headers = {
+                "Authorization": f"Bearer {self.demo_token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Get demo user info
+            me_response = self.session.get(f"{BACKEND_URL}/auth/me", headers=headers)
+            if me_response.status_code != 200:
+                self.log_result("User Profile Demo User", False, "Could not get demo user info")
+                return
+                
+            demo_user = me_response.json()
+            demo_user_id = demo_user.get('id')
+            
+            if not demo_user_id:
+                self.log_result("User Profile Demo User", False, "Demo user ID not found")
+                return
+            
+            # Test profile endpoint with demo user ID and u1 as current user
+            params = {
+                'currentUserId': 'u1'
+            }
+            
+            response = self.session.get(f"{BACKEND_URL}/users/{demo_user_id}/profile", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check required fields in response
+                required_fields = ['user', 'posts', 'followersCount', 'followingCount', 'postsCount', 'relationshipStatus']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    user_info = data['user']
+                    posts_count = data['postsCount']
+                    relationship_status = data['relationshipStatus']
+                    
+                    if user_info.get('id') == demo_user_id:
+                        self.log_result(
+                            "User Profile Demo User", 
+                            True, 
+                            f"Successfully retrieved profile for demo user {user_info.get('name', 'Unknown')}",
+                            f"Demo User ID: {demo_user_id}, Posts: {posts_count}, Relationship with u1: {relationship_status}"
+                        )
+                    else:
+                        self.log_result(
+                            "User Profile Demo User", 
+                            False, 
+                            "Profile returned wrong user",
+                            f"Expected: {demo_user_id}, Got: {user_info.get('id')}"
+                        )
+                else:
+                    self.log_result(
+                        "User Profile Demo User", 
+                        False, 
+                        f"Profile response missing required fields: {missing_fields}",
+                        f"Available fields: {list(data.keys())}"
+                    )
+            else:
+                self.log_result(
+                    "User Profile Demo User", 
+                    False, 
+                    f"Demo user profile failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("User Profile Demo User", False, f"Exception occurred: {str(e)}")
+    
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
