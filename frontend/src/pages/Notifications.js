@@ -38,6 +38,41 @@ const Notifications = () => {
     }
   };
 
+  const [roomInvites, setRoomInvites] = useState([]);
+
+  const fetchRoomInvites = async () => {
+    try {
+      const res = await axios.get(`${API}/rooms/invites/${currentUser.id}`);
+      setRoomInvites(res.data);
+    } catch (error) {
+      console.error("Failed to load room invites");
+    }
+  };
+
+  useEffect(() => {
+    fetchRoomInvites();
+  }, []);
+
+  const handleAcceptRoomInvite = async (inviteId) => {
+    try {
+      const res = await axios.post(`${API}/rooms/invites/${inviteId}/accept?userId=${currentUser.id}`);
+      toast.success("Joining room...");
+      navigate(`/rooms/${res.data.room.id}`);
+    } catch (error) {
+      toast.error("Failed to accept invite");
+    }
+  };
+
+  const handleDeclineRoomInvite = async (inviteId) => {
+    try {
+      await axios.post(`${API}/rooms/invites/${inviteId}/decline?userId=${currentUser.id}`);
+      setRoomInvites(roomInvites.filter(inv => inv.id !== inviteId));
+      toast.success("Invite declined");
+    } catch (error) {
+      toast.error("Failed to decline");
+    }
+  };
+
   const fetchNotifications = async () => {
     try {
       const res = await axios.get(`${API}/notifications?userId=${currentUser.id}`);
