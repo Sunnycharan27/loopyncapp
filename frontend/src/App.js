@@ -320,6 +320,18 @@ function App() {
                 )
               }
             />
+            <Route
+              path="/settings"
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Settings />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-center" richColors />
