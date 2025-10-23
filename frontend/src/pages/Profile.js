@@ -149,7 +149,7 @@ const Profile = () => {
         {/* Quick Actions */}
         <div className="glass-card p-4 mb-6">
           <h3 className="text-sm font-semibold text-gray-400 mb-3">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => navigate('/wallet')}
               className="p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-all text-center group"
@@ -157,8 +157,19 @@ const Profile = () => {
               <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <CreditCard size={20} className="text-white" />
               </div>
-              <p className="text-sm font-medium text-white">Manage Wallet</p>
-              <p className="text-xs text-gray-500">Payments & Top-up</p>
+              <p className="text-sm font-medium text-white">Wallet</p>
+              <p className="text-xs text-gray-500">Payments</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/settings')}
+              className="p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-all text-center group"
+            >
+              <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Settings size={20} className="text-white" />
+              </div>
+              <p className="text-sm font-medium text-white">Settings</p>
+              <p className="text-xs text-gray-500">Account</p>
             </button>
 
             <button
@@ -168,7 +179,7 @@ const Profile = () => {
               <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Ticket size={20} className="text-white" />
               </div>
-              <p className="text-sm font-medium text-white">My Tickets</p>
+              <p className="text-sm font-medium text-white">Tickets</p>
               <p className="text-xs text-gray-500">{tickets?.length || 0} active</p>
             </button>
           </div>
