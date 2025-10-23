@@ -781,6 +781,71 @@ async def get_user(userId: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+@api_router.get("/users/{userId}/profile")
+async def get_user_profile(userId: str, currentUserId: str = None):
+    """Get user profile with posts, followers, and following counts"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user's posts
+    posts = await db.posts.find({"authorId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    for post in posts:
+        post["author"] = user
+    
+    # Count followers (users who are friends with this user)
+    followers_count = 0
+    following_count = 0
+    
+    # Count friendships where this user is user1
+    count1 = await db.friendships.count_documents({"userId1": userId})
+    # Count friendships where this user is user2
+    count2 = await db.friendships.count_documents({"userId2": userId})
+    
+    # Total friends count (each friendship is bidirectional)
+    friends_count = count1 + count2
+    
+    # For now, followers = following = friends count (simplified friend model)
+    followers_count = friends_count
+    following_count = friends_count
+    
+    # Check relationship status if currentUserId provided
+    relationship_status = None
+    if currentUserId and currentUserId != userId:
+        # Check if friends
+        is_friend = await are_friends(currentUserId, userId)
+        if is_friend:
+            relationship_status = "friends"
+        else:
+            # Check friend requests
+            sent_request = await db.friend_requests.find_one({
+                "fromUserId": currentUserId,
+                "toUserId": userId,
+                "status": "pending"
+            }, {"_id": 0})
+            
+            received_request = await db.friend_requests.find_one({
+                "fromUserId": userId,
+                "toUserId": currentUserId,
+                "status": "pending"
+            }, {"_id": 0})
+            
+            if sent_request:
+                relationship_status = "pending_sent"
+            elif received_request:
+                relationship_status = "pending_received"
+            else:
+                relationship_status = None
+    
+    return {
+        "user": user,
+        "posts": posts,
+        "followersCount": followers_count,
+        "followingCount": following_count,
+        "postsCount": len(posts),
+        "relationshipStatus": relationship_status
+    }
+
 @api_router.get("/search")
 async def search_all(q: str, currentUserId: str = None, limit: int = 20):
     """Global search for users, posts, tribes, venues, events"""
