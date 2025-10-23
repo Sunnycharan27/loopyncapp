@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2, Bookmark, Flag, UserPlus, Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
+  const navigate = useNavigate();
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [selectedReaction, setSelectedReaction] = useState(null);
