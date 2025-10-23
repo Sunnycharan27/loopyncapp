@@ -108,8 +108,9 @@ const Profile = () => {
               </div>
             </div>
             <button
-              onClick={() => navigate('/settings')}
+              onClick={() => setShowSettings(true)}
               className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:text-white"
+              data-testid="profile-settings-btn"
             >
               <Settings size={20} />
             </button>
