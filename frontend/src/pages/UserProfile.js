@@ -83,7 +83,7 @@ const UserProfile = () => {
     try {
       await axios.post(`${API}/friend-requests?fromUserId=${currentUser.id}&toUserId=${userId}`);
       toast.success("Friend request sent!");
-      checkRelationship();
+      fetchUserProfile(); // Refetch to update relationship status
     } catch (error) {
       toast.error(error.response?.data?.detail || "Failed to send request");
     }
