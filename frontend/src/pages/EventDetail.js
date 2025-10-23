@@ -87,22 +87,34 @@ const EventDetail = () => {
     }
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (selectedSeats.length !== ticketCount) {
       toast.error(`Please select ${ticketCount} seat(s)`);
       return;
     }
 
-    // Navigate to payment page with booking details
-    navigate('/payment', {
-      state: {
-        event,
-        tier: selectedTier,
-        seats: selectedSeats,
-        ticketCount,
-        totalAmount: selectedTier.price * ticketCount
-      }
-    });
+    try {
+      setLoading(true);
+      const totalAmount = selectedTier.price * ticketCount;
+      
+      // Book tickets using wallet
+      const res = await axios.post(
+        `${API}/events/${eventId}/book?userId=${currentUser.id}&tier=${selectedTier.name}&quantity=${ticketCount}`
+      );
+
+      toast.success(`🎉 ${res.data.message}\n💰 New Balance: ₹${res.data.balance}\n⭐ Earned ${res.data.creditsEarned} Loop Credits!`, {
+        duration: 5000
+      });
+
+      // Navigate to profile tickets tab
+      setTimeout(() => {
+        navigate('/profile');
+      }, 2000);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Failed to book tickets");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
