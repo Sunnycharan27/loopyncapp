@@ -256,6 +256,44 @@ const Notifications = () => {
           {/* Friend Requests Tab */}
           {activeTab === "requests" && (
             <>
+              {/* Room Invites Section */}
+              {roomInvites.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3">Room Invitations</h3>
+                  {roomInvites.map(invite => (
+                    <div key={invite.id} className="glass-card p-4 mb-3">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center">
+                          <Users size={24} className="text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-white">{invite.fromUserName}</p>
+                          <p className="text-sm text-gray-400">invited you to join</p>
+                          <p className="text-sm text-cyan-400 font-semibold mt-1">{invite.roomName}</p>
+                          <p className="text-xs text-gray-500 capitalize">{invite.roomCategory}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleAcceptRoomInvite(invite.id)}
+                          className="flex-1 py-2 px-4 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-semibold hover:opacity-90"
+                        >
+                          Join Room
+                        </button>
+                        <button
+                          onClick={() => handleDeclineRoomInvite(invite.id)}
+                          className="px-4 py-2 rounded-full border-2 border-red-400/30 text-red-400 hover:bg-red-400/10"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Friend Requests Section */}
+              <h3 className="text-sm font-semibold text-gray-400 mb-3">Friend Requests</h3>
               {friendRequests.length === 0 ? (
                 <div className="text-center py-12 glass-card p-8">
                   <UserPlus size={48} className="text-gray-600 mx-auto mb-4" />
