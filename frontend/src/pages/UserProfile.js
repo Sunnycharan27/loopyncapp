@@ -231,6 +231,14 @@ const UserProfile = () => {
                 <div className="text-xl font-bold text-white">{posts.length}</div>
                 <div className="text-xs text-gray-400">Posts</div>
               </div>
+              <div>
+                <div className="text-xl font-bold text-white">{followersCount}</div>
+                <div className="text-xs text-gray-400">Followers</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-white">{followingCount}</div>
+                <div className="text-xs text-gray-400">Following</div>
+              </div>
             </div>
           </div>
 
