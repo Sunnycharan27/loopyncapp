@@ -133,11 +133,22 @@ const RoomDetail = () => {
           </p>
         </div>
 
-        {room.hostId === currentUser.id && callObject && (
-          <button onClick={handleLeaveRoom} className="px-4 py-2 rounded-full bg-red-500/20 text-red-400 text-sm font-semibold">
-            End
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {callObject && (
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="px-3 py-2 rounded-full bg-cyan-400/20 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/30 flex items-center gap-1"
+            >
+              <UserPlus size={16} />
+              <span className="hidden sm:inline">Invite</span>
+            </button>
+          )}
+          {room.hostId === currentUser.id && callObject && (
+            <button onClick={handleLeaveRoom} className="px-4 py-2 rounded-full bg-red-500/20 text-red-400 text-sm font-semibold">
+              End
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto">
