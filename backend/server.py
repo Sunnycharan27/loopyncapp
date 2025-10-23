@@ -1207,10 +1207,45 @@ async def create_daily_token(roomName: str, userName: str, isOwner: bool = False
 
 @api_router.post("/rooms")
 async def create_room(room: RoomCreate, userId: str):
-    """Create a new Vibe Room"""
+    """Create a new Vibe Room with Daily.co integration"""
+    import httpx
+    
     user = await db.users.find_one({"id": userId}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    # Create Daily.co room first
+    daily_api_key = os.environ.get('DAILY_API_KEY')
+    daily_room_url = None
+    daily_room_name = None
+    
+    if daily_api_key:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.daily.co/v1/rooms",
+                    json={
+                        "properties": {
+                            "enable_chat": False,
+                            "enable_screenshare": False,
+                            "start_video_off": True,
+                            "start_audio_off": False,
+                            "exp": int(datetime.now(timezone.utc).timestamp()) + 3600
+                        }
+                    },
+                    headers={
+                        "Authorization": f"Bearer {daily_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    timeout=30.0
+                )
+                
+                if response.status_code == 200:
+                    daily_room = response.json()
+                    daily_room_url = daily_room.get("url")
+                    daily_room_name = daily_room.get("name")
+        except Exception as e:
+            print(f"Failed to create Daily room: {e}")
     
     new_room = VibeRoom(
         name=room.name,
@@ -1233,8 +1268,13 @@ async def create_room(room: RoomCreate, userId: str):
         peakParticipants=1
     )
     
-    await db.vibe_rooms.insert_one(new_room.model_dump())
-    return new_room
+    room_dict = new_room.model_dump()
+    if daily_room_url:
+        room_dict["dailyRoomUrl"] = daily_room_url
+        room_dict["dailyRoomName"] = daily_room_name
+    
+    await db.vibe_rooms.insert_one(room_dict)
+    return room_dict
 
 @api_router.get("/rooms")
 async def get_active_rooms(category: str = None, limit: int = 50):
