@@ -1950,14 +1950,31 @@ class BackendTester:
                 )
                 return
             
-            # Pick the first event
-            event = events[0]
+            # Find an event with available tiers
+            event = None
+            tier_name = None
+            
+            for e in events:
+                if e.get('tiers') and len(e['tiers']) > 0:
+                    event = e
+                    tier_name = e['tiers'][0]['name']  # Use first available tier
+                    break
+            
+            if not event:
+                self.log_result(
+                    "Event Ticket Booking", 
+                    False, 
+                    "No events with valid tiers found",
+                    "All events missing tier information"
+                )
+                return
+            
             event_id = event['id']
             
             # Book tickets
             params = {
                 "userId": user_id,
-                "tier": "General",
+                "tier": tier_name,
                 "quantity": 2
             }
             
