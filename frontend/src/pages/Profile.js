@@ -513,7 +513,123 @@ const Profile = () => {
         </button>
       </div>
 
+      {/* Settings Modal */}
+      {showSettings && (
+        <SettingsModal
+          currentUser={currentUser}
+          onClose={() => setShowSettings(false)}
+          onSave={() => {
+            setShowSettings(false);
+            fetchProfileData();
+          }}
+        />
+      )}
+
       <BottomNav active="profile" />
+    </div>
+  );
+};
+
+const SettingsModal = ({ currentUser, onClose, onSave }) => {
+  const [name, setName] = useState(currentUser.name || "");
+  const [bio, setBio] = useState(currentUser.bio || "");
+  const [location, setLocation] = useState(currentUser.location || "");
+  const [website, setWebsite] = useState(currentUser.website || "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await axios.put(`${API}/users/${currentUser.id}/settings`, {
+        name,
+        bio,
+        location,
+        website
+      });
+      toast.success("Profile updated successfully!");
+      onSave();
+    } catch (error) {
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="glass-card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold neon-text">Edit Profile</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            ✕
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900/50 border-2 border-cyan-400/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white"
+              placeholder="Your name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Bio</label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900/50 border-2 border-cyan-400/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white resize-none"
+              rows={3}
+              placeholder="Tell us about yourself"
+              maxLength={150}
+            />
+            <p className="text-xs text-gray-500 mt-1">{bio.length}/150 characters</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900/50 border-2 border-cyan-400/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white"
+              placeholder="City, Country"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Website</label>
+            <input
+              type="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-900/50 border-2 border-cyan-400/30 rounded-xl focus:border-cyan-400 focus:outline-none text-white"
+              placeholder="https://yourwebsite.com"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-full border-2 border-gray-600 text-gray-300 font-semibold hover:bg-gray-800/50"
+            disabled={saving}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 py-3 rounded-full text-white font-semibold bg-gradient-to-r from-cyan-400 to-purple-500 hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
