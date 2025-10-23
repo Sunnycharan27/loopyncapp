@@ -2329,14 +2329,251 @@ async def get_user_consents(userId: str):
 
 @api_router.get("/analytics/{userId}")
 async def get_user_analytics(userId: str):
-    """Get user analytics dashboard"""
-    analytics = await db.user_analytics.find_one({"userId": userId}, {"_id": 0})
-    if not analytics:
-        analytics = UserAnalytics(userId=userId).model_dump()
-        await db.user_analytics.insert_one(analytics)
+    """Get comprehensive user analytics dashboard"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     
-    # Get credits balance
-    credits_info = await get_user_credits(userId)
+    # Get all user posts
+    posts = await db.posts.find({"authorId": userId}, {"_id": 0}).to_list(None)
+    reels = await db.reels.find({"authorId": userId}, {"_id": 0}).to_list(None)
+    
+    # Calculate engagement
+    total_likes = sum(len(p.get("likes", [])) for p in posts) + sum(len(r.get("likes", [])) for r in reels)
+    total_comments = sum(len(p.get("comments", [])) for p in posts) + sum(len(r.get("comments", [])) for r in reels)
+    total_shares = sum(p.get("shares", 0) for p in posts) + sum(r.get("shares", 0) for r in reels)
+    
+    # Get follower count
+    followers_count = len(user.get("followers", []))
+    following_count = len(user.get("following", []))
+    
+    # Daily/Weekly engagement (last 7 days)
+    from datetime import timedelta
+    now = datetime.now(timezone.utc)
+    week_ago = now - timedelta(days=7)
+    
+    recent_posts = [p for p in posts if datetime.fromisoformat(p.get("createdAt", now.isoformat())) > week_ago]
+    recent_reels = [r for r in reels if datetime.fromisoformat(r.get("createdAt", now.isoformat())) > week_ago]
+    
+    weekly_engagement = {
+        "posts": len(recent_posts),
+        "reels": len(recent_reels),
+        "likes": sum(len(p.get("likes", [])) for p in recent_posts) + sum(len(r.get("likes", [])) for r in recent_reels),
+        "comments": sum(len(p.get("comments", [])) for p in recent_posts) + sum(len(r.get("comments", [])) for r in recent_reels)
+    }
+    
+    return {
+        "userId": userId,
+        "totalPosts": len(posts),
+        "totalReels": len(reels),
+        "totalLikes": total_likes,
+        "totalComments": total_comments,
+        "totalShares": total_shares,
+        "followersCount": followers_count,
+        "followingCount": following_count,
+        "weeklyEngagement": weekly_engagement,
+        "engagementRate": round((total_likes + total_comments) / max(len(posts) + len(reels), 1), 2),
+        "tier": user.get("tier", "Bronze")
+    }
+
+@api_router.get("/analytics/creator/{userId}")
+async def get_creator_dashboard(userId: str):
+    """Get creator-specific analytics"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    posts = await db.posts.find({"authorId": userId}, {"_id": 0}).to_list(None)
+    reels = await db.reels.find({"authorId": userId}, {"_id": 0}).to_list(None)
+    
+    # Calculate total reach (views)
+    total_views = sum(p.get("views", 0) for p in posts) + sum(r.get("views", 0) for r in reels)
+    
+    # Follower growth (mock data - in production, track historical data)
+    followers = user.get("followers", [])
+    
+    # Top performing content
+    top_posts = sorted(posts, key=lambda x: len(x.get("likes", [])), reverse=True)[:5]
+    top_reels = sorted(reels, key=lambda x: len(x.get("likes", [])), reverse=True)[:5]
+    
+    return {
+        "userId": userId,
+        "followersCount": len(followers),
+        "followersGrowth": "+15%",  # Mock - track historical data
+        "totalReach": total_views,
+        "avgEngagementRate": "8.5%",  # Mock calculation
+        "topPosts": top_posts,
+        "topReels": top_reels,
+        "contentBreakdown": {
+            "posts": len(posts),
+            "reels": len(reels),
+            "totalEngagement": sum(len(p.get("likes", [])) for p in posts) + sum(len(r.get("likes", [])) for r in reels)
+        }
+    }
+
+@api_router.get("/analytics/tribe/{tribeId}")
+async def get_tribe_analytics(tribeId: str):
+    """Get tribe-specific analytics"""
+    tribe = await db.tribes.find_one({"id": tribeId}, {"_id": 0})
+    if not tribe:
+        raise HTTPException(status_code=404, detail="Tribe not found")
+    
+    members = tribe.get("members", [])
+    
+    # Get tribe posts
+    tribe_posts = await db.posts.find({"authorId": {"$in": members}}, {"_id": 0}).to_list(None)
+    
+    # Most active members
+    member_activity = {}
+    for post in tribe_posts:
+        author_id = post.get("authorId")
+        member_activity[author_id] = member_activity.get(author_id, 0) + 1
+    
+    top_contributors = sorted(member_activity.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    # Popular posts
+    popular_posts = sorted(tribe_posts, key=lambda x: len(x.get("likes", [])), reverse=True)[:10]
+    
+    return {
+        "tribeId": tribeId,
+        "tribeName": tribe.get("name"),
+        "memberCount": len(members),
+        "totalPosts": len(tribe_posts),
+        "activeMembers": len(member_activity),
+        "topContributors": [{"userId": uid, "postCount": count} for uid, count in top_contributors],
+        "popularPosts": popular_posts,
+        "engagementRate": round(sum(len(p.get("likes", [])) for p in tribe_posts) / max(len(tribe_posts), 1), 2)
+    }
+
+@api_router.get("/analytics/wallet/{userId}")
+async def get_wallet_analytics(userId: str):
+    """Get wallet-specific analytics"""
+    wallet = await db.users.find_one({"id": userId}, {"_id": 0, "walletBalance": 1})
+    if not wallet:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get transactions
+    transactions = await db.wallet_transactions.find({"userId": userId}, {"_id": 0}).to_list(None)
+    
+    # Calculate spending
+    total_spent = sum(t.get("amount", 0) for t in transactions if t.get("type") == "payment")
+    total_added = sum(t.get("amount", 0) for t in transactions if t.get("type") == "topup")
+    
+    # Get credits earned
+    credits = await db.loop_credits.find({"userId": userId}, {"_id": 0}).to_list(None)
+    total_credits_earned = sum(c.get("amount", 0) for c in credits if c.get("type") == "earn")
+    
+    # Spending by category (mock)
+    spending_breakdown = {
+        "venues": 0,
+        "events": 0,
+        "marketplace": 0,
+        "other": 0
+    }
+    
+    for txn in transactions:
+        if txn.get("type") == "payment":
+            metadata = txn.get("metadata", {})
+            venue_name = metadata.get("venueName", "")
+            if "café" in venue_name.lower() or "restaurant" in venue_name.lower():
+                spending_breakdown["venues"] += txn.get("amount", 0)
+            elif "ticket" in venue_name.lower() or "event" in venue_name.lower():
+                spending_breakdown["events"] += txn.get("amount", 0)
+            else:
+                spending_breakdown["other"] += txn.get("amount", 0)
+    
+    return {
+        "userId": userId,
+        "currentBalance": wallet.get("walletBalance", 0),
+        "totalSpent": total_spent,
+        "totalAdded": total_added,
+        "totalCreditsEarned": total_credits_earned,
+        "transactionCount": len(transactions),
+        "spendingBreakdown": spending_breakdown,
+        "avgTransactionAmount": round(total_spent / max(len([t for t in transactions if t.get("type") == "payment"]), 1), 2),
+        "recentTransactions": sorted(transactions, key=lambda x: x.get("createdAt", ""), reverse=True)[:10]
+    }
+
+@api_router.get("/analytics/admin")
+async def get_admin_dashboard(adminUserId: str):
+    """Get platform-wide admin analytics"""
+    # Verify admin (in production, check admin role)
+    admin = await db.users.find_one({"id": adminUserId}, {"_id": 0})
+    if not admin:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Count totals
+    total_users = await db.users.count_documents({})
+    total_posts = await db.posts.count_documents({})
+    total_reels = await db.reels.count_documents({})
+    total_tribes = await db.tribes.count_documents({})
+    total_rooms = await db.vibe_rooms.count_documents({})
+    
+    # Active users (posted in last 7 days)
+    from datetime import timedelta
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    active_users = await db.posts.distinct("authorId", {"createdAt": {"$gte": week_ago}})
+    
+    # Platform engagement
+    all_posts = await db.posts.find({}, {"_id": 0, "likes": 1, "comments": 1}).to_list(None)
+    total_likes = sum(len(p.get("likes", [])) for p in all_posts)
+    total_comments = sum(len(p.get("comments", [])) for p in all_posts)
+    
+    return {
+        "totalUsers": total_users,
+        "activeUsers": len(active_users),
+        "totalPosts": total_posts,
+        "totalReels": total_reels,
+        "totalTribes": total_tribes,
+        "totalRooms": total_rooms,
+        "totalLikes": total_likes,
+        "totalComments": total_comments,
+        "platformEngagementRate": round((total_likes + total_comments) / max(total_posts, 1), 2),
+        "growthRate": "+23%",  # Mock - track historical data
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+# ===== USER SETTINGS ROUTES =====
+
+@api_router.put("/users/{userId}/settings")
+async def update_user_settings(userId: str, updates: dict):
+    """Update user profile settings"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Allowed fields to update
+    allowed_fields = ["name", "bio", "avatar", "location", "website", "interests"]
+    update_data = {k: v for k, v in updates.items() if k in allowed_fields}
+    
+    if update_data:
+        await db.users.update_one({"id": userId}, {"$set": update_data})
+    
+    updated_user = await db.users.find_one({"id": userId}, {"_id": 0})
+    return updated_user
+
+@api_router.get("/users/{userId}/content")
+async def get_user_content(userId: str, category: str = "all"):
+    """Get user's content categorized by type"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    result = {}
+    
+    if category in ["all", "posts"]:
+        posts = await db.posts.find({"authorId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(None)
+        result["posts"] = posts
+    
+    if category in ["all", "reels"]:
+        reels = await db.reels.find({"authorId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(None)
+        result["reels"] = reels
+    
+    if category in ["all", "products"]:
+        products = await db.marketplace.find({"sellerId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(None)
+        result["products"] = products if products else []
+    
+    return result
 
 
 # ===== FRIEND REQUEST ROUTES =====
