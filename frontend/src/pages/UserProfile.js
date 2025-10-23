@@ -125,7 +125,7 @@ const UserProfile = () => {
     try {
       await axios.delete(`${API}/friends/${userId}?userId=${currentUser.id}`);
       toast.success("Unfriended");
-      setRelationshipStatus(null);
+      fetchUserProfile(); // Refetch to update relationship status and counts
     } catch (error) {
       toast.error("Failed to unfriend");
     }
