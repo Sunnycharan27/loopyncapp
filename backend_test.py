@@ -1929,6 +1929,11 @@ class BackendTester:
         self.test_user_profile_endpoint()
         self.test_user_profile_with_demo_user()
         
+        # Priority 7: Wallet and Ticket Booking System (NEW)
+        print("\n🎫 PRIORITY 7: WALLET AND TICKET BOOKING SYSTEM (NEW)")
+        print("-" * 60)
+        self.test_wallet_and_ticket_booking_system()
+        
         # File Upload Tests
         print("\n📁 FILE UPLOAD TESTS")
         print("-" * 60)
