@@ -1108,6 +1108,101 @@ async def get_tribe_posts(tribeId: str, limit: int = 50):
         post["author"] = author
     return posts
 
+# ===== DAILY.CO INTEGRATION ROUTES =====
+
+@api_router.post("/daily/rooms")
+async def create_daily_room(userId: str, roomName: str):
+    """Create a Daily.co room for real-time audio"""
+    import httpx
+    
+    daily_api_key = os.environ.get('DAILY_API_KEY')
+    if not daily_api_key:
+        raise HTTPException(status_code=500, detail="Daily API key not configured")
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.daily.co/v1/rooms",
+                json={
+                    "properties": {
+                        "enable_chat": False,
+                        "enable_screenshare": False,
+                        "enable_recording": "cloud",
+                        "start_video_off": True,
+                        "start_audio_off": False,
+                        "owner_only_broadcast": False,
+                        "exp": int(datetime.now(timezone.utc).timestamp()) + 3600  # 1 hour
+                    }
+                },
+                headers={
+                    "Authorization": f"Bearer {daily_api_key}",
+                    "Content-Type": "application/json"
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to create Daily room: {response.text}"
+                )
+            
+            daily_room = response.json()
+            return {
+                "dailyRoomUrl": daily_room.get("url"),
+                "dailyRoomName": daily_room.get("name"),
+                "success": True
+            }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating Daily room: {str(e)}")
+
+@api_router.post("/daily/token")
+async def create_daily_token(roomName: str, userName: str, isOwner: bool = False):
+    """Create a Daily.co meeting token for controlled access"""
+    import httpx
+    
+    daily_api_key = os.environ.get('DAILY_API_KEY')
+    if not daily_api_key:
+        raise HTTPException(status_code=500, detail="Daily API key not configured")
+    
+    try:
+        token_properties = {
+            "room_name": roomName,
+            "user_name": userName,
+            "is_owner": isOwner,
+            "enable_recording": isOwner,
+            "start_audio_off": False,
+            "start_video_off": True,
+            "exp": int(datetime.now(timezone.utc).timestamp()) + 3600
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.daily.co/v1/meeting-tokens",
+                json={"properties": token_properties},
+                headers={
+                    "Authorization": f"Bearer {daily_api_key}",
+                    "Content-Type": "application/json"
+                },
+                timeout=30.0
+            )
+            
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to create token: {response.text}"
+                )
+            
+            token_data = response.json()
+            return {
+                "token": token_data.get("token"),
+                "success": True
+            }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating token: {str(e)}")
+
 # ===== VIBE ROOMS (VOICE ROOMS) ROUTES =====
 
 @api_router.post("/rooms")
