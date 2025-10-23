@@ -12,40 +12,34 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [relationshipStatus, setRelationshipStatus] = useState(null); // null, 'friends', 'pending_sent', 'pending_received', 'blocked'
   const [requestId, setRequestId] = useState(null);
 
   useEffect(() => {
     fetchUserProfile();
-    fetchUserPosts();
-    checkRelationship();
   }, [userId]);
 
   const fetchUserProfile = async () => {
     try {
-      const res = await axios.get(`${API}/users/${userId}`);
-      setUser(res.data);
+      setLoading(true);
+      const res = await axios.get(`${API}/users/${userId}/profile?currentUserId=${currentUser.id}`);
+      
+      setUser(res.data.user);
+      setPosts(res.data.posts.map(p => ({
+        ...p,
+        media: p.media && p.media.startsWith('/uploads')
+          ? `${process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL}${p.media}`
+          : p.media
+      })));
+      setFollowersCount(res.data.followersCount || 0);
+      setFollowingCount(res.data.followingCount || 0);
+      setRelationshipStatus(res.data.relationshipStatus);
     } catch (error) {
       toast.error("Failed to load profile");
       navigate('/');
-    }
-  };
-
-  const fetchUserPosts = async () => {
-    try {
-      const res = await axios.get(`${API}/posts`);
-      const userPosts = res.data
-        .filter(p => p.authorId === userId)
-        .map(p => ({
-          ...p,
-          media: p.media && p.media.startsWith('/uploads')
-            ? `${process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL}${p.media}`
-            : p.media
-        }));
-      setPosts(userPosts);
-    } catch (error) {
-      console.error("Failed to load posts");
     } finally {
       setLoading(false);
     }
