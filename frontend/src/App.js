@@ -307,6 +307,18 @@ function App() {
                 )
               }
             />
+            <Route
+              path="/analytics"
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Analytics />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-center" richColors />
