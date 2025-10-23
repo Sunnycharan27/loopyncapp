@@ -306,6 +306,42 @@ class SheetsDB:
                 print(f"Error updating user: {e}")
                 return None
     
+    def update_user_password(self, email: str, new_password: str) -> bool:
+        """
+        Update user password.
+        
+        Args:
+            email: User's email
+            new_password: New plaintext password (will be hashed)
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        # Hash new password
+        password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        if self.demo_mode:
+            for user in self.demo_users:
+                if user['email'].lower() == email.lower():
+                    user['password_hash'] = password_hash
+                    user['updated_at'] = datetime.now(timezone.utc).isoformat()
+                    return True
+            return False
+        else:
+            try:
+                cell = self.sheet.find(email, in_column=3)
+                if cell:
+                    row = cell.row
+                    # Update password hash (column D)
+                    self.sheet.update_cell(row, 4, password_hash)
+                    # Update timestamp (column F)
+                    self.sheet.update_cell(row, 6, datetime.now(timezone.utc).isoformat())
+                    return True
+                return False
+            except Exception as e:
+                print(f"Error updating password: {e}")
+                return False
+    
     def get_all_users(self) -> List[Dict]:
         """
         Get all users (without password hashes).
