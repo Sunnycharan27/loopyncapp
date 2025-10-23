@@ -1092,6 +1092,227 @@ async def get_tribe_posts(tribeId: str, limit: int = 50):
         post["author"] = author
     return posts
 
+# ===== VIBE ROOMS (VOICE ROOMS) ROUTES =====
+
+@api_router.post("/rooms")
+async def create_room(room: RoomCreate, userId: str):
+    """Create a new Vibe Room"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_room = VibeRoom(
+        name=room.name,
+        description=room.description,
+        category=room.category,
+        hostId=userId,
+        hostName=user.get("name", "Unknown"),
+        moderators=[userId],
+        isPrivate=room.isPrivate,
+        tags=room.tags,
+        participants=[{
+            "userId": userId,
+            "userName": user.get("name", "Unknown"),
+            "avatar": user.get("avatar", ""),
+            "joinedAt": datetime.now(timezone.utc).isoformat(),
+            "isMuted": False,
+            "isHost": True
+        }],
+        totalJoins=1,
+        peakParticipants=1
+    )
+    
+    await db.vibe_rooms.insert_one(new_room.model_dump())
+    return new_room
+
+@api_router.get("/rooms")
+async def get_active_rooms(category: str = None, limit: int = 50):
+    """Get list of active Vibe Rooms"""
+    query = {"status": "active"}
+    if category and category != "all":
+        query["category"] = category
+    
+    rooms = await db.vibe_rooms.find(query, {"_id": 0}).sort("startedAt", -1).to_list(limit)
+    return rooms
+
+@api_router.get("/rooms/{roomId}")
+async def get_room(roomId: str):
+    """Get specific room details"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return room
+
+@api_router.post("/rooms/{roomId}/join")
+async def join_room(roomId: str, userId: str):
+    """Join a Vibe Room"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    if room.get("status") != "active":
+        raise HTTPException(status_code=400, detail="Room is not active")
+    
+    # Check if already in room
+    participants = room.get("participants", [])
+    if any(p["userId"] == userId for p in participants):
+        return {"message": "Already in room", "room": room}
+    
+    # Check max participants
+    if len(participants) >= room.get("maxParticipants", 50):
+        raise HTTPException(status_code=400, detail="Room is full")
+    
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Add participant
+    new_participant = {
+        "userId": userId,
+        "userName": user.get("name", "Unknown"),
+        "avatar": user.get("avatar", ""),
+        "joinedAt": datetime.now(timezone.utc).isoformat(),
+        "isMuted": False,
+        "isHost": False
+    }
+    participants.append(new_participant)
+    
+    # Update peak participants
+    peak = max(room.get("peakParticipants", 0), len(participants))
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {
+            "$set": {
+                "participants": participants,
+                "peakParticipants": peak
+            },
+            "$inc": {"totalJoins": 1}
+        }
+    )
+    
+    # Emit WebSocket event
+    room["participants"] = participants
+    room["peakParticipants"] = peak
+    
+    return {"message": "Joined room", "room": room, "participant": new_participant}
+
+@api_router.post("/rooms/{roomId}/leave")
+async def leave_room(roomId: str, userId: str):
+    """Leave a Vibe Room"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    participants = room.get("participants", [])
+    participants = [p for p in participants if p["userId"] != userId]
+    
+    # If host leaves and there are participants, assign new host
+    if room.get("hostId") == userId and len(participants) > 0:
+        new_host = participants[0]
+        await db.vibe_rooms.update_one(
+            {"id": roomId},
+            {
+                "$set": {
+                    "hostId": new_host["userId"],
+                    "hostName": new_host["userName"],
+                    "participants": participants
+                }
+            }
+        )
+        return {"message": "Left room, host transferred", "newHostId": new_host["userId"]}
+    
+    # If no participants left, end room
+    if len(participants) == 0:
+        await db.vibe_rooms.update_one(
+            {"id": roomId},
+            {
+                "$set": {
+                    "status": "ended",
+                    "endedAt": datetime.now(timezone.utc).isoformat(),
+                    "participants": []
+                }
+            }
+        )
+        return {"message": "Room ended"}
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    return {"message": "Left room", "participantCount": len(participants)}
+
+@api_router.post("/rooms/{roomId}/end")
+async def end_room(roomId: str, userId: str):
+    """End a Vibe Room (host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    if room.get("hostId") != userId:
+        raise HTTPException(status_code=403, detail="Only host can end room")
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {
+            "$set": {
+                "status": "ended",
+                "endedAt": datetime.now(timezone.utc).isoformat(),
+                "participants": []
+            }
+        }
+    )
+    
+    return {"message": "Room ended"}
+
+@api_router.post("/rooms/{roomId}/mute")
+async def toggle_mute(roomId: str, userId: str, targetUserId: str = None):
+    """Toggle mute for self or others (moderator)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    target = targetUserId or userId
+    
+    # Check if user is moderator when muting others
+    if targetUserId and userId not in room.get("moderators", []):
+        raise HTTPException(status_code=403, detail="Only moderators can mute others")
+    
+    participants = room.get("participants", [])
+    for p in participants:
+        if p["userId"] == target:
+            p["isMuted"] = not p.get("isMuted", False)
+            break
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    return {"message": "Mute toggled", "participants": participants}
+
+@api_router.post("/rooms/{roomId}/promote")
+async def promote_moderator(roomId: str, userId: str, targetUserId: str):
+    """Promote user to moderator (host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    if room.get("hostId") != userId:
+        raise HTTPException(status_code=403, detail="Only host can promote moderators")
+    
+    moderators = room.get("moderators", [])
+    if targetUserId not in moderators:
+        moderators.append(targetUserId)
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"moderators": moderators}}
+    )
+    
+    return {"message": "User promoted to moderator", "moderators": moderators}
+
 # ===== SEED DATA ROUTE =====
 
 @api_router.post("/seed")
