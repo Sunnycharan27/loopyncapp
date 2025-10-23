@@ -19,6 +19,9 @@ export const WebSocketProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
+    // WebSocket is optional - not needed for core functionality
+    // Commenting out to prevent console errors
+    /*
     const token = localStorage.getItem('loopync_token');
     
     if (!token) {
@@ -118,6 +121,7 @@ export const WebSocketProvider = ({ children }) => {
     return () => {
       newSocket.close();
     };
+    */
   }, []);
 
   const emitTyping = (threadId) => {
