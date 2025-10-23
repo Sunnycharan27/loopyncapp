@@ -353,6 +353,155 @@ const Profile = () => {
           </div>
         )}
 
+        {/* Posts Tab */}
+        {activeTab === "posts" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">My Posts ({userContent.posts?.length || 0})</h3>
+            </div>
+            {userContent.posts && userContent.posts.length > 0 ? (
+              userContent.posts.map((post) => (
+                <div key={post.id} className="glass-card p-4">
+                  <div className="mb-3">
+                    <p className="text-gray-300">{post.content}</p>
+                    <p className="text-xs text-gray-500 mt-2">{new Date(post.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  {post.media && post.media.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {post.media.map((url, idx) => (
+                        <img key={idx} src={url} alt="Post" className="rounded-lg w-full h-32 object-cover" />
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
+                    <span>{post.likes?.length || 0} likes</span>
+                    <span>{post.comments?.length || 0} comments</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="glass-card p-12 text-center">
+                <FileText size={48} className="text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">No posts yet</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Reels Tab */}
+        {activeTab === "reels" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">My Reels ({userContent.reels?.length || 0})</h3>
+            </div>
+            {userContent.reels && userContent.reels.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {userContent.reels.map((reel) => (
+                  <div key={reel.id} className="glass-card p-3">
+                    <div className="relative rounded-lg overflow-hidden mb-2" style={{ paddingTop: '177.78%' }}>
+                      <video
+                        src={reel.videoUrl}
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                        poster={reel.thumbnail}
+                      />
+                      <div className="absolute top-2 right-2 px-2 py-1 rounded bg-black/50 text-white text-xs">
+                        <Film size={12} className="inline mr-1" />
+                        Reel
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300 line-clamp-2">{reel.caption}</p>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                      <span>{reel.likes?.length || 0} likes</span>
+                      <span>{reel.views || 0} views</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{new Date(reel.createdAt).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="glass-card p-12 text-center">
+                <Film size={48} className="text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 mb-4">No reels yet</p>
+                <button
+                  onClick={() => navigate('/vibezone')}
+                  className="px-6 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-semibold"
+                >
+                  Create Reel
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Products Tab */}
+        {activeTab === "products" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-white">My Products ({userContent.products?.length || 0})</h3>
+            </div>
+            {userContent.products && userContent.products.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {userContent.products.map((product) => (
+                  <div key={product.id} className="glass-card p-3">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-32 object-cover rounded-lg mb-2"
+                    />
+                    <h4 className="font-semibold text-white text-sm">{product.name}</h4>
+                    <p className="text-cyan-400 font-bold">₹{product.price}</p>
+                    <p className="text-xs text-gray-500 mt-1">{new Date(product.createdAt).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="glass-card p-12 text-center">
+                <ShoppingBag size={48} className="text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 mb-4">No products listed</p>
+                <button
+                  onClick={() => navigate('/marketplace')}
+                  className="px-6 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-semibold"
+                >
+                  Visit Marketplace
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === "analytics" && (
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-bold text-white mb-4">Quick Analytics</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Total Content</span>
+                <span className="text-white font-bold">
+                  {(userContent.posts?.length || 0) + (userContent.reels?.length || 0) + (userContent.products?.length || 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Posts</span>
+                <span className="text-white font-bold">{userContent.posts?.length || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Reels</span>
+                <span className="text-white font-bold">{userContent.reels?.length || 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Products</span>
+                <span className="text-white font-bold">{userContent.products?.length || 0}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/analytics')}
+              className="w-full mt-6 py-3 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-semibold"
+            >
+              View Full Analytics
+            </button>
+          </div>
+        )}
+
         {/* Logout Button */}
         <button
           onClick={handleLogout}
