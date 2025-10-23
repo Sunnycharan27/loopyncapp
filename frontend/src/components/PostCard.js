@@ -67,11 +67,15 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
         <img
           src={post.author?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorId}`}
           alt={post.author?.name || 'User'}
-          className="w-12 h-12 rounded-full ring-2 ring-cyan-400/20"
+          className="w-12 h-12 rounded-full ring-2 ring-cyan-400/20 cursor-pointer hover:ring-cyan-400/50 transition-all"
+          onClick={() => navigate(`/profile/${post.authorId}`)}
         />
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <div>
+            <div 
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => navigate(`/profile/${post.authorId}`)}
+            >
               <h3 className="font-semibold text-white">{post.author?.name || 'User'}</h3>
               <p className="text-sm text-gray-400">@{post.author?.handle || post.authorId?.substring(0, 8)}</p>
             </div>
