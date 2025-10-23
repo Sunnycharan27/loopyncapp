@@ -26,12 +26,13 @@ const Profile = () => {
 
   const fetchProfileData = async () => {
     try {
-      const [analyticsRes, creditsRes, ticketsRes, bookmarksRes, walletRes] = await Promise.all([
+      const [analyticsRes, creditsRes, ticketsRes, bookmarksRes, walletRes, contentRes] = await Promise.all([
         axios.get(`${API}/analytics/${currentUser.id}`),
         axios.get(`${API}/credits/${currentUser.id}`),
         axios.get(`${API}/tickets/${currentUser.id}`),
         axios.get(`${API}/bookmarks/${currentUser.id}`),
-        axios.get(`${API}/wallet?userId=${currentUser.id}`)
+        axios.get(`${API}/wallet?userId=${currentUser.id}`),
+        axios.get(`${API}/users/${currentUser.id}/content`)
       ]);
 
       setAnalytics(analyticsRes.data);
@@ -39,6 +40,7 @@ const Profile = () => {
       setTickets(ticketsRes.data);
       setBookmarks(bookmarksRes.data);
       setWalletBalance(walletRes.data.balance || 0);
+      setUserContent(contentRes.data);
     } catch (error) {
       console.error("Failed to fetch profile data");
     } finally {
