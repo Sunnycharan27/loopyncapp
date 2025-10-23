@@ -21,6 +21,7 @@ import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Rooms from "./pages/Rooms";
 import RoomDetail from "./pages/RoomDetail";
+import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import { Toaster } from "sonner";
 import { WebSocketProvider } from "./context/WebSocketContext";
