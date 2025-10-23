@@ -196,6 +196,14 @@ const RoomDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <InviteFriendsModal
+          room={room}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
     </div>
   );
 };
