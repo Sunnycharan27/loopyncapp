@@ -282,6 +282,30 @@ function App() {
                 )
               }
             />
+            <Route
+              path="/rooms"
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <Rooms />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
+            <Route
+              path="/rooms/:roomId"
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <RoomDetail />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-center" richColors />
