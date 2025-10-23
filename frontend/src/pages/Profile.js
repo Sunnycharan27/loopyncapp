@@ -111,20 +111,61 @@ const Profile = () => {
             </button>
           </div>
 
-          {/* Credits Card */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-400/10 to-purple-400/10 border border-cyan-400/30">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">Loop Credits Balance</p>
-                <p className="text-4xl font-bold text-cyan-400">{credits?.balance || 0}</p>
+          {/* Credits & Wallet Section */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Loop Credits Card */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-400/10 to-purple-400/10 border border-cyan-400/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap size={16} className="text-cyan-400" />
+                <p className="text-gray-400 text-xs">Loop Credits</p>
               </div>
-              <button
-                onClick={() => navigate('/wallet')}
-                className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 text-white text-sm font-semibold"
-              >
-                Earn More
-              </button>
+              <p className="text-2xl font-bold text-cyan-400 mb-1">{credits?.balance || 0}</p>
+              <p className="text-xs text-gray-500">Reward points</p>
             </div>
+
+            {/* LoopPay Wallet Card */}
+            <button
+              onClick={() => navigate('/wallet')}
+              className="p-4 rounded-xl bg-gradient-to-br from-green-400/10 to-emerald-400/10 border border-green-400/30 hover:border-green-400/50 transition-all text-left group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet size={16} className="text-green-400" />
+                <p className="text-gray-400 text-xs">LoopPay Wallet</p>
+              </div>
+              <p className="text-2xl font-bold text-green-400 mb-1">₹{walletBalance.toFixed(2)}</p>
+              <div className="flex items-center gap-1 text-xs text-green-400 group-hover:gap-2 transition-all">
+                <span>Open Wallet</span>
+                <ArrowRight size={12} />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="glass-card p-4 mb-6">
+          <h3 className="text-sm font-semibold text-gray-400 mb-3">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate('/wallet')}
+              className="p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-all text-center group"
+            >
+              <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CreditCard size={20} className="text-white" />
+              </div>
+              <p className="text-sm font-medium text-white">Manage Wallet</p>
+              <p className="text-xs text-gray-500">Payments & Top-up</p>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('tickets')}
+              className="p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-all text-center group"
+            >
+              <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Ticket size={20} className="text-white" />
+              </div>
+              <p className="text-sm font-medium text-white">My Tickets</p>
+              <p className="text-xs text-gray-500">{tickets?.length || 0} active</p>
+            </button>
           </div>
         </div>
 
