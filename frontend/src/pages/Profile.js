@@ -177,8 +177,11 @@ const Profile = () => {
         <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
           {[
             { id: "overview", name: "Overview", icon: <TrendingUp size={16} /> },
-            { id: "tickets", name: "My Tickets", icon: <Ticket size={16} /> },
-            { id: "bookmarks", name: "Bookmarks", icon: <Bookmark size={16} /> }
+            { id: "posts", name: "Posts", icon: <FileText size={16} /> },
+            { id: "reels", name: "Reels", icon: <Film size={16} /> },
+            { id: "products", name: "Products", icon: <ShoppingBag size={16} /> },
+            { id: "analytics", name: "Analytics", icon: <BarChart3 size={16} /> },
+            { id: "tickets", name: "Tickets", icon: <Ticket size={16} /> }
           ].map((tab) => (
             <button
               key={tab.id}
