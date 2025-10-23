@@ -93,8 +93,7 @@ const UserProfile = () => {
     try {
       await axios.post(`${API}/friend-requests/${requestId}/cancel`);
       toast.success("Friend request cancelled");
-      setRelationshipStatus(null);
-      setRequestId(null);
+      fetchUserProfile(); // Refetch to update relationship status
     } catch (error) {
       toast.error("Failed to cancel request");
     }
@@ -104,7 +103,7 @@ const UserProfile = () => {
     try {
       await axios.post(`${API}/friend-requests/${requestId}/accept`);
       toast.success("Friend request accepted!");
-      setRelationshipStatus('friends');
+      fetchUserProfile(); // Refetch to update relationship status and counts
     } catch (error) {
       toast.error("Failed to accept request");
     }
