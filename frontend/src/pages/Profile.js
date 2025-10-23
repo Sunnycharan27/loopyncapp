@@ -623,4 +623,80 @@ const SettingsModal = ({ currentUser, onClose, onSave }) => {
   );
 };
 
+// Ticket Card Component with QR Code
+const TicketCard = ({ ticket }) => {
+  const [showQR, setShowQR] = useState(false);
+
+  return (
+    <div className="glass-card overflow-hidden">
+      {/* Ticket Header */}
+      <div 
+        className="p-4 cursor-pointer hover:bg-gray-800/30 transition-all"
+        onClick={() => setShowQR(!showQR)}
+      >
+        <div className="flex gap-4">
+          <img
+            src={ticket.eventImage || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400'}
+            alt={ticket.eventName}
+            className="w-20 h-20 rounded-xl object-cover"
+          />
+          <div className="flex-1">
+            <h4 className="font-semibold text-white mb-1">{ticket.eventName || 'Event'}</h4>
+            <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <MapPin size={14} />
+              <span>{ticket.eventLocation || 'Location TBA'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <Clock size={14} />
+              <span>{ticket.eventDate ? new Date(ticket.eventDate).toLocaleDateString() : 'Date TBA'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                ticket.status === 'active' 
+                  ? 'bg-green-500/20 text-green-400 border border-green-400'
+                  : ticket.status === 'used'
+                  ? 'bg-gray-700 text-gray-400'
+                  : 'bg-red-500/20 text-red-400 border border-red-400'
+              }`}>
+                {ticket.status.toUpperCase()}
+              </span>
+              <span className="text-xs text-gray-400">• {ticket.tier}</span>
+              {ticket.price && <span className="text-xs text-cyan-400">• ₹{ticket.price}</span>}
+            </div>
+          </div>
+          <div className="text-cyan-400">
+            {showQR ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </div>
+        </div>
+      </div>
+
+      {/* QR Code Section */}
+      {showQR && (
+        <div className="border-t border-gray-700 p-6 bg-gray-800/20">
+          <div className="text-center">
+            <h3 className="text-white font-semibold mb-4">Scan at Entry</h3>
+            <div className="inline-block p-6 bg-white rounded-2xl mb-4">
+              <QRCodeSVG
+                value={ticket.qrCode || ticket.id}
+                size={200}
+                level="H"
+                includeMargin={true}
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-400">Ticket ID</p>
+              <p className="text-xs font-mono text-cyan-400 bg-gray-900/50 px-3 py-2 rounded">
+                {ticket.id || ticket.qrCode}
+              </p>
+              <p className="text-xs text-gray-500 mt-4">
+                Show this QR code at the venue entrance
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default Profile;
