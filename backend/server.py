@@ -439,6 +439,15 @@ class RoomAction(BaseModel):
     targetUserId: str = None
     data: dict = {}
 
+class RoomInvite(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    roomId: str
+    fromUserId: str
+    toUserId: str
+    status: str = "pending"  # pending, accepted, declined
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 class Friendship(BaseModel):
     model_config = ConfigDict(extra="ignore")
     userId1: str
