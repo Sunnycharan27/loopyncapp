@@ -3088,6 +3088,15 @@ async def send_friend_request(fromUserId: str, toUserId: str):
     # Get sender info
     from_user = await db.users.find_one({"id": fromUserId}, {"_id": 0})
     
+    # If user not found in MongoDB, create a basic user object
+    if not from_user:
+        from_user = {
+            "id": fromUserId,
+            "name": "Demo User",
+            "handle": "demo_user",
+            "avatar": f"https://api.dicebear.com/7.x/avataaars/svg?seed={fromUserId}"
+        }
+    
     # Create notification
     notification = Notification(
         userId=toUserId,
