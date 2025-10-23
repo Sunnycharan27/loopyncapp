@@ -846,6 +846,108 @@ async def get_user_profile(userId: str, currentUserId: str = None):
         "relationshipStatus": relationship_status
     }
 
+@api_router.put("/users/{userId}")
+async def update_user(userId: str, data: dict):
+    """Update user profile"""
+    allowed_fields = ["name", "handle", "bio", "avatar"]
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    result = await db.users.update_one(
+        {"id": userId},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"success": True, "message": "Profile updated"}
+
+@api_router.get("/users/{userId}/settings")
+async def get_user_settings(userId: str):
+    """Get user settings"""
+    settings = await db.user_settings.find_one({"userId": userId}, {"_id": 0})
+    if not settings:
+        # Return default settings
+        return {
+            "accountPrivate": False,
+            "showOnlineStatus": True,
+            "allowMessagesFrom": "everyone",
+            "showActivity": True,
+            "allowTagging": True,
+            "showStories": True,
+            "emailNotifications": True,
+            "pushNotifications": True,
+            "likeNotifications": True,
+            "commentNotifications": True,
+            "followNotifications": True,
+            "messageNotifications": True,
+            "darkMode": False
+        }
+    return settings
+
+@api_router.put("/users/{userId}/settings")
+async def update_user_settings(userId: str, settings: dict):
+    """Update user settings"""
+    settings["userId"] = userId
+    
+    await db.user_settings.update_one(
+        {"userId": userId},
+        {"$set": settings},
+        upsert=True
+    )
+    
+    return {"success": True, "message": "Settings saved"}
+
+@api_router.get("/users/{userId}/blocked")
+async def get_blocked_users(userId: str):
+    """Get list of blocked users"""
+    blocks = await db.user_blocks.find({"blockerId": userId}, {"_id": 0}).to_list(None)
+    
+    blocked_users = []
+    for block in blocks:
+        user = await db.users.find_one({"id": block["blockedId"]}, {"_id": 0})
+        if user:
+            blocked_users.append(user)
+    
+    return blocked_users
+
+@api_router.delete("/users/{userId}/block/{blockedUserId}")
+async def unblock_user(userId: str, blockedUserId: str):
+    """Unblock a user"""
+    result = await db.user_blocks.delete_one({
+        "blockerId": userId,
+        "blockedId": blockedUserId
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Block not found")
+    
+    return {"success": True, "message": "User unblocked"}
+
+@api_router.post("/auth/change-password")
+async def change_password(data: dict):
+    """Change user password"""
+    userId = data.get("userId")
+    current_password = data.get("currentPassword")
+    new_password = data.get("newPassword")
+    
+    # Verify current password with Google Sheets DB
+    user = sheets_db.find_user_by_id(userId)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify current password
+    if not sheets_db.verify_password(user.get("email"), current_password):
+        raise HTTPException(status_code=401, detail="Current password is incorrect")
+    
+    # Update password in Google Sheets
+    sheets_db.update_user_password(user.get("email"), new_password)
+    
+    return {"success": True, "message": "Password changed successfully"}
+
 @api_router.get("/search")
 async def search_all(q: str, currentUserId: str = None, limit: int = 20):
     """Global search for users, posts, tribes, venues, events"""
