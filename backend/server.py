@@ -1574,6 +1574,115 @@ async def leave_room(roomId: str, userId: str):
     
     return {"message": "Left room", "participantCount": len(participants)}
 
+@api_router.post("/rooms/{roomId}/raise-hand")
+async def raise_hand(roomId: str, userId: str):
+    """Raise hand to request to speak (Clubhouse-style)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    participants = room.get("participants", [])
+    for p in participants:
+        if p["userId"] == userId:
+            p["raisedHand"] = not p.get("raisedHand", False)
+            break
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    return {"message": "Hand raised" if p.get("raisedHand") else "Hand lowered", "participants": participants}
+
+@api_router.post("/rooms/{roomId}/invite-to-stage")
+async def invite_to_stage(roomId: str, userId: str, targetUserId: str):
+    """Pull audience member to stage as speaker (moderator/host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Check if user is host or moderator
+    if userId != room.get("hostId") and userId not in room.get("moderators", []):
+        raise HTTPException(status_code=403, detail="Only hosts and moderators can invite to stage")
+    
+    # Check speaker limit
+    participants = room.get("participants", [])
+    speakers = [p for p in participants if p.get("role") in ["host", "moderator", "speaker"]]
+    if len(speakers) >= room.get("maxSpeakers", 20):
+        raise HTTPException(status_code=400, detail="Stage is full")
+    
+    # Update target user role to speaker
+    for p in participants:
+        if p["userId"] == targetUserId:
+            p["role"] = "speaker"
+            p["raisedHand"] = False
+            p["isMuted"] = False
+            break
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    return {"message": "User invited to stage", "participants": participants}
+
+@api_router.post("/rooms/{roomId}/remove-from-stage")
+async def remove_from_stage(roomId: str, userId: str, targetUserId: str):
+    """Remove speaker from stage back to audience (moderator/host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Check if user is host or moderator
+    if userId != room.get("hostId") and userId not in room.get("moderators", []):
+        raise HTTPException(status_code=403, detail="Only hosts and moderators can remove from stage")
+    
+    # Update target user role to audience
+    participants = room.get("participants", [])
+    for p in participants:
+        if p["userId"] == targetUserId:
+            if p.get("role") == "host":
+                raise HTTPException(status_code=400, detail="Cannot remove host from stage")
+            p["role"] = "audience"
+            p["isMuted"] = True
+            break
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"participants": participants}}
+    )
+    
+    return {"message": "User removed from stage", "participants": participants}
+
+@api_router.post("/rooms/{roomId}/make-moderator")
+async def make_moderator(roomId: str, userId: str, targetUserId: str):
+    """Make a user a moderator (host only)"""
+    room = await db.vibe_rooms.find_one({"id": roomId}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    # Check if user is host
+    if userId != room.get("hostId"):
+        raise HTTPException(status_code=403, detail="Only host can make moderators")
+    
+    moderators = room.get("moderators", [])
+    if targetUserId not in moderators:
+        moderators.append(targetUserId)
+    
+    # Update participant role
+    participants = room.get("participants", [])
+    for p in participants:
+        if p["userId"] == targetUserId:
+            p["role"] = "moderator"
+            break
+    
+    await db.vibe_rooms.update_one(
+        {"id": roomId},
+        {"$set": {"moderators": moderators, "participants": participants}}
+    )
+    
+    return {"message": "User is now a moderator", "moderators": moderators}
+
 @api_router.post("/rooms/{roomId}/end")
 async def end_room(roomId: str, userId: str):
     """End a Vibe Room (host only)"""
