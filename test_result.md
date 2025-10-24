@@ -935,6 +935,52 @@ backend:
           
           **RESOLUTION: User should no longer see "Audio room not available" error**
           **Daily.co audio integration is now fully operational for Vibe Rooms**
+      - working: true
+        agent: "testing"
+        comment: |
+          VIBEROOM CREATION WITH DAILY.CO INTEGRATION RE-TESTED - ALL SCENARIOS VERIFIED (5/5 TESTS PASSED)
+          
+          🎵 USER REQUESTED TEST SCENARIO COMPLETED:
+          ✅ Step 1: Create New VibeRoom - POST /api/rooms?userId=demo_user
+             - Request Body: {"name": "Test Clubhouse Room", "description": "Testing room creation", "category": "music", "isPrivate": false, "tags": ["test"]}
+             - Response Status: 200 OK
+             - Room ID Generated: Successfully created with unique ID
+             - Host ID Verified: demo_user correctly set as hostId
+             - Daily.co Integration: ✅ dailyRoomUrl and dailyRoomName populated
+          
+          ✅ Step 2: Verify Room Creation Response
+             - Required Fields Present: ✅ id, name, description, category, hostId, participants
+             - Daily.co Fields Present: ✅ dailyRoomUrl, dailyRoomName
+             - Host Participant Verification:
+               * Role: "host" ✅
+               * isHost: true ✅
+               * raisedHand: false ✅
+               * isMuted: false ✅
+          
+          ✅ Step 3: Get Room Details - GET /api/rooms/{roomId}
+             - Room Details Retrieved: ✅ All fields correctly populated
+             - Daily.co Integration Persisted: ✅ Audio room URL available
+             - Participants List: ✅ Host properly configured
+          
+          ✅ Step 4: List All Rooms - GET /api/rooms
+             - Room Appears in List: ✅ Created room found in active rooms
+             - Room Count: 7 total rooms retrieved
+             - Room Structure Valid: ✅ All required fields present
+          
+          ✅ Step 5: Daily.co Direct Integration Tests
+             - Direct Room Creation: ✅ POST /api/daily/rooms working
+             - Token Generation: ✅ POST /api/daily/token working (283 character JWT)
+             - API Key Validation: ✅ c84172cc30949874adcdd45f4c8cf2819d6e9fc12628de00608f156662be0e79
+          
+          🚀 COMPLETE END-TO-END VERIFICATION:
+          - Room Creation Flow: ✅ FULLY FUNCTIONAL
+          - Daily.co Audio Integration: ✅ WORKING CORRECTLY
+          - Host Participant Setup: ✅ CLUBHOUSE-STYLE ROLES IMPLEMENTED
+          - Room Persistence: ✅ DATABASE STORAGE WORKING
+          - Room Listing: ✅ ACTIVE ROOMS DISPLAY CORRECTLY
+          
+          **FINAL CONFIRMATION: VibeRoom creation with Daily.co integration is working perfectly**
+          **All user requirements from the test scenario have been verified and are functioning correctly**
 
 frontend:
   - task: "Enhanced Onboarding Flow (4 Steps)"
