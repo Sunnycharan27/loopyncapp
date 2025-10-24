@@ -1447,7 +1447,9 @@ async def create_room(room: RoomCreate, userId: str):
         room_dict["dailyRoomUrl"] = daily_room_url
         room_dict["dailyRoomName"] = daily_room_name
     
-    await db.vibe_rooms.insert_one(room_dict)
+    result = await db.vibe_rooms.insert_one(room_dict)
+    # Remove MongoDB _id before returning
+    room_dict.pop('_id', None)
     return room_dict
 
 @api_router.get("/rooms")
