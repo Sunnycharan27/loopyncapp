@@ -99,7 +99,7 @@ const Rooms = () => {
             {rooms.map((room) => (
               <div
                 key={room.id}
-                onClick={() => navigate(`/rooms/${room.id}`)}
+                onClick={() => navigate(`/viberooms/${room.id}`)}
                 className="glass-card p-5 cursor-pointer hover:scale-[1.01] transition-transform"
                 data-testid="room-card"
               >
