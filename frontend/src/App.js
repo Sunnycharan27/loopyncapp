@@ -88,7 +88,7 @@ function App() {
         <div className="App">
           <BrowserRouter>
             <Routes>
-              <Route path="/auth" element={<Auth />} />
+              <Route path="/auth" element={<AuthComplete />} />
               <Route
                 path="/onboarding"
                 element={isAuthenticated ? <Onboarding /> : <Navigate to="/auth" />}
