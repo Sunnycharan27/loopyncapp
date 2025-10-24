@@ -406,8 +406,11 @@ class VibeRoom(BaseModel):
     hostId: str
     hostName: str = ""
     moderators: List[str] = []
-    participants: List[dict] = []  # [{userId, userName, avatar, joinedAt, isMuted}]
+    participants: List[dict] = []  # [{userId, userName, avatar, joinedAt, isMuted, role, raisedHand}]
+    # role: "host", "moderator", "speaker", "audience"
+    # raisedHand: bool - whether audience member wants to speak
     maxParticipants: int = 50
+    maxSpeakers: int = 20  # Max speakers on stage at once
     status: str = "active"  # active, ended
     isPrivate: bool = False
     tags: List[str] = []
@@ -415,6 +418,7 @@ class VibeRoom(BaseModel):
     endedAt: Optional[str] = None
     totalJoins: int = 0
     peakParticipants: int = 0
+    scheduledFor: Optional[str] = None  # Future scheduled time
 
 class RoomCreate(BaseModel):
     name: str
