@@ -4553,6 +4553,345 @@ async def check_friendship(userId: str, friendId: str):
     
     return {"areFriends": False, "hasPendingRequest": False}
 
+# ===== MARKETPLACE - FULL SYSTEM =====
+
+@api_router.get("/marketplace/products")
+async def get_marketplace_products(category: str = "all", limit: int = 50):
+    """Get marketplace products"""
+    query = {"category": category} if category != "all" else {}
+    products = await db.marketplace_products.find(query, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    for product in products:
+        seller = await db.users.find_one({"id": product["sellerId"]}, {"_id": 0})
+        product["seller"] = seller
+    return products
+
+@api_router.post("/marketplace/products")
+async def create_product(
+    sellerId: str,
+    name: str,
+    description: str,
+    price: float,
+    category: str,
+    images: list[str] = [],
+    stock: int = 0,
+    type: str = "physical"  # physical, digital, course
+):
+    """Create marketplace product"""
+    product = {
+        "id": str(uuid.uuid4()),
+        "sellerId": sellerId,
+        "name": name,
+        "description": description,
+        "price": price,
+        "category": category,
+        "images": images,
+        "stock": stock,
+        "type": type,
+        "sold": 0,
+        "rating": 0,
+        "reviews": [],
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.marketplace_products.insert_one(product)
+    product.pop("_id", None)
+    return product
+
+@api_router.get("/marketplace/products/{productId}")
+async def get_product(productId: str):
+    """Get product details"""
+    product = await db.marketplace_products.find_one({"id": productId}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    seller = await db.users.find_one({"id": product["sellerId"]}, {"_id": 0})
+    product["seller"] = seller
+    return product
+
+@api_router.post("/marketplace/cart/add")
+async def add_to_cart(userId: str, productId: str, quantity: int = 1):
+    """Add product to cart"""
+    cart_item = await db.cart.find_one({"userId": userId, "productId": productId}, {"_id": 0})
+    if cart_item:
+        # Update quantity
+        await db.cart.update_one(
+            {"userId": userId, "productId": productId},
+            {"$inc": {"quantity": quantity}}
+        )
+    else:
+        # Add new item
+        cart_item = {
+            "id": str(uuid.uuid4()),
+            "userId": userId,
+            "productId": productId,
+            "quantity": quantity,
+            "addedAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.cart.insert_one(cart_item)
+    return {"success": True}
+
+@api_router.get("/marketplace/cart/{userId}")
+async def get_cart(userId: str):
+    """Get user's cart"""
+    cart_items = await db.cart.find({"userId": userId}, {"_id": 0}).to_list(100)
+    for item in cart_items:
+        product = await db.marketplace_products.find_one({"id": item["productId"]}, {"_id": 0})
+        item["product"] = product
+    return cart_items
+
+@api_router.delete("/marketplace/cart/{userId}/{productId}")
+async def remove_from_cart(userId: str, productId: str):
+    """Remove item from cart"""
+    await db.cart.delete_one({"userId": userId, "productId": productId})
+    return {"success": True}
+
+@api_router.post("/marketplace/orders")
+async def create_order(
+    userId: str,
+    items: list[dict],  # [{productId, quantity, price}]
+    totalAmount: float,
+    shippingAddress: dict
+):
+    """Create marketplace order"""
+    order = {
+        "id": str(uuid.uuid4()),
+        "userId": userId,
+        "items": items,
+        "totalAmount": totalAmount,
+        "shippingAddress": shippingAddress,
+        "status": "pending",  # pending, processing, shipped, delivered, cancelled
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.marketplace_orders.insert_one(order)
+    
+    # Deduct from wallet
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    current_balance = user.get("walletBalance", 0.0)
+    if current_balance < totalAmount:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+    
+    new_balance = current_balance - totalAmount
+    await db.users.update_one({"id": userId}, {"$set": {"walletBalance": new_balance}})
+    
+    # Clear cart
+    await db.cart.delete_many({"userId": userId})
+    
+    # Record transaction
+    transaction = {
+        "id": str(uuid.uuid4()),
+        "userId": userId,
+        "type": "payment",
+        "amount": totalAmount,
+        "description": f"Order #{order['id']}",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.wallet_transactions.insert_one(transaction)
+    
+    order.pop("_id", None)
+    return order
+
+@api_router.get("/marketplace/orders/{userId}")
+async def get_user_orders(userId: str):
+    """Get user's orders"""
+    orders = await db.marketplace_orders.find({"userId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    return orders
+
+@api_router.post("/marketplace/products/{productId}/review")
+async def add_product_review(productId: str, userId: str, rating: int, comment: str):
+    """Add product review"""
+    review = {
+        "id": str(uuid.uuid4()),
+        "userId": userId,
+        "rating": rating,
+        "comment": comment,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add review to product
+    await db.marketplace_products.update_one(
+        {"id": productId},
+        {"$push": {"reviews": review}}
+    )
+    
+    # Recalculate average rating
+    product = await db.marketplace_products.find_one({"id": productId}, {"_id": 0})
+    reviews = product.get("reviews", [])
+    avg_rating = sum(r["rating"] for r in reviews) / len(reviews) if reviews else 0
+    
+    await db.marketplace_products.update_one(
+        {"id": productId},
+        {"$set": {"rating": avg_rating}}
+    )
+    
+    return review
+
+# ===== VIDEO/VOICE CALLS (1-on-1) =====
+
+@api_router.post("/calls/initiate")
+async def initiate_call(callerId: str, receiverId: str, type: str = "video"):
+    """Initiate 1-on-1 call"""
+    # Create Daily.co room for call
+    daily_api_key = os.environ.get("DAILY_API_KEY")
+    if not daily_api_key:
+        raise HTTPException(status_code=500, detail="Daily.co API key not configured")
+    
+    room_name = f"call-{str(uuid.uuid4())[:8]}"
+    
+    try:
+        response = requests.post(
+            "https://api.daily.co/v1/rooms",
+            headers={
+                "Authorization": f"Bearer {daily_api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "name": room_name,
+                "properties": {
+                    "max_participants": 2,
+                    "enable_chat": True,
+                    "enable_screenshare": True,
+                    "start_video_off": type == "audio",
+                    "start_audio_off": False
+                }
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            daily_data = response.json()
+            
+            # Create call record
+            call = {
+                "id": str(uuid.uuid4()),
+                "callerId": callerId,
+                "receiverId": receiverId,
+                "type": type,
+                "status": "ringing",
+                "dailyRoomUrl": daily_data["url"],
+                "dailyRoomName": daily_data["name"],
+                "startedAt": datetime.now(timezone.utc).isoformat(),
+                "endedAt": None
+            }
+            await db.calls.insert_one(call)
+            call.pop("_id", None)
+            
+            # Send notification to receiver
+            notification = {
+                "id": str(uuid.uuid4()),
+                "userId": receiverId,
+                "type": "call",
+                "title": f"Incoming {type} call",
+                "message": f"Call from user",
+                "data": {"callId": call["id"], "callerId": callerId},
+                "read": False,
+                "createdAt": datetime.now(timezone.utc).isoformat()
+            }
+            await db.notifications.insert_one(notification)
+            
+            return call
+        else:
+            raise HTTPException(status_code=500, detail=f"Failed to create call room: {response.text}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Call initiation failed: {str(e)}")
+
+@api_router.post("/calls/{callId}/answer")
+async def answer_call(callId: str):
+    """Answer incoming call"""
+    await db.calls.update_one(
+        {"id": callId},
+        {"$set": {"status": "active", "answeredAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    call = await db.calls.find_one({"id": callId}, {"_id": 0})
+    return call
+
+@api_router.post("/calls/{callId}/reject")
+async def reject_call(callId: str):
+    """Reject incoming call"""
+    await db.calls.update_one(
+        {"id": callId},
+        {"$set": {"status": "rejected", "endedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True}
+
+@api_router.post("/calls/{callId}/end")
+async def end_call(callId: str):
+    """End active call"""
+    await db.calls.update_one(
+        {"id": callId},
+        {"$set": {"status": "ended", "endedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True}
+
+@api_router.get("/calls/{userId}/history")
+async def get_call_history(userId: str, limit: int = 50):
+    """Get call history"""
+    calls = await db.calls.find({
+        "$or": [{"callerId": userId}, {"receiverId": userId}]
+    }, {"_id": 0}).sort("startedAt", -1).limit(limit).to_list(limit)
+    
+    for call in calls:
+        caller = await db.users.find_one({"id": call["callerId"]}, {"_id": 0})
+        receiver = await db.users.find_one({"id": call["receiverId"]}, {"_id": 0})
+        call["caller"] = caller
+        call["receiver"] = receiver
+    
+    return calls
+
+# ===== PUSH NOTIFICATIONS =====
+
+@api_router.post("/notifications/send")
+async def send_notification(userId: str, type: str, title: str, message: str, data: dict = {}):
+    """Send push notification to user"""
+    notification = {
+        "id": str(uuid.uuid4()),
+        "userId": userId,
+        "type": type,  # like, comment, follow, message, call, etc
+        "title": title,
+        "message": message,
+        "data": data,
+        "read": False,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.notifications.insert_one(notification)
+    notification.pop("_id", None)
+    
+    # In production, this would also trigger browser push notification
+    # For now, just store in database
+    
+    return notification
+
+@api_router.get("/notifications/{userId}")
+async def get_notifications(userId: str, limit: int = 50, unreadOnly: bool = False):
+    """Get user notifications"""
+    query = {"userId": userId}
+    if unreadOnly:
+        query["read"] = False
+    
+    notifications = await db.notifications.find(query, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    return notifications
+
+@api_router.post("/notifications/{notificationId}/read")
+async def mark_notification_read(notificationId: str):
+    """Mark notification as read"""
+    await db.notifications.update_one(
+        {"id": notificationId},
+        {"$set": {"read": True, "readAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True}
+
+@api_router.post("/notifications/{userId}/read-all")
+async def mark_all_notifications_read(userId: str):
+    """Mark all notifications as read"""
+    await db.notifications.update_many(
+        {"userId": userId, "read": False},
+        {"$set": {"read": True, "readAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True}
+
+@api_router.delete("/notifications/{notificationId}")
+async def delete_notification(notificationId: str):
+    """Delete notification"""
+    await db.notifications.delete_one({"id": notificationId})
+    return {"success": True}
+
     analytics["creditsBalance"] = credits_info["balance"]
     
     # Calculate tier based on credits
