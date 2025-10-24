@@ -149,7 +149,7 @@ const Rooms = () => {
         )}
       </div>
 
-      <BottomNav active="rooms" />
+      <BottomNav active="viberooms" />
 
       {/* Create Room Modal */}
       {showCreateModal && (
