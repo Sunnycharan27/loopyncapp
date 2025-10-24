@@ -93,13 +93,61 @@ const ShareModal = ({ isOpen, onClose, item, type = "post" }) => {
       ? `${base}/post/${item.id}`
       : `${base}/reel/${item.id}`;
     
-    navigator.clipboard.writeText(link);
-    setCopied(true);
-    toast.success("Link copied to clipboard!");
+    // Fallback method for copying (works everywhere)
+    try {
+      // Try modern Clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+          setCopied(true);
+          toast.success("Link copied to clipboard!");
+        }).catch(() => {
+          // Fallback if Clipboard API fails
+          fallbackCopyText(link);
+        });
+      } else {
+        // Use fallback directly if Clipboard API not available
+        fallbackCopyText(link);
+      }
+    } catch (err) {
+      fallbackCopyText(link);
+    }
     
     setTimeout(() => {
       setCopied(false);
     }, 2000);
+  };
+
+  const fallbackCopyText = (text) => {
+    // Create temporary textarea
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = "0";
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        setCopied(true);
+        toast.success("Link copied to clipboard!");
+      } else {
+        toast.info(`Link: ${text}`, { duration: 10000 });
+      }
+    } catch (err) {
+      toast.info(`Link: ${text}`, { duration: 10000 });
+    }
+    
+    document.body.removeChild(textArea);
   };
 
   const toggleFriendSelection = (friendId) => {
