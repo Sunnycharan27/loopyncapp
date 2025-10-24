@@ -1346,7 +1346,6 @@ async def create_daily_token(roomName: str, userName: str, isOwner: bool = False
             "room_name": roomName,
             "user_name": userName,
             "is_owner": isOwner,
-            "enable_recording": isOwner,
             "start_audio_off": False,
             "start_video_off": True,
             "exp": int(datetime.now(timezone.utc).timestamp()) + 3600
