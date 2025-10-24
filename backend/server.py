@@ -1303,7 +1303,6 @@ async def create_daily_room(userId: str, roomName: str):
                     "properties": {
                         "enable_chat": False,
                         "enable_screenshare": False,
-                        "enable_recording": "cloud",
                         "start_video_off": True,
                         "start_audio_off": False,
                         "owner_only_broadcast": False,
