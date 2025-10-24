@@ -91,7 +91,7 @@ const Rooms = () => {
         ) : rooms.length === 0 ? (
           <div className="text-center py-12 glass-card">
             <Radio size={48} className="text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400 mb-2">No active rooms</p>
+            <p className="text-gray-400 mb-2">No active VibeRooms</p>
             <p className="text-gray-500 text-sm">Be the first to start a conversation!</p>
           </div>
         ) : (
