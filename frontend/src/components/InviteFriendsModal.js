@@ -50,8 +50,32 @@ const InviteFriendsModal = ({ room, onClose }) => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareLink || `${window.location.origin}/rooms/${room.id}`);
-    toast.success("Link copied to clipboard!");
+    const link = shareLink || `${window.location.origin}/viberooms/${room.id}`;
+    
+    // Try modern Clipboard API with fallback
+    const fallbackCopy = (text) => {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast.success("Link copied to clipboard!");
+      } catch (err) {
+        toast.info(`Link: ${text}`, { duration: 10000 });
+      }
+      document.body.removeChild(textArea);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link)
+        .then(() => toast.success("Link copied to clipboard!"))
+        .catch(() => fallbackCopy(link));
+    } else {
+      fallbackCopy(link);
+    }
   };
 
   const filteredFriends = friends.filter(friend =>
