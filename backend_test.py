@@ -2221,6 +2221,322 @@ class BackendTester:
         except Exception as e:
             self.log_result("Wallet Transaction Verification", False, f"Exception occurred: {str(e)}")
 
+    def test_vibe_room_creation_with_daily(self):
+        """Test: VibeRoom Creation with Daily.co Integration"""
+        try:
+            # Step 1: Create a new VibeRoom
+            payload = {
+                "name": "Test Clubhouse Room",
+                "description": "Testing room creation",
+                "category": "music",
+                "isPrivate": False,
+                "tags": ["test"]
+            }
+            params = {"userId": "demo_user"}
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify required fields
+                required_fields = ['id', 'name', 'description', 'category', 'hostId', 'participants']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result(
+                        "VibeRoom Creation", 
+                        False, 
+                        f"Room created but missing required fields: {missing_fields}",
+                        f"Response: {data}"
+                    )
+                    return
+                
+                # Verify Daily.co integration fields
+                daily_fields = ['dailyRoomUrl', 'dailyRoomName']
+                has_daily_integration = all(field in data for field in daily_fields)
+                
+                # Verify host participant
+                participants = data.get('participants', [])
+                host_participant = None
+                for p in participants:
+                    if p.get('userId') == 'demo_user':
+                        host_participant = p
+                        break
+                
+                if not host_participant:
+                    self.log_result(
+                        "VibeRoom Creation", 
+                        False, 
+                        "Room created but host not found in participants",
+                        f"Participants: {participants}"
+                    )
+                    return
+                
+                # Verify host participant properties
+                host_checks = {
+                    'role': host_participant.get('role') == 'host',
+                    'isHost': host_participant.get('isHost') == True,
+                    'raisedHand': host_participant.get('raisedHand') == False,
+                    'isMuted': host_participant.get('isMuted') == False
+                }
+                
+                failed_host_checks = [k for k, v in host_checks.items() if not v]
+                
+                if failed_host_checks:
+                    self.log_result(
+                        "VibeRoom Creation", 
+                        False, 
+                        f"Host participant properties incorrect: {failed_host_checks}",
+                        f"Host participant: {host_participant}"
+                    )
+                    return
+                
+                # Store room ID for further tests
+                self.created_room_id = data['id']
+                
+                success_details = [
+                    f"Room ID: {data['id']}",
+                    f"Name: {data['name']}",
+                    f"Host ID: {data['hostId']}",
+                    f"Participants: {len(participants)}",
+                    f"Daily.co Integration: {'✅' if has_daily_integration else '❌'}"
+                ]
+                
+                if has_daily_integration:
+                    success_details.extend([
+                        f"Daily Room URL: {data.get('dailyRoomUrl', 'N/A')}",
+                        f"Daily Room Name: {data.get('dailyRoomName', 'N/A')}"
+                    ])
+                
+                self.log_result(
+                    "VibeRoom Creation", 
+                    True, 
+                    "Successfully created VibeRoom with all required fields",
+                    "; ".join(success_details)
+                )
+                
+            else:
+                self.log_result(
+                    "VibeRoom Creation", 
+                    False, 
+                    f"Room creation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("VibeRoom Creation", False, f"Exception occurred: {str(e)}")
+    
+    def test_get_room_details(self):
+        """Test: Get Room Details"""
+        if not hasattr(self, 'created_room_id') or not self.created_room_id:
+            self.log_result("Get Room Details", False, "Skipped - no room ID available")
+            return
+            
+        try:
+            response = self.session.get(f"{BACKEND_URL}/rooms/{self.created_room_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify room exists and has correct fields
+                required_fields = ['id', 'name', 'description', 'category', 'hostId', 'participants']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result(
+                        "Get Room Details", 
+                        False, 
+                        f"Room details missing required fields: {missing_fields}",
+                        f"Response: {data}"
+                    )
+                    return
+                
+                # Verify Daily.co fields are present
+                daily_fields_present = 'dailyRoomUrl' in data and 'dailyRoomName' in data
+                
+                self.log_result(
+                    "Get Room Details", 
+                    True, 
+                    f"Successfully retrieved room details: {data['name']}",
+                    f"Room ID: {data['id']}, Daily.co Integration: {'✅' if daily_fields_present else '❌'}"
+                )
+                
+            else:
+                self.log_result(
+                    "Get Room Details", 
+                    False, 
+                    f"Get room details failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Get Room Details", False, f"Exception occurred: {str(e)}")
+    
+    def test_list_all_rooms(self):
+        """Test: List All Rooms"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/rooms")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        # Check if our created room appears in the list
+                        room_found = False
+                        if hasattr(self, 'created_room_id') and self.created_room_id:
+                            room_found = any(room.get('id') == self.created_room_id for room in data)
+                        
+                        # Verify room structure
+                        first_room = data[0]
+                        required_fields = ['id', 'name', 'hostId', 'status']
+                        missing_fields = [field for field in required_fields if field not in first_room]
+                        
+                        if missing_fields:
+                            self.log_result(
+                                "List All Rooms", 
+                                False, 
+                                f"Rooms missing required fields: {missing_fields}",
+                                f"First room: {first_room}"
+                            )
+                            return
+                        
+                        success_message = f"Successfully retrieved {len(data)} rooms"
+                        if room_found:
+                            success_message += " (created room found in list)"
+                        
+                        self.log_result(
+                            "List All Rooms", 
+                            True, 
+                            success_message,
+                            f"First room: {first_room['name']} (Host: {first_room['hostId']})"
+                        )
+                    else:
+                        self.log_result(
+                            "List All Rooms", 
+                            True, 
+                            "Rooms endpoint working but no rooms found",
+                            "Empty rooms list is acceptable"
+                        )
+                else:
+                    self.log_result(
+                        "List All Rooms", 
+                        False, 
+                        "Rooms response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "List All Rooms", 
+                    False, 
+                    f"List rooms failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("List All Rooms", False, f"Exception occurred: {str(e)}")
+    
+    def test_daily_room_creation_direct(self):
+        """Test: Direct Daily.co Room Creation"""
+        try:
+            params = {
+                "userId": "demo_user",
+                "roomName": "Test Audio Room"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/daily/rooms", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                required_fields = ['dailyRoomUrl', 'dailyRoomName', 'success']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    self.log_result(
+                        "Daily.co Room Creation", 
+                        False, 
+                        f"Daily room response missing required fields: {missing_fields}",
+                        f"Response: {data}"
+                    )
+                    return
+                
+                if data.get('success') == True:
+                    self.log_result(
+                        "Daily.co Room Creation", 
+                        True, 
+                        "Successfully created Daily.co room",
+                        f"Room URL: {data['dailyRoomUrl']}, Room Name: {data['dailyRoomName']}"
+                    )
+                else:
+                    self.log_result(
+                        "Daily.co Room Creation", 
+                        False, 
+                        "Daily room creation returned success=false",
+                        f"Response: {data}"
+                    )
+                
+            else:
+                self.log_result(
+                    "Daily.co Room Creation", 
+                    False, 
+                    f"Daily room creation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Daily.co Room Creation", False, f"Exception occurred: {str(e)}")
+    
+    def test_daily_token_generation(self):
+        """Test: Daily.co Token Generation"""
+        try:
+            params = {
+                "roomName": "test-room-123",
+                "userName": "Demo User",
+                "isOwner": "true"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/daily/token", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if 'token' in data and 'success' in data:
+                    if data.get('success') == True and data.get('token'):
+                        token_length = len(data['token'])
+                        self.log_result(
+                            "Daily.co Token Generation", 
+                            True, 
+                            "Successfully generated Daily.co meeting token",
+                            f"Token length: {token_length} characters"
+                        )
+                    else:
+                        self.log_result(
+                            "Daily.co Token Generation", 
+                            False, 
+                            "Token generation returned success=false or empty token",
+                            f"Response: {data}"
+                        )
+                else:
+                    self.log_result(
+                        "Daily.co Token Generation", 
+                        False, 
+                        "Token response missing required fields",
+                        f"Response: {data}"
+                    )
+                
+            else:
+                self.log_result(
+                    "Daily.co Token Generation", 
+                    False, 
+                    f"Token generation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Daily.co Token Generation", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
