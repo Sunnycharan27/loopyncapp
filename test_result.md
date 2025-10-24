@@ -381,7 +381,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Final API Smoke Tests for Go-Live"
+    - "Daily.co Audio Integration Testing Complete"
   stuck_tasks:
     - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
