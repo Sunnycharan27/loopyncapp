@@ -213,7 +213,7 @@ const CreateRoomModal = ({ onClose, onSuccess, currentUser }) => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-card p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold neon-text mb-4">Start a Vibe Room</h2>
+        <h2 className="text-xl font-bold neon-text mb-4">Start a VibeRoom 🎙️</h2>
         
         <div className="space-y-4">
           <div>
