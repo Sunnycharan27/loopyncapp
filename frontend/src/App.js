@@ -21,7 +21,7 @@ import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Settings from "./pages/Settings";
 import Rooms from "./pages/Rooms";
-import RoomDetail from "./pages/RoomDetail";
+import RoomDetailClubhouse from "./pages/RoomDetailClubhouse";
 import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import { Toaster } from "sonner";
