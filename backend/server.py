@@ -668,28 +668,43 @@ async def signup(req: UserCreate):
             password=req.password
         )
         
+        # Generate verification code
+        verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
         # Also create user in MongoDB for app data (posts, tribes, etc.)
         mongo_user = User(
             id=user['user_id'],
             handle=req.handle,
             name=req.name,
             email=req.email,
-            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={req.handle}"
+            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={req.handle}",
+            isVerified=False,
+            verificationCode=verification_code
         )
         doc = mongo_user.model_dump()
         await db.users.insert_one(doc)
+        
+        # Mock email - log to console
+        print(f"\n=== VERIFICATION EMAIL ===")
+        print(f"To: {req.email}")
+        print(f"Subject: Verify your Loopync account")
+        print(f"Code: {verification_code}")
+        print(f"========================\n")
         
         # Generate JWT token
         token = create_access_token(user['user_id'])
         
         return {
             "token": token,
+            "needsVerification": True,
+            "verificationCode": verification_code,  # Only for testing
             "user": {
                 "id": user['user_id'],
                 "handle": req.handle,
                 "name": user['name'],
                 "email": user['email'],
-                "avatar": mongo_user.avatar
+                "avatar": mongo_user.avatar,
+                "isVerified": False
             }
         }
     except HTTPException:
