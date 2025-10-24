@@ -381,7 +381,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Daily.co Audio Integration Testing Complete"
+    - "Comprehensive Backend API Testing - All 50+ Endpoints"
   stuck_tasks:
     - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
