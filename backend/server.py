@@ -1440,7 +1440,9 @@ async def create_room(room: RoomCreate, userId: str):
             "avatar": user.get("avatar", ""),
             "joinedAt": datetime.now(timezone.utc).isoformat(),
             "isMuted": False,
-            "isHost": True
+            "isHost": True,
+            "role": "host",
+            "raisedHand": False
         }],
         totalJoins=1,
         peakParticipants=1
