@@ -52,7 +52,7 @@ const Rooms = () => {
 
   return (
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
-      <TopHeader title="Vibe Rooms" subtitle="Join live audio conversations" />
+      <TopHeader title="VibeRooms" subtitle="Join live audio conversations 🎙️ Clubhouse-style" />
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Create Room Button */}
