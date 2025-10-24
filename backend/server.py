@@ -957,6 +957,172 @@ async def change_password(data: dict):
     
     return {"success": True, "message": "Password changed successfully"}
 
+@api_router.post("/auth/verify-email")
+async def verify_email(data: dict):
+    """Verify email with code"""
+    email = data.get("email")
+    code = data.get("code")
+    
+    # Find user in MongoDB
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check verification code
+    if user.get("verificationCode") != code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    # Mark as verified
+    await db.users.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "isVerified": True,
+                "verificationCode": None
+            }
+        }
+    )
+    
+    return {"success": True, "message": "Email verified successfully"}
+
+@api_router.post("/auth/resend-verification")
+async def resend_verification(data: dict):
+    """Resend verification code"""
+    email = data.get("email")
+    
+    # Find user
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if user.get("isVerified"):
+        raise HTTPException(status_code=400, detail="Email already verified")
+    
+    # Generate new code
+    verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    # Update code
+    await db.users.update_one(
+        {"email": email},
+        {"$set": {"verificationCode": verification_code}}
+    )
+    
+    # Mock email - log to console
+    print(f"\n=== VERIFICATION EMAIL ===")
+    print(f"To: {email}")
+    print(f"Subject: Verify your Loopync account")
+    print(f"Code: {verification_code}")
+    print(f"========================\n")
+    
+    return {
+        "success": True,
+        "message": "Verification code sent",
+        "code": verification_code  # Only for testing
+    }
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: dict):
+    """Request password reset"""
+    email = data.get("email")
+    
+    # Find user
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        # Don't reveal if email exists
+        return {"success": True, "message": "If the email exists, a reset code will be sent"}
+    
+    # Generate 6-digit code
+    reset_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    expires = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    
+    # Store reset token
+    await db.users.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "resetPasswordToken": reset_code,
+                "resetPasswordExpires": expires
+            }
+        }
+    )
+    
+    # Mock email - log to console
+    print(f"\n=== PASSWORD RESET EMAIL ===")
+    print(f"To: {email}")
+    print(f"Subject: Reset your Loopync password")
+    print(f"Code: {reset_code}")
+    print(f"Expires: {expires}")
+    print(f"===========================\n")
+    
+    return {
+        "success": True,
+        "message": "If the email exists, a reset code will be sent",
+        "code": reset_code  # Only for testing
+    }
+
+@api_router.post("/auth/verify-reset-code")
+async def verify_reset_code(data: dict):
+    """Verify password reset code"""
+    email = data.get("email")
+    code = data.get("code")
+    
+    # Find user
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check code
+    if user.get("resetPasswordToken") != code:
+        raise HTTPException(status_code=400, detail="Invalid reset code")
+    
+    # Check expiration
+    if user.get("resetPasswordExpires"):
+        expires = datetime.fromisoformat(user.get("resetPasswordExpires"))
+        if datetime.now(timezone.utc) > expires:
+            raise HTTPException(status_code=400, detail="Reset code has expired")
+    
+    return {"success": True, "message": "Code verified", "token": code}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: dict):
+    """Reset password with verified code"""
+    email = data.get("email")
+    code = data.get("code")
+    new_password = data.get("newPassword")
+    
+    # Find user
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Verify code again
+    if user.get("resetPasswordToken") != code:
+        raise HTTPException(status_code=400, detail="Invalid reset code")
+    
+    # Check expiration
+    if user.get("resetPasswordExpires"):
+        expires = datetime.fromisoformat(user.get("resetPasswordExpires"))
+        if datetime.now(timezone.utc) > expires:
+            raise HTTPException(status_code=400, detail="Reset code has expired")
+    
+    # Update password in Google Sheets
+    sheets_user = sheets_db.find_user_by_email(email)
+    if sheets_user:
+        sheets_db.update_user_password(email, new_password)
+    
+    # Clear reset token
+    await db.users.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "resetPasswordToken": None,
+                "resetPasswordExpires": None
+            }
+        }
+    )
+    
+    return {"success": True, "message": "Password reset successfully"}
+
 @api_router.get("/search")
 async def search_all(q: str, currentUserId: str = None, limit: int = 20):
     """Global search for users, posts, tribes, venues, events"""
