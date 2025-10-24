@@ -16,7 +16,7 @@ const Rooms = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const categories = [
-    { id: "all", name: "All Rooms", icon: <Radio size={16} /> },
+    { id: "all", name: "All VibeRooms", icon: <Radio size={16} /> },
     { id: "music", name: "Music", icon: <Music size={16} /> },
     { id: "tech", name: "Tech", icon: <Code size={16} /> },
     { id: "gaming", name: "Gaming", icon: <Gamepad2 size={16} /> },
