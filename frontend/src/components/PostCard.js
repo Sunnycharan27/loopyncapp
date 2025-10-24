@@ -35,8 +35,34 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
 
   const handleCopyLink = () => {
     const base = window?.location?.origin || '';
-    navigator.clipboard.writeText(`${base}/post/${post.id}`);
-    toast.success("Link copied to clipboard!");
+    const link = `${base}/post/${post.id}`;
+    
+    // Fallback copy function
+    const fallbackCopy = (text) => {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast.success("Link copied to clipboard!");
+      } catch (err) {
+        toast.info(`Link: ${text}`, { duration: 10000 });
+      }
+      document.body.removeChild(textArea);
+    };
+
+    // Try modern API with fallback
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link)
+        .then(() => toast.success("Link copied to clipboard!"))
+        .catch(() => fallbackCopy(link));
+    } else {
+      fallbackCopy(link);
+    }
+    
     setShowQuickActions(false);
   };
 
