@@ -8,7 +8,7 @@ const BottomNav = ({ active }) => {
   const navItems = [
     { id: "home", label: "Timeline", icon: Home, path: "/" },
     { id: "vibezone", label: "VibeZone", icon: Film, path: "/vibezone" },
-    { id: "rooms", label: "Rooms", icon: Radio, path: "/rooms" },
+    { id: "viberooms", label: "VibeRooms", icon: Radio, path: "/viberooms" },
     { id: "discover", label: "Discover", icon: Compass, path: "/discover" },
     { id: "profile", label: "Profile", icon: User, path: "/profile" },
   ];
