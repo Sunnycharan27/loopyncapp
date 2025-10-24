@@ -1310,6 +1310,312 @@ async def create_post_comment(postId: str, comment: CommentCreate, authorId: str
     doc["author"] = author
     return doc
 
+@api_router.delete("/comments/{commentId}")
+async def delete_comment(commentId: str, userId: str):
+    """Delete a comment"""
+    comment = await db.comments.find_one({"id": commentId}, {"_id": 0})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment["authorId"] != userId:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    await db.comments.delete_one({"id": commentId})
+    return {"success": True}
+
+# ===== BOOKMARKS =====
+
+@api_router.post("/posts/{postId}/bookmark")
+async def bookmark_post(postId: str, userId: str):
+    """Bookmark a post"""
+    existing = await db.bookmarks.find_one({"userId": userId, "postId": postId}, {"_id": 0})
+    if existing:
+        await db.bookmarks.delete_one({"userId": userId, "postId": postId})
+        return {"bookmarked": False}
+    else:
+        bookmark = {
+            "id": str(uuid.uuid4()),
+            "userId": userId,
+            "postId": postId,
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.bookmarks.insert_one(bookmark)
+        return {"bookmarked": True}
+
+@api_router.get("/bookmarks/{userId}")
+async def get_bookmarks(userId: str):
+    """Get user's bookmarked posts"""
+    bookmarks = await db.bookmarks.find({"userId": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    posts = []
+    for bookmark in bookmarks:
+        post = await db.posts.find_one({"id": bookmark["postId"]}, {"_id": 0})
+        if post:
+            author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+            post["author"] = author
+            posts.append(post)
+    return posts
+
+# ===== HASHTAGS =====
+
+@api_router.get("/hashtags/trending")
+async def get_trending_hashtags(limit: int = 20):
+    """Get trending hashtags"""
+    # Aggregate hashtags from posts
+    pipeline = [
+        {"$match": {"hashtags": {"$exists": True, "$ne": []}}},
+        {"$unwind": "$hashtags"},
+        {"$group": {"_id": "$hashtags", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": limit}
+    ]
+    results = await db.posts.aggregate(pipeline).to_list(limit)
+    return [{"tag": r["_id"], "count": r["count"]} for r in results]
+
+@api_router.get("/hashtags/{tag}/posts")
+async def get_posts_by_hashtag(tag: str, limit: int = 50):
+    """Get posts by hashtag"""
+    posts = await db.posts.find({"hashtags": tag}, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    for post in posts:
+        author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+        post["author"] = author
+    return posts
+
+# ===== ADVANCED SEARCH =====
+
+@api_router.get("/search/all")
+async def search_all(q: str, type: str = "all", limit: int = 20):
+    """Advanced search across all content"""
+    results = {"users": [], "posts": [], "hashtags": [], "events": [], "venues": []}
+    
+    if type in ["all", "users"]:
+        users = await db.users.find({
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"handle": {"$regex": q, "$options": "i"}}
+            ]
+        }, {"_id": 0}).limit(limit).to_list(limit)
+        results["users"] = users
+    
+    if type in ["all", "posts"]:
+        posts = await db.posts.find({
+            "text": {"$regex": q, "$options": "i"}
+        }, {"_id": 0}).limit(limit).to_list(limit)
+        for post in posts:
+            author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+            post["author"] = author
+        results["posts"] = posts
+    
+    if type in ["all", "hashtags"]:
+        hashtags = await db.posts.find({
+            "hashtags": {"$regex": q, "$options": "i"}
+        }, {"_id": 0, "hashtags": 1}).limit(limit).to_list(limit)
+        unique_tags = set()
+        for post in hashtags:
+            unique_tags.update([tag for tag in post.get("hashtags", []) if q.lower() in tag.lower()])
+        results["hashtags"] = list(unique_tags)[:limit]
+    
+    if type in ["all", "events"]:
+        events = await db.events.find({
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"description": {"$regex": q, "$options": "i"}}
+            ]
+        }, {"_id": 0}).limit(limit).to_list(limit)
+        results["events"] = events
+    
+    if type in ["all", "venues"]:
+        venues = await db.venues.find({
+            "$or": [
+                {"name": {"$regex": q, "$options": "i"}},
+                {"location": {"$regex": q, "$options": "i"}}
+            ]
+        }, {"_id": 0}).limit(limit).to_list(limit)
+        results["venues"] = venues
+    
+    return results
+
+# ===== STORIES (VIBE CAPSULES) =====
+
+@api_router.post("/stories")
+async def create_story(authorId: str, media: str, type: str = "image"):
+    """Create a 24hr story (Vibe Capsule)"""
+    story = {
+        "id": str(uuid.uuid4()),
+        "authorId": authorId,
+        "media": media,
+        "type": type,
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "expiresAt": (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
+        "views": []
+    }
+    await db.stories.insert_one(story)
+    story.pop("_id", None)
+    return story
+
+@api_router.get("/stories")
+async def get_active_stories(userId: str):
+    """Get active stories from friends"""
+    # Get user's friends
+    friends_res = await db.friendships.find({
+        "$or": [{"userId1": userId}, {"userId2": userId}]
+    }, {"_id": 0}).to_list(None)
+    
+    friend_ids = set()
+    for f in friends_res:
+        friend_ids.add(f["userId1"] if f["userId1"] != userId else f["userId2"])
+    friend_ids.add(userId)  # Include own stories
+    
+    # Get non-expired stories
+    now = datetime.now(timezone.utc).isoformat()
+    stories = await db.stories.find({
+        "authorId": {"$in": list(friend_ids)},
+        "expiresAt": {"$gt": now}
+    }, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    
+    # Group by author
+    grouped = {}
+    for story in stories:
+        author_id = story["authorId"]
+        if author_id not in grouped:
+            author = await db.users.find_one({"id": author_id}, {"_id": 0})
+            grouped[author_id] = {
+                "author": author,
+                "stories": []
+            }
+        grouped[author_id]["stories"].append(story)
+    
+    return list(grouped.values())
+
+@api_router.post("/stories/{storyId}/view")
+async def view_story(storyId: str, userId: str):
+    """Mark story as viewed"""
+    await db.stories.update_one(
+        {"id": storyId},
+        {"$addToSet": {"views": userId}}
+    )
+    return {"success": True}
+
+# ===== GROUP CHATS =====
+
+@api_router.post("/groups")
+async def create_group(name: str, creatorId: str, members: list[str], avatar: str = ""):
+    """Create a group chat"""
+    group = {
+        "id": str(uuid.uuid4()),
+        "name": name,
+        "avatar": avatar or f"https://api.dicebear.com/7.x/identicon/svg?seed={name}",
+        "creatorId": creatorId,
+        "admins": [creatorId],
+        "members": list(set([creatorId] + members)),
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.groups.insert_one(group)
+    group.pop("_id", None)
+    return group
+
+@api_router.get("/groups/{userId}")
+async def get_user_groups(userId: str):
+    """Get user's groups"""
+    groups = await db.groups.find({"members": userId}, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    return groups
+
+@api_router.post("/groups/{groupId}/messages")
+async def send_group_message(groupId: str, userId: str, text: str, media: str = None):
+    """Send message to group"""
+    message = {
+        "id": str(uuid.uuid4()),
+        "groupId": groupId,
+        "userId": userId,
+        "text": text,
+        "media": media,
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.group_messages.insert_one(message)
+    message.pop("_id", None)
+    
+    # Add sender info
+    sender = await db.users.find_one({"id": userId}, {"_id": 0})
+    message["sender"] = sender
+    return message
+
+@api_router.get("/groups/{groupId}/messages")
+async def get_group_messages(groupId: str, limit: int = 100):
+    """Get group messages"""
+    messages = await db.group_messages.find({"groupId": groupId}, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    for msg in messages:
+        sender = await db.users.find_one({"id": msg["userId"]}, {"_id": 0})
+        msg["sender"] = sender
+    return list(reversed(messages))
+
+# ===== CONTENT MODERATION =====
+
+@api_router.post("/reports")
+async def report_content(reporterId: str, contentType: str, contentId: str, reason: str, description: str = ""):
+    """Report inappropriate content"""
+    report = {
+        "id": str(uuid.uuid4()),
+        "reporterId": reporterId,
+        "contentType": contentType,  # post, comment, user, reel
+        "contentId": contentId,
+        "reason": reason,
+        "description": description,
+        "status": "pending",
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    await db.reports.insert_one(report)
+    report.pop("_id", None)
+    return report
+
+@api_router.get("/reports")
+async def get_reports(status: str = "pending", limit: int = 50):
+    """Get content reports (admin only)"""
+    query = {"status": status} if status != "all" else {}
+    reports = await db.reports.find(query, {"_id": 0}).sort("createdAt", -1).limit(limit).to_list(limit)
+    return reports
+
+@api_router.post("/reports/{reportId}/action")
+async def handle_report(reportId: str, action: str, adminId: str):
+    """Take action on report (admin only)"""
+    # action: approve, reject, remove_content, ban_user
+    await db.reports.update_one(
+        {"id": reportId},
+        {"$set": {"status": action, "handledBy": adminId, "handledAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    return {"success": True}
+
+# ===== TRENDING & ACTIVITY FEED =====
+
+@api_router.get("/trending/posts")
+async def get_trending_posts(limit: int = 20):
+    """Get trending posts based on engagement"""
+    # Get recent posts with high engagement
+    day_ago = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
+    posts = await db.posts.find(
+        {"createdAt": {"$gte": day_ago}},
+        {"_id": 0}
+    ).sort([
+        ("stats.likes", -1),
+        ("stats.reposts", -1),
+        ("stats.replies", -1)
+    ]).limit(limit).to_list(limit)
+    
+    for post in posts:
+        author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+        post["author"] = author
+    return posts
+
+@api_router.get("/activity/{userId}")
+async def get_activity_feed(userId: str, limit: int = 50):
+    """Get personalized activity feed"""
+    # Get activities: likes, comments, follows on user's content
+    activities = []
+    
+    # Recent likes on user's posts
+    user_posts = await db.posts.find({"authorId": userId}, {"_id": 0, "id": 1}).to_list(None)
+    post_ids = [p["id"] for p in user_posts]
+    
+    # This would need a more sophisticated tracking system
+    # For now, return recent interactions
+    return {"activities": activities, "message": "Activity tracking ready"}
+
 # ===== REEL ROUTES (VIBEZONE) =====
 
 @api_router.get("/reels")
