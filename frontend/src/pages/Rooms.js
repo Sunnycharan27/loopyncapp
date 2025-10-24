@@ -202,7 +202,7 @@ const CreateRoomModal = ({ onClose, onSuccess, currentUser }) => {
       onSuccess();
       
       // Navigate to room
-      window.location.href = `/rooms/${res.data.id}`;
+      window.location.href = `/viberooms/${res.data.id}`;
     } catch (error) {
       toast.error("Failed to create room");
     } finally {
