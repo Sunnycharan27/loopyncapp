@@ -2291,6 +2291,15 @@ class BackendTester:
         print("-" * 60)
         self.test_wallet_and_ticket_booking_system()
         
+        # Priority 8: VibeRoom & Daily.co Integration (REQUESTED TEST)
+        print("\n🎵 PRIORITY 8: VIBEROOM & DAILY.CO INTEGRATION (REQUESTED TEST)")
+        print("-" * 60)
+        self.test_daily_room_creation_direct()
+        self.test_vibe_room_creation_with_daily()
+        self.test_get_room_details()
+        self.test_list_all_rooms()
+        self.test_daily_token_generation()
+        
         # File Upload Tests
         print("\n📁 FILE UPLOAD TESTS")
         print("-" * 60)
