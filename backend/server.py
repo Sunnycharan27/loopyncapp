@@ -121,6 +121,7 @@ class Post(BaseModel):
     text: str
     media: Optional[str] = None
     audience: str = "public"
+    hashtags: List[str] = Field(default_factory=list)
     stats: dict = Field(default_factory=lambda: {"likes": 0, "quotes": 0, "reposts": 0, "replies": 0})
     likedBy: List[str] = Field(default_factory=list)
     repostedBy: List[str] = Field(default_factory=list)
@@ -130,6 +131,7 @@ class PostCreate(BaseModel):
     text: str
     media: Optional[str] = None
     audience: str = "public"
+    hashtags: List[str] = []
 
 class Reel(BaseModel):
     model_config = ConfigDict(extra="ignore")
