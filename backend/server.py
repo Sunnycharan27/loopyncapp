@@ -1497,14 +1497,20 @@ async def join_room(roomId: str, userId: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Add participant
+    # Determine role based on position
+    is_host = userId == room.get("hostId")
+    is_moderator = userId in room.get("moderators", [])
+    
+    # Add participant with role
     new_participant = {
         "userId": userId,
         "userName": user.get("name", "Unknown"),
         "avatar": user.get("avatar", ""),
         "joinedAt": datetime.now(timezone.utc).isoformat(),
-        "isMuted": False,
-        "isHost": False
+        "isMuted": not (is_host or is_moderator),  # Host and mods unmuted by default
+        "isHost": is_host,
+        "role": "host" if is_host else ("moderator" if is_moderator else "audience"),
+        "raisedHand": False
     }
     participants.append(new_participant)
     
