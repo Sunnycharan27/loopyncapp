@@ -63,11 +63,9 @@ const RoomDetail = () => {
 
       setCallObject(newCallObject);
       
-      // Join with token
+      // Join with token only (token contains room info)
       await newCallObject.join({ 
-        url: room.dailyRoomUrl,
-        token: tokenRes.data.token,
-        userName: currentUser.name 
+        token: tokenRes.data.token
       });
       
       toast.success("Joined audio room!");
