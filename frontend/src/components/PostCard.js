@@ -224,7 +224,10 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
               <span className="text-sm">{post.likeCount || 0}</span>
             </button>
 
-            <button className="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+            <button 
+              onClick={() => setShowComments(!showComments)}
+              className={`flex items-center gap-2 hover:text-cyan-400 transition-colors ${showComments ? 'text-cyan-400' : ''}`}
+            >
               <MessageCircle size={18} />
               <span className="text-sm">{post.stats?.replies || 0}</span>
             </button>
