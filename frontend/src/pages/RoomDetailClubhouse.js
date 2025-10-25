@@ -98,11 +98,9 @@ const RoomDetailClubhouse = () => {
         showFullscreenButton: false,
       });
 
-      // Join with token for authenticated access
+      // Join with token only (token contains room info)
       await daily.join({
-        url: room.dailyRoomUrl,
-        token: meetingToken,
-        userName: currentUser.name
+        token: meetingToken
       });
 
       // Start with mic muted for audience
