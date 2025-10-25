@@ -1804,7 +1804,7 @@ async def create_daily_room(userId: str, roomName: str):
                         "start_video_off": True,
                         "start_audio_off": False,
                         "owner_only_broadcast": False,
-                        "exp": int(datetime.now(timezone.utc).timestamp()) + 3600  # 1 hour
+                        "exp": int(datetime.now(timezone.utc).timestamp()) + 86400  # 24 hours
                     }
                 },
                 headers={
