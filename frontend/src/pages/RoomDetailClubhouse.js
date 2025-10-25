@@ -28,16 +28,29 @@ const RoomDetailClubhouse = () => {
   }, [roomId]);
 
   useEffect(() => {
-    if (room?.dailyRoomUrl && !callFrame) {
-      initializeDailyAudio();
-    }
+    const initRoom = async () => {
+      if (room?.dailyRoomUrl && !callFrame && currentUser?.id) {
+        // First, join the room on backend
+        try {
+          await axios.post(`${API}/rooms/${roomId}/join?userId=${currentUser.id}`);
+          // Then initialize audio
+          await initializeDailyAudio();
+        } catch (error) {
+          console.error("Failed to join room:", error);
+          toast.error("Failed to join room");
+        }
+      }
+    };
+    
+    initRoom();
+    
     return () => {
       if (callFrame) {
         callFrame.leave();
         callFrame.destroy();
       }
     };
-  }, [room]);
+  }, [room?.id, currentUser?.id]); // Only run when room or user changes
 
   const fetchRoom = async () => {
     try {
