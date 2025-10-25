@@ -1846,7 +1846,7 @@ async def create_daily_token(roomName: str, userName: str, isOwner: bool = False
             "is_owner": isOwner,
             "start_audio_off": False,
             "start_video_off": True,
-            "exp": int(datetime.now(timezone.utc).timestamp()) + 3600
+            "exp": int(datetime.now(timezone.utc).timestamp()) + 86400  # 24 hours
         }
         
         async with httpx.AsyncClient() as client:
