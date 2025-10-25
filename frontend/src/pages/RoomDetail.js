@@ -37,15 +37,25 @@ const RoomDetail = () => {
   };
 
   const handleJoinRoom = async () => {
-    if (!room?.dailyRoomUrl) {
+    if (!room?.dailyRoomUrl || !room?.dailyRoomName) {
       toast.error("Audio room not available");
       return;
     }
 
     setJoiningCall(true);
     try {
+      // Join room on backend
       await axios.post(`${API}/rooms/${roomId}/join?userId=${currentUser.id}`);
       
+      // Generate meeting token for secure access
+      const tokenRes = await axios.post(
+        `${API}/daily/token?roomName=${room.dailyRoomName}&userName=${encodeURIComponent(currentUser.name)}&isOwner=${room.hostId === currentUser.id}`
+      );
+      
+      if (!tokenRes.data?.token) {
+        throw new Error("Failed to get meeting token");
+      }
+
       const newCallObject = DailyIframe.createCallObject({
         audioSource: true,
         videoSource: false,
@@ -53,15 +63,18 @@ const RoomDetail = () => {
 
       setCallObject(newCallObject);
       
+      // Join with token
       await newCallObject.join({ 
         url: room.dailyRoomUrl,
+        token: tokenRes.data.token,
         userName: currentUser.name 
       });
       
       toast.success("Joined audio room!");
       fetchRoom();
     } catch (error) {
-      toast.error("Failed to join audio");
+      console.error("Failed to join audio:", error);
+      toast.error(`Failed to join audio: ${error.message || 'Unknown error'}`);
       setCallObject(null);
     } finally {
       setJoiningCall(false);
