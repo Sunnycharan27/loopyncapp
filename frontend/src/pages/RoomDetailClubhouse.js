@@ -52,12 +52,27 @@ const RoomDetailClubhouse = () => {
   };
 
   const initializeDailyAudio = async () => {
-    if (!room?.dailyRoomUrl) {
+    if (!room?.dailyRoomUrl || !room?.dailyRoomName) {
       toast.error("Audio room not available");
       return;
     }
 
     try {
+      // First, generate a meeting token for secure access
+      const myRole = getCurrentUserRole();
+      const isOwner = myRole === "host" || myRole === "moderator";
+      
+      const tokenRes = await axios.post(
+        `${API}/daily/token?roomName=${room.dailyRoomName}&userName=${encodeURIComponent(currentUser.name)}&isOwner=${isOwner}`
+      );
+      
+      if (!tokenRes.data?.token) {
+        throw new Error("Failed to get meeting token");
+      }
+
+      const meetingToken = tokenRes.data.token;
+
+      // Create Daily frame for audio-only
       const daily = DailyIframe.createFrame({
         iframeStyle: {
           position: "absolute",
@@ -70,27 +85,39 @@ const RoomDetailClubhouse = () => {
         showFullscreenButton: false,
       });
 
+      // Join with token for authenticated access
       await daily.join({
         url: room.dailyRoomUrl,
+        token: meetingToken,
         userName: currentUser.name
       });
 
       // Start with mic muted for audience
-      const myRole = getCurrentUserRole();
       if (myRole === "audience") {
         daily.setLocalAudio(false);
         setIsMuted(true);
+      } else {
+        // Speakers start unmuted
+        daily.setLocalAudio(true);
+        setIsMuted(false);
       }
 
       setCallFrame(daily);
       dailyRef.current = daily;
 
+      // Listen for Daily.co events
       daily.on("participant-joined", () => fetchRoom());
       daily.on("participant-left", () => fetchRoom());
+      daily.on("error", (error) => {
+        console.error("Daily.co error:", error);
+        toast.error("Audio connection error");
+      });
+      
+      toast.success("Connected to audio!");
       
     } catch (error) {
       console.error("Failed to initialize audio:", error);
-      toast.error("Failed to connect to audio");
+      toast.error(`Failed to connect to audio: ${error.message || 'Unknown error'}`);
     }
   };
 
