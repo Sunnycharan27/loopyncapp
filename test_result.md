@@ -381,7 +381,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive Backend API Testing - All 50+ Endpoints"
+    - "Complete Email/Password Authentication Flow Testing"
   stuck_tasks:
     - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
