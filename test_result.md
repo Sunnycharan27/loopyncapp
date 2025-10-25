@@ -2689,7 +2689,7 @@ backend:
           - Successfully retrieved uploaded file using returned URL path
           - Correct HTTP 200 response with proper content-type headers
           - File served correctly through ingress routing
-          - Full URL construction working: https://vibe-superapp.preview.emergentagent.com/api/uploads/{filename}
+          - Full URL construction working: https://vibe-connect-26.preview.emergentagent.com/api/uploads/{filename}
           
           Static file upload and retrieval system is fully functional.
 
