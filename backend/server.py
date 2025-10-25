@@ -1902,7 +1902,7 @@ async def create_room(room: RoomCreate, userId: str):
                             "enable_screenshare": False,
                             "start_video_off": True,
                             "start_audio_off": False,
-                            "exp": int(datetime.now(timezone.utc).timestamp()) + 3600
+                            "exp": int(datetime.now(timezone.utc).timestamp()) + 86400  # 24 hours
                         }
                     },
                     headers={
