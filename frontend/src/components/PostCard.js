@@ -253,6 +253,13 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
         </div>
       </div>
 
+      {/* Comments Section */}
+      {showComments && (
+        <div className="border-t border-gray-700 pt-4">
+          <CommentsSection postId={post.id} />
+        </div>
+      )}
+
       {/* Share Modal */}
       <ShareModal
         isOpen={showShareModal}
