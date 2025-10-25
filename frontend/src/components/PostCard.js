@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2, Bookmark
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import ShareModal from "./ShareModal";
+import CommentsSection from "./CommentsSection";
 
 const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
   const navigate = useNavigate();
@@ -11,8 +12,6 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
   const [selectedReaction, setSelectedReaction] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
   
   const isLiked = post.likedBy?.includes(currentUser?.id);
   const isReposted = post.repostedBy?.includes(currentUser?.id);
