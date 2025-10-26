@@ -130,8 +130,42 @@ const RoomDetailClubhouse = () => {
           
           if (mediaType === "audio") {
             console.log(`Playing audio for user ${user.uid}`);
-            user.audioTrack.play();
-            toast.success(`User is now speaking`);
+            
+            // Check if audioTrack exists
+            if (user.audioTrack) {
+              try {
+                // Play audio with proper error handling
+                await user.audioTrack.play();
+                console.log(`✅ Audio playing for user ${user.uid}`);
+                toast.success(`🔊 User is now speaking`);
+              } catch (playError) {
+                console.error(`Failed to play audio for user ${user.uid}:`, playError);
+                
+                // Handle browser autoplay policy
+                if (playError.name === 'NotAllowedError' || playError.message?.includes('autoplay')) {
+                  toast.warning(`Click anywhere to enable audio playback`, {
+                    duration: 5000,
+                  });
+                  
+                  // Add click listener to resume playback
+                  const resumeAudio = async () => {
+                    try {
+                      await user.audioTrack.play();
+                      toast.success(`🔊 Audio enabled!`);
+                      document.removeEventListener('click', resumeAudio);
+                    } catch (e) {
+                      console.error('Failed to resume audio:', e);
+                    }
+                  };
+                  document.addEventListener('click', resumeAudio, { once: true });
+                } else {
+                  toast.error(`Failed to play audio: ${playError.message}`);
+                }
+              }
+            } else {
+              console.warn(`⚠️ Audio track not available for user ${user.uid}`);
+              toast.warning(`Audio track not ready for this user`);
+            }
           }
         } catch (error) {
           console.error(`Error subscribing to user ${user.uid}:`, error);
