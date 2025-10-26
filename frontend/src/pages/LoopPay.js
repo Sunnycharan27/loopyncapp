@@ -13,12 +13,16 @@ const LoopPay = () => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   
-  const [loopCredits, setLoopCredits] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(0); // Money balance
+  const [loopCredits, setLoopCredits] = useState(0); // Reward credits
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [vibeRank, setVibeRank] = useState("Bronze");
   const [showRedeemModal, setShowRedeemModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddMoneyModal, setShowAddMoneyModal] = useState(false);
+  const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
+  const [addMoneyAmount, setAddMoneyAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("upi"); // upi, card, netbanking
   const [earnedThisWeek, setEarnedThisWeek] = useState(0);
   const [spentThisWeek, setSpentThisWeek] = useState(0);
 
