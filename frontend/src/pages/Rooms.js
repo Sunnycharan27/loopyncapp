@@ -188,14 +188,21 @@ const CreateRoomModal = ({ onClose, onSuccess, currentUser }) => {
       return;
     }
 
+    if (!currentUser || !currentUser.id) {
+      toast.error("User not authenticated. Please login again.");
+      return;
+    }
+
     setCreating(true);
     try {
-      const res = await axios.post(`${API}/rooms?userId=${currentUser.id}`, {
+      const res = await axios.post(`${API}/rooms`, {
         name: name.trim(),
         description: description.trim(),
         category,
         isPrivate,
         tags: []
+      }, {
+        params: { userId: currentUser.id }
       });
       
       toast.success("Room created successfully!");
@@ -204,7 +211,9 @@ const CreateRoomModal = ({ onClose, onSuccess, currentUser }) => {
       // Navigate to room
       window.location.href = `/viberooms/${res.data.id}`;
     } catch (error) {
-      toast.error("Failed to create room");
+      console.error("Room creation error:", error);
+      const errorMsg = error.response?.data?.detail || "Failed to create room";
+      toast.error(errorMsg);
     } finally {
       setCreating(false);
     }
