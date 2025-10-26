@@ -439,6 +439,15 @@ const RoomDetailClubhouse = () => {
           </div>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && room && (
+        <UniversalShareModal
+          item={room}
+          type="room"
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </div>
   );
 };
