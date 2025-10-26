@@ -550,8 +550,97 @@ const Discover = () => {
 
           {activeTab === "people" && (
             <div className="space-y-6">
+              {/* Search Box for People Tab */}
+              <div className="glass-card p-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    placeholder="Search people by name, handle, or email..."
+                    className="w-full px-4 py-3 pl-12 rounded-full bg-gray-800/50 border-2 border-gray-700 text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
+                  />
+                  <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  {searching && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+                {searchQuery.length > 0 && searchQuery.length < 2 && (
+                  <p className="text-xs text-gray-500 mt-2">Type at least 2 characters to search</p>
+                )}
+              </div>
+
+              {/* Search Results for People */}
+              {searchResults && searchQuery.length >= 2 && searchResults.users && searchResults.users.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    <Search size={20} className="text-cyan-400" />
+                    Search Results ({searchResults.users.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {searchResults.users.map(user => (
+                      <div key={user.id} className="glass-card p-4">
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                            alt={user.name}
+                            className="w-16 h-16 rounded-full cursor-pointer"
+                            onClick={() => navigate(`/profile/${user.id}`)}
+                          />
+                          <div className="flex-1">
+                            <h3 
+                              className="font-semibold text-white cursor-pointer hover:underline"
+                              onClick={() => navigate(`/profile/${user.id}`)}
+                            >
+                              {user.name}
+                            </h3>
+                            <p className="text-sm text-gray-400">@{user.handle}</p>
+                            {user.bio && <p className="text-sm text-gray-300 mt-1">{user.bio}</p>}
+                            {user.email && (
+                              <p className="text-xs text-gray-500 mt-1">{user.email}</p>
+                            )}
+                            
+                            <div className="flex items-center gap-2 mt-3">
+                              {user.id === currentUser.id ? (
+                                <span className="px-4 py-2 rounded-full bg-gray-700 text-gray-400 text-sm">You</span>
+                              ) : user.isFriend ? (
+                                <span className="px-4 py-2 rounded-full bg-green-500/20 text-green-400 font-semibold text-sm flex items-center gap-1">
+                                  <UserCheck size={16} />
+                                  Friends
+                                </span>
+                              ) : (
+                                <FriendButton currentUser={currentUser} targetUser={user} />
+                              )}
+                              {user.id !== currentUser.id && (
+                                <button
+                                  onClick={() => handleMessageClick(user)}
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition text-sm"
+                                >
+                                  <MessageCircle size={16} />
+                                  Message
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No Results Message */}
+              {searchResults && searchQuery.length >= 2 && searchResults.users && searchResults.users.length === 0 && (
+                <div className="glass-card p-8 text-center">
+                  <p className="text-gray-400">No users found matching "{searchQuery}"</p>
+                  <p className="text-sm text-gray-500 mt-2">Try searching by name, handle (@username), or email</p>
+                </div>
+              )}
+
               {/* Friend Requests Section */}
-              {friendRequests.length > 0 && (
+              {(!searchQuery || searchQuery.length < 2) && friendRequests.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                     <Clock size={20} className="text-cyan-400" />
