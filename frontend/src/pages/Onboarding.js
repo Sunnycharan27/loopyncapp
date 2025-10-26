@@ -501,7 +501,7 @@ const Onboarding = () => {
 
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(kycVerified ? 3 : 2)}
+                onClick={() => setStep(2)}
                 className="flex-1 py-4 rounded-full border-2 border-gray-700 text-white font-semibold hover:bg-gray-800/50"
               >
                 Back
