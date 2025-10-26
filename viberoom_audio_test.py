@@ -29,7 +29,7 @@ class VibeRoomAudioTester:
         self.demo_token = None
         self.demo_user_id = None
         self.test_room_id = None
-        self.test_user_id = "u1"  # Using seeded user for testing
+        self.test_user_id = "u2"  # Using seeded user u2 for testing (u1 will be host)
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
