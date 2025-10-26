@@ -2,10 +2,11 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
-import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign, Search, X, UserPlus, Sparkles } from "lucide-react";
+import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign, Search, X, UserPlus, Sparkles, MessageCircle, Clock, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import FindYourParallel from "../components/FindYourParallel";
+import FriendButton from "../components/FriendButton";
 
 const Discover = () => {
   const { currentUser } = useContext(AuthContext);
@@ -14,6 +15,8 @@ const Discover = () => {
   const [events, setEvents] = useState([]);
   const [creators, setCreators] = useState([]);
   const [tribes, setTribes] = useState([]);
+  const [people, setPeople] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
   const [activeTab, setActiveTab] = useState("venues");
   const [loading, setLoading] = useState(true);
   const [showParallels, setShowParallels] = useState(false);
