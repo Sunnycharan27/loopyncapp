@@ -531,7 +531,7 @@ const Onboarding = () => {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 border border-yellow-400">
                 <span className="text-2xl">🎁</span>
                 <span className="text-yellow-400 font-semibold">
-                  Earn {kycVerified ? '150' : '100'} Loop Credits on completion!
+                  Earn 100 Loop Credits on completion!
                 </span>
               </div>
             </div>
