@@ -266,6 +266,21 @@ const AuthComplete = () => {
               >
                 Forgot password?
               </button>
+
+              {/* Demo Login Button */}
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("demo@loopync.com");
+                    setPassword("password123");
+                    toast.info("Demo credentials filled in! Click 'Sign In' to login.");
+                  }}
+                  className="w-full py-3 rounded-xl bg-purple-500/20 border border-purple-500/50 text-purple-300 hover:bg-purple-500/30 transition"
+                >
+                  🎮 Try Demo Account
+                </button>
+              </div>
             </form>
           )}
 
