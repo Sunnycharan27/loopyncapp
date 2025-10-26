@@ -106,7 +106,7 @@ const Onboarding = () => {
 
   const handleSkipKYC = () => {
     toast.info("You can complete eKYC later from Settings");
-    setStep(4); // Skip to consent step
+    setStep(3); // Skip to consent step
   };
 
  
