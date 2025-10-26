@@ -71,8 +71,19 @@ const RoomDetailClubhouse = () => {
     try {
       const myRole = getCurrentUserRole();
       
-      // Generate Agora token
-      const uid = parseInt(currentUser.id.slice(-8), 36);
+      // Generate a valid Agora UID (must be 0-10000)
+      // Use a simple hash of user ID to keep it in range
+      const hashCode = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          const char = str.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+      };
+      
+      const uid = hashCode(currentUser.id) % 10000; // Keep within 0-9999
       const role = myRole === "audience" ? "subscriber" : "publisher";
       
       const tokenRes = await axios.post(
