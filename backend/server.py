@@ -1790,7 +1790,7 @@ async def generate_agora_token(channelName: str, uid: int, role: str = "publishe
     Generate Agora RTC token for audio room access
     Role: 'publisher' (can speak) or 'subscriber' (listen only)
     """
-    from agora_token_builder import RtcTokenBuilder, Role_Publisher, Role_Subscriber
+    from agora_token_builder.RtcTokenBuilder import RtcTokenBuilder, Role_Publisher, Role_Subscriber
     
     app_id = os.environ.get('AGORA_APP_ID')
     app_certificate = os.environ.get('AGORA_APP_CERTIFICATE')
