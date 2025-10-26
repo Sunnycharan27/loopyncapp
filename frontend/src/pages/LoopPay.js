@@ -125,66 +125,51 @@ const LoopPay = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0F021E] to-[#121427] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#00E0FF] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+        <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F021E] to-[#121427] pb-24">
+    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       {/* Header */}
-      <div className="sticky top-0 z-10 backdrop-blur-xl bg-[#0F021E]/80 border-b border-white/10 p-4">
+      <div className="sticky top-0 z-10 glass-surface p-4">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white/5 rounded-lg transition-all"
+            className="p-2 hover:bg-cyan-400/10 rounded-lg transition-all"
           >
             <ArrowLeft size={24} className="text-white" />
           </button>
-          <h1 className="text-xl font-bold text-white">Loop Credits</h1>
+          <h1 className="text-xl font-bold text-white">LoopPay Wallet</h1>
           <div className="w-10"></div>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Money Balance Card */}
-        <div className="relative overflow-hidden rounded-3xl p-6 backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
-          <div className="absolute inset-0 overflow-hidden">
-            {[...Array(10)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-[#00E0FF] rounded-full animate-pulse"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 3}s`,
-                  animationDuration: `${2 + Math.random() * 3}s`
-                }}
-              />
-            ))}
-          </div>
-          
+        <div className="relative overflow-hidden rounded-3xl p-6 glass-card">
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <img
                   src={currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}`}
                   alt={currentUser.name}
-                  className="w-12 h-12 rounded-full border-2 border-[#00E0FF]/50"
+                  className="w-12 h-12 rounded-full border-2 border-cyan-400/50"
                 />
                 <div>
                   <p className="text-white font-semibold">{currentUser.name}</p>
-                  <p className="text-white/60 text-sm">@{currentUser.handle}</p>
+                  <p className="text-gray-400 text-sm">@{currentUser.handle}</p>
                 </div>
               </div>
-              <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#00E0FF]/20 to-[#5AFF9C]/20 border border-[#00E0FF]/30">
-                <p className="text-[#00E0FF] text-xs font-bold">{vibeRank}</p>
+              <div className="px-4 py-1.5 rounded-full bg-cyan-400/20 border border-cyan-400/30">
+                <p className="text-cyan-400 text-xs font-bold">{vibeRank}</p>
               </div>
             </div>
 
             <div className="mb-2">
-              <p className="text-white/60 text-sm mb-1">Wallet Balance</p>
+              <p className="text-gray-400 text-sm mb-1">Wallet Balance</p>
               <div className="flex items-baseline gap-2">
                 <h2 className="text-5xl font-bold text-white">₹{walletBalance.toFixed(2)}</h2>
               </div>
@@ -192,88 +177,88 @@ const LoopPay = () => {
 
             <button
               onClick={() => setShowAddMoneyModal(true)}
-              className="mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#00E0FF] to-[#5AFF9C] text-black font-bold hover:opacity-90 transition-all"
+              className="mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold hover:opacity-90 transition-all"
             >
               + Add Money
             </button>
           </div>
 
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#00E0FF]/20 rounded-full blur-3xl"></div>
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-cyan-400/20 rounded-full blur-3xl"></div>
         </div>
 
         {/* Loop Credits Card */}
-        <div className="p-6 rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10">
+        <div className="p-6 rounded-3xl glass-card">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
                 <Zap size={28} className="text-white" />
               </div>
               <div>
-                <p className="text-white/60 text-sm">Loop Credits</p>
+                <p className="text-gray-400 text-sm">Loop Credits</p>
                 <h3 className="text-3xl font-bold text-white">{loopCredits}</h3>
               </div>
             </div>
             <button
               onClick={() => setShowAddCreditsModal(true)}
-              className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 transition-all"
+              className="px-4 py-2 rounded-full glass-surface border border-gray-700 text-white text-sm font-semibold hover:bg-cyan-400/10 transition-all"
             >
               Earn More
             </button>
           </div>
-          <p className="text-white/40 text-xs mt-4">Earn credits through activities and redeem for rewards</p>
+          <p className="text-gray-500 text-xs mt-4">Earn credits through activities and redeem for rewards</p>
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setShowRedeemModal(true)}
-            className="p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
+            className="p-4 rounded-2xl glass-card hover:bg-cyan-400/5 transition-all group"
           >
-            <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-[#FF3DB3]/20 to-[#00E0FF]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Gift size={24} className="text-[#FF3DB3]" />
+            <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-pink-400/20 to-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Gift size={24} className="text-pink-400" />
             </div>
             <p className="text-white text-sm font-semibold">Redeem Credits</p>
           </button>
 
           <button
             onClick={() => navigate('/wallet/history')}
-            className="p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
+            className="p-4 rounded-2xl glass-card hover:bg-cyan-400/5 transition-all group"
           >
-            <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-[#00E0FF]/20 to-[#FF3DB3]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Clock size={24} className="text-[#00E0FF]" />
+            <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Clock size={24} className="text-cyan-400" />
             </div>
             <p className="text-white text-sm font-semibold">Transactions</p>
           </button>
         </div>
 
         {/* Insights */}
-        <div className="p-6 rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10">
+        <div className="p-6 rounded-3xl glass-card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-bold">This Week</h3>
-            <TrendingUp size={20} className="text-[#00E0FF]" />
+            <TrendingUp size={20} className="text-cyan-400" />
           </div>
           
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#5AFF9C]"></div>
-                <span className="text-white/60 text-sm">Earned</span>
+                <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                <span className="text-gray-400 text-sm">Earned</span>
               </div>
-              <span className="text-[#5AFF9C] font-bold">+{earnedThisWeek}</span>
+              <span className="text-green-400 font-bold">+{earnedThisWeek}</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#FF3DB3]"></div>
-                <span className="text-white/60 text-sm">Spent</span>
+                <div className="w-2 h-2 rounded-full bg-pink-400"></div>
+                <span className="text-gray-400 text-sm">Spent</span>
               </div>
-              <span className="text-[#FF3DB3] font-bold">-{spentThisWeek}</span>
+              <span className="text-pink-400 font-bold">-{spentThisWeek}</span>
             </div>
           </div>
 
           {/* Progress bar */}
-          <div className="mt-4 h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="mt-4 h-2 bg-gray-800 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-[#5AFF9C] to-[#00E0FF]"
+              className="h-full bg-gradient-to-r from-green-400 to-cyan-400"
               style={{ width: `${Math.min((earnedThisWeek / (earnedThisWeek + spentThisWeek)) * 100, 100)}%` }}
             ></div>
           </div>
@@ -287,22 +272,22 @@ const LoopPay = () => {
               {transactions.slice(0, 5).map((txn, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  className="p-4 rounded-2xl glass-card hover:bg-cyan-400/5 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        txn.type === 'topup' ? 'bg-[#5AFF9C]/20' : 'bg-[#FF3DB3]/20'
+                        txn.type === 'topup' ? 'bg-green-400/20' : 'bg-pink-400/20'
                       }`}>
                         {txn.type === 'topup' ? (
-                          <Plus size={20} className="text-[#5AFF9C]" />
+                          <Plus size={20} className="text-green-400" />
                         ) : (
-                          <Gift size={20} className="text-[#FF3DB3]" />
+                          <Gift size={20} className="text-pink-400" />
                         )}
                       </div>
                       <div>
                         <p className="text-white text-sm font-semibold">{txn.description}</p>
-                        <p className="text-white/40 text-xs">
+                        <p className="text-gray-500 text-xs">
                           {new Date(txn.createdAt).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -313,7 +298,7 @@ const LoopPay = () => {
                       </div>
                     </div>
                     <span className={`font-bold ${
-                      txn.type === 'topup' ? 'text-[#5AFF9C]' : 'text-[#FF3DB3]'
+                      txn.type === 'topup' ? 'text-green-400' : 'text-pink-400'
                     }`}>
                       {txn.type === 'topup' ? '+' : '-'}{txn.amount}
                     </span>
@@ -322,9 +307,9 @@ const LoopPay = () => {
               ))}
             </div>
           ) : (
-            <div className="p-12 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 text-center">
-              <Clock size={48} className="mx-auto mb-3 text-white/20" />
-              <p className="text-white/40 text-sm">No transactions yet</p>
+            <div className="p-12 rounded-2xl glass-card text-center">
+              <Clock size={48} className="mx-auto mb-3 text-gray-600" />
+              <p className="text-gray-500 text-sm">No transactions yet</p>
             </div>
           )}
         </div>
@@ -333,10 +318,10 @@ const LoopPay = () => {
       {/* Add Money Modal */}
       {showAddMoneyModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-md rounded-3xl backdrop-blur-xl bg-[#0F021E]/90 border border-white/10 p-6">
+          <div className="w-full max-w-md rounded-3xl glass-surface border border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Add Money to Wallet</h3>
-              <button onClick={() => setShowAddMoneyModal(false)} className="text-white/60 hover:text-white">
+              <button onClick={() => setShowAddMoneyModal(false)} className="text-gray-400 hover:text-white">
                 <X size={24} />
               </button>
             </div>
@@ -344,7 +329,7 @@ const LoopPay = () => {
             <div className="space-y-4">
               {/* Amount Input */}
               <div>
-                <label className="text-sm text-white/60 mb-2 block">Enter Amount</label>
+                <label className="text-sm text-gray-400 mb-2 block">Enter Amount</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-white">₹</span>
                   <input
@@ -352,7 +337,7 @@ const LoopPay = () => {
                     value={addMoneyAmount}
                     onChange={(e) => setAddMoneyAmount(e.target.value)}
                     placeholder="0.00"
-                    className="w-full pl-10 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white text-xl focus:border-[#00E0FF] focus:outline-none"
+                    className="w-full pl-10 pr-4 py-4 glass-card border border-gray-700 rounded-2xl text-white text-xl focus:border-cyan-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -363,7 +348,7 @@ const LoopPay = () => {
                   <button
                     key={amount}
                     onClick={() => setAddMoneyAmount(amount.toString())}
-                    className="py-3 bg-white/5 hover:bg-[#00E0FF] hover:text-black rounded-xl font-semibold text-white transition-all border border-white/10"
+                    className="py-3 glass-card hover:bg-cyan-400 hover:text-black rounded-xl font-semibold text-white transition-all border border-gray-700"
                   >
                     ₹{amount}
                   </button>
@@ -372,7 +357,7 @@ const LoopPay = () => {
 
               {/* Payment Method Selection */}
               <div>
-                <label className="text-sm text-white/60 mb-2 block">Payment Method</label>
+                <label className="text-sm text-gray-400 mb-2 block">Payment Method</label>
                 <div className="space-y-2">
                   {[
                     { id: 'upi', label: 'UPI (PhonePe, GPay, Paytm)' },
@@ -384,13 +369,13 @@ const LoopPay = () => {
                       onClick={() => setPaymentMethod(method.id)}
                       className={`w-full p-4 rounded-2xl border flex items-center justify-between transition-all ${
                         paymentMethod === method.id
-                          ? 'border-[#00E0FF] bg-[#00E0FF]/10'
-                          : 'border-white/10 bg-white/5'
+                          ? 'border-cyan-400 bg-cyan-400/10'
+                          : 'border-gray-700 glass-card'
                       }`}
                     >
                       <span className="text-white text-sm font-semibold">{method.label}</span>
                       {paymentMethod === method.id && (
-                        <div className="w-5 h-5 rounded-full bg-[#00E0FF] flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full bg-cyan-400 flex items-center justify-center">
                           <div className="w-2 h-2 bg-white rounded-full"></div>
                         </div>
                       )}
@@ -401,7 +386,7 @@ const LoopPay = () => {
 
               <button
                 onClick={handleAddMoney}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#00E0FF] to-[#5AFF9C] text-black font-bold hover:opacity-90 transition-all"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold hover:opacity-90 transition-all"
               >
                 Add ₹{addMoneyAmount || '0'}
               </button>
@@ -413,18 +398,18 @@ const LoopPay = () => {
       {/* Add Credits Modal */}
       {showAddCreditsModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-md rounded-3xl backdrop-blur-xl bg-[#0F021E]/90 border border-white/10 p-6">
+          <div className="w-full max-w-md rounded-3xl glass-surface border border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Earn Loop Credits</h3>
-              <button onClick={() => setShowAddCreditsModal(false)} className="text-white/60 hover:text-white">
+              <button onClick={() => setShowAddCreditsModal(false)} className="text-gray-400 hover:text-white">
                 <X size={24} />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="text-center p-8 rounded-2xl bg-white/5 border border-white/10">
-                <Zap size={48} className="mx-auto mb-3 text-[#00E0FF]" />
-                <p className="text-white/60 text-sm mb-4">Earn credits by:</p>
+              <div className="text-center p-8 rounded-2xl glass-card border border-gray-700">
+                <Zap size={48} className="mx-auto mb-3 text-cyan-400" />
+                <p className="text-gray-400 text-sm mb-4">Earn credits by:</p>
                 <div className="space-y-2 text-left">
                   <p className="text-white text-sm">• Creating posts & reels</p>
                   <p className="text-white text-sm">• Engaging with community</p>
@@ -447,10 +432,10 @@ const LoopPay = () => {
       {/* Redeem Modal */}
       {showRedeemModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="w-full max-w-md rounded-3xl backdrop-blur-xl bg-[#0F021E]/90 border border-white/10 p-6 max-h-[80vh] overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl glass-surface border border-gray-700 p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Redeem Rewards</h3>
-              <button onClick={() => setShowRedeemModal(false)} className="text-white/60 hover:text-white">
+              <button onClick={() => setShowRedeemModal(false)} className="text-gray-400 hover:text-white">
                 <X size={24} />
               </button>
             </div>
@@ -461,10 +446,10 @@ const LoopPay = () => {
                   key={option.id}
                   onClick={() => handleRedeem(option)}
                   disabled={loopCredits < option.cost}
-                  className={`p-4 rounded-2xl backdrop-blur-xl border transition-all ${
+                  className={`p-4 rounded-2xl border transition-all ${
                     loopCredits >= option.cost
-                      ? 'bg-white/5 border-white/10 hover:bg-white/10'
-                      : 'bg-white/5 border-white/5 opacity-50 cursor-not-allowed'
+                      ? 'glass-card border-gray-700 hover:bg-cyan-400/5'
+                      : 'glass-card border-gray-800 opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <div className="flex items-center gap-4">
@@ -473,10 +458,10 @@ const LoopPay = () => {
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-white font-semibold">{option.title}</p>
-                      <p className="text-white/60 text-sm">{option.cost} credits</p>
+                      <p className="text-gray-400 text-sm">{option.cost} credits</p>
                     </div>
                     <div className="text-right">
-                      <Award size={20} className="text-[#00E0FF]" />
+                      <Award size={20} className="text-cyan-400" />
                     </div>
                   </div>
                 </button>

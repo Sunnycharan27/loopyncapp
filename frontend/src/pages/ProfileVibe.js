@@ -102,26 +102,15 @@ const ProfileVibe = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0F021E] via-purple-900 to-blue-900 flex items-center justify-center">
-        <div className="relative">
-          <div className="w-20 h-20 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
-          <div className="absolute inset-0 w-20 h-20 border-4 border-pink-400 border-b-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse' }}></div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+        <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white overflow-hidden relative">
-      {/* Subtle Background Grid Pattern */}
-      <div className="fixed inset-0 opacity-[0.02] pointer-events-none">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'linear-gradient(rgba(0, 224, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 224, 255, 0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }}></div>
-      </div>
-
-      <div className="relative z-10 pb-24">
+    <div className="min-h-screen text-white overflow-hidden relative pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+      <div className="relative z-10">
         {/* 1. Header - Vibe Identity Capsule */}
         <div className="relative overflow-hidden">
           {/* Modern Cover Photo Area */}
@@ -132,7 +121,7 @@ const ProfileVibe = () => {
             <div className="absolute top-4 right-4 flex gap-2 z-10">
               <button
                 onClick={() => navigate("/settings")}
-                className="p-2.5 rounded-xl bg-gray-800/90 backdrop-blur-sm border border-gray-700 hover:border-cyan-400 transition-all"
+                className="p-2.5 rounded-xl glass-surface hover:bg-cyan-400/10 transition-all"
               >
                 <Settings size={20} />
               </button>
@@ -146,7 +135,7 @@ const ProfileVibe = () => {
             </div>
 
             {/* Loop Credits Badge */}
-            <div className="absolute top-4 left-4 px-4 py-2 rounded-xl bg-gray-800/90 backdrop-blur-sm border border-gray-700 flex items-center gap-2">
+            <div className="absolute top-4 left-4 px-4 py-2 rounded-xl glass-surface flex items-center gap-2">
               <Zap size={16} className="text-yellow-400" />
               <span className="font-bold text-white">{loopCredits}</span>
               <span className="text-xs text-gray-400">Credits</span>
@@ -155,7 +144,7 @@ const ProfileVibe = () => {
 
           {/* Profile Info Card */}
           <div className="px-4 -mt-16 relative z-20">
-            <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 shadow-xl">
+            <div className="glass-card p-6 shadow-xl">
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="relative flex-shrink-0">
@@ -229,7 +218,7 @@ const ProfileVibe = () => {
             ].map((item, idx) => (
               <button
                 key={idx}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-800 hover:bg-gray-750 transition-all border border-gray-700 hover:border-gray-600"
+                className="flex flex-col items-center gap-2 p-4 rounded-xl glass-card hover:bg-cyan-400/5 transition-all"
               >
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${item.gradient} flex items-center justify-center shadow-lg`}>
                   <item.icon size={18} className="text-white" />
@@ -243,7 +232,7 @@ const ProfileVibe = () => {
 
         {/* 3. Scroll Tabs - Four Dimensions */}
         <div className="px-4 mb-4">
-          <div className="bg-gray-800 rounded-xl p-1 border border-gray-700 inline-flex gap-1">
+          <div className="glass-surface rounded-xl p-1 inline-flex gap-1">
             {[
               { id: "posts", label: "Posts", icon: Grid },
               { id: "tribes", label: "Tribes", icon: Users },
@@ -256,7 +245,7 @@ const ProfileVibe = () => {
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold whitespace-nowrap transition-all ${
                   activeTab === tab.id
                     ? 'bg-cyan-400 text-black shadow-lg'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
                 }`}
               >
                 <tab.icon size={18} />
@@ -285,7 +274,7 @@ const ProfileVibe = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-800 flex items-center justify-center p-3">
+                      <div className="w-full h-full glass-card flex items-center justify-center p-3">
                         <p className="text-xs text-center text-gray-400 line-clamp-4">
                           {post.text}
                         </p>
@@ -295,8 +284,8 @@ const ProfileVibe = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-3 bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700 flex items-center justify-center">
+                <div className="col-span-3 glass-card p-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
                     <Grid size={32} className="text-gray-500" />
                   </div>
                   <p className="text-gray-400 mb-4">No posts yet</p>
@@ -318,7 +307,7 @@ const ProfileVibe = () => {
                 userTribes.map(tribe => (
                   <div
                     key={tribe.id}
-                    className="bg-gray-800 border border-gray-700 p-4 rounded-xl hover:border-cyan-400 transition-all cursor-pointer group"
+                    className="glass-card p-4 rounded-xl hover:bg-cyan-400/5 transition-all cursor-pointer group"
                     onClick={() => navigate(`/tribe/${tribe.id}`)}
                   >
                     <div className="flex items-center gap-4">
@@ -336,8 +325,8 @@ const ProfileVibe = () => {
                   </div>
                 ))
               ) : (
-                <div className="bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700 flex items-center justify-center">
+                <div className="glass-card p-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
                     <Users size={32} className="text-gray-500" />
                   </div>
                   <p className="text-gray-400">No tribes joined yet</p>
@@ -348,13 +337,13 @@ const ProfileVibe = () => {
 
           {/* Venues Tab */}
           {activeTab === "venues" && (
-            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 text-center">
+            <div className="glass-card p-8 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
                 <Map size={32} className="text-white" />
               </div>
               <h3 className="text-xl font-bold mb-2 text-white">Venue Check-ins</h3>
               <p className="text-gray-400 mb-6">Interactive heatmap showing your visited places</p>
-              <div className="w-full h-64 bg-gray-900 rounded-xl border border-gray-700 flex items-center justify-center">
+              <div className="w-full h-64 bg-gray-900/50 rounded-xl border border-gray-800 flex items-center justify-center">
                 <p className="text-gray-500">Map visualization coming soon</p>
               </div>
             </div>
@@ -362,7 +351,7 @@ const ProfileVibe = () => {
 
           {/* Marketplace Tab */}
           {activeTab === "marketplace" && (
-            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center">
+            <div className="glass-card p-12 text-center">
               <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-r from-pink-400 to-rose-500 flex items-center justify-center">
                 <Store size={32} className="text-white" />
               </div>
@@ -415,8 +404,8 @@ const ProfileVibe = () => {
                 key={achievement.id}
                 className={`p-4 rounded-xl text-center transition-all ${
                   achievement.unlocked
-                    ? 'bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-400/30'
-                    : 'bg-gray-800 border border-gray-700 opacity-50'
+                    ? 'glass-card border-2 border-yellow-400/30'
+                    : 'glass-card opacity-50'
                 }`}
               >
                 <div className="text-4xl mb-2">{achievement.icon}</div>

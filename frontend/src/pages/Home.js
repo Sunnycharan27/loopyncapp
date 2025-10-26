@@ -99,7 +99,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 pb-24">
+    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="max-w-2xl mx-auto">
         <TopHeader title="Timeline" subtitle="What's happening now" />
 
