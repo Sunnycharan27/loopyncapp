@@ -282,8 +282,10 @@ const UniversalShareModal = ({ item, type, onClose, currentUser }) => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
