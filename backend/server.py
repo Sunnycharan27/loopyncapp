@@ -696,10 +696,304 @@ async def typing(sid, data):
             await emit_to_thread(thread_id, 'typing', {
                 'threadId': thread_id,
                 'userId': user_id,
+                'isTyping': data.get('isTyping', True),
                 'timestamp': datetime.now(timezone.utc).isoformat()
             }, exclude_user=user_id)
     except Exception as e:
         logging.error(f"Typing event error: {e}")
+
+@sio.event
+async def message_read(sid, data):
+    """Handle message read receipt"""
+    try:
+        message_id = data.get('messageId')
+        thread_id = data.get('threadId')
+        user_id = None
+        
+        # Find user_id from sid
+        for uid, client_sid in connected_clients.items():
+            if client_sid == sid:
+                user_id = uid
+                break
+        
+        if user_id and message_id:
+            # Update message read status
+            await db.messages.update_one(
+                {"id": message_id},
+                {"$addToSet": {"readBy": user_id}}
+            )
+            
+            # Emit to thread
+            if thread_id:
+                await emit_to_thread(thread_id, 'message_read', {
+                    'messageId': message_id,
+                    'threadId': thread_id,
+                    'userId': user_id,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                }, exclude_user=user_id)
+    except Exception as e:
+        logging.error(f"Message read event error: {e}")
+
+@sio.event
+async def join_thread(sid, data):
+    """Join a thread room for real-time updates"""
+    try:
+        thread_id = data.get('threadId')
+        if thread_id:
+            await sio.enter_room(sid, f"thread:{thread_id}")
+            logging.info(f"SID {sid} joined thread {thread_id}")
+    except Exception as e:
+        logging.error(f"Join thread error: {e}")
+
+@sio.event
+async def leave_thread(sid, data):
+    """Leave a thread room"""
+    try:
+        thread_id = data.get('threadId')
+        if thread_id:
+            await sio.leave_room(sid, f"thread:{thread_id}")
+            logging.info(f"SID {sid} left thread {thread_id}")
+    except Exception as e:
+        logging.error(f"Leave thread error: {e}")
+
+# ===== WEBRTC SIGNALING =====
+
+# Store active calls: {callId: {callerId, calleeId, threadId, status}}
+active_calls = {}
+
+@sio.event
+async def call_initiate(sid, data):
+    """Initiate a call"""
+    try:
+        thread_id = data.get('threadId')
+        is_video = data.get('isVideo', False)
+        caller_id = None
+        
+        # Find caller
+        for uid, client_sid in connected_clients.items():
+            if client_sid == sid:
+                caller_id = uid
+                break
+        
+        if not caller_id or not thread_id:
+            return
+        
+        # Get thread to find callee
+        thread = await db.dm_threads.find_one({"id": thread_id}, {"_id": 0})
+        if not thread:
+            return
+        
+        callee_id = thread["user2Id"] if thread["user1Id"] == caller_id else thread["user1Id"]
+        
+        # Create call record
+        call_id = str(uuid.uuid4())
+        active_calls[call_id] = {
+            'callerId': caller_id,
+            'calleeId': callee_id,
+            'threadId': thread_id,
+            'isVideo': is_video,
+            'status': 'ringing',
+            'startedAt': datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Save to database
+        await db.calls.insert_one({
+            'id': call_id,
+            'threadId': thread_id,
+            'callerId': caller_id,
+            'calleeId': callee_id,
+            'isVideo': is_video,
+            'status': 'ringing',
+            'startedAt': datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Notify callee
+        await emit_to_user(callee_id, 'call_incoming', {
+            'callId': call_id,
+            'callerId': caller_id,
+            'threadId': thread_id,
+            'isVideo': is_video
+        })
+        
+        # Confirm to caller
+        await emit_to_user(caller_id, 'call_initiated', {
+            'callId': call_id,
+            'calleeId': callee_id
+        })
+        
+    except Exception as e:
+        logging.error(f"Call initiate error: {e}")
+
+@sio.event
+async def call_answer(sid, data):
+    """Answer a call"""
+    try:
+        call_id = data.get('callId')
+        if call_id not in active_calls:
+            return
+        
+        call = active_calls[call_id]
+        call['status'] = 'connected'
+        
+        # Update database
+        await db.calls.update_one(
+            {"id": call_id},
+            {"$set": {"status": "connected", "answeredAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        # Notify both parties
+        await emit_to_user(call['callerId'], 'call_answered', {'callId': call_id})
+        await emit_to_user(call['calleeId'], 'call_answered', {'callId': call_id})
+        
+    except Exception as e:
+        logging.error(f"Call answer error: {e}")
+
+@sio.event
+async def call_reject(sid, data):
+    """Reject a call"""
+    try:
+        call_id = data.get('callId')
+        if call_id not in active_calls:
+            return
+        
+        call = active_calls[call_id]
+        
+        # Update database
+        await db.calls.update_one(
+            {"id": call_id},
+            {"$set": {"status": "rejected", "endedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        # Notify caller
+        await emit_to_user(call['callerId'], 'call_rejected', {'callId': call_id})
+        
+        # Remove from active calls
+        del active_calls[call_id]
+        
+    except Exception as e:
+        logging.error(f"Call reject error: {e}")
+
+@sio.event
+async def call_end(sid, data):
+    """End a call"""
+    try:
+        call_id = data.get('callId')
+        if call_id not in active_calls:
+            return
+        
+        call = active_calls[call_id]
+        
+        # Update database
+        await db.calls.update_one(
+            {"id": call_id},
+            {"$set": {"status": "ended", "endedAt": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        # Notify both parties
+        await emit_to_user(call['callerId'], 'call_ended', {'callId': call_id})
+        await emit_to_user(call['calleeId'], 'call_ended', {'callId': call_id})
+        
+        # Remove from active calls
+        del active_calls[call_id]
+        
+    except Exception as e:
+        logging.error(f"Call end error: {e}")
+
+@sio.event
+async def webrtc_offer(sid, data):
+    """Forward WebRTC offer"""
+    try:
+        call_id = data.get('callId')
+        sdp = data.get('sdp')
+        
+        if call_id not in active_calls:
+            return
+        
+        call = active_calls[call_id]
+        user_id = None
+        
+        # Find sender
+        for uid, client_sid in connected_clients.items():
+            if client_sid == sid:
+                user_id = uid
+                break
+        
+        if not user_id:
+            return
+        
+        # Forward to peer
+        target_id = call['calleeId'] if user_id == call['callerId'] else call['callerId']
+        await emit_to_user(target_id, 'webrtc_offer', {
+            'callId': call_id,
+            'sdp': sdp
+        })
+        
+    except Exception as e:
+        logging.error(f"WebRTC offer error: {e}")
+
+@sio.event
+async def webrtc_answer(sid, data):
+    """Forward WebRTC answer"""
+    try:
+        call_id = data.get('callId')
+        sdp = data.get('sdp')
+        
+        if call_id not in active_calls:
+            return
+        
+        call = active_calls[call_id]
+        user_id = None
+        
+        # Find sender
+        for uid, client_sid in connected_clients.items():
+            if client_sid == sid:
+                user_id = uid
+                break
+        
+        if not user_id:
+            return
+        
+        # Forward to peer
+        target_id = call['calleeId'] if user_id == call['callerId'] else call['callerId']
+        await emit_to_user(target_id, 'webrtc_answer', {
+            'callId': call_id,
+            'sdp': sdp
+        })
+        
+    except Exception as e:
+        logging.error(f"WebRTC answer error: {e}")
+
+@sio.event
+async def webrtc_ice_candidate(sid, data):
+    """Forward ICE candidate"""
+    try:
+        call_id = data.get('callId')
+        candidate = data.get('candidate')
+        
+        if call_id not in active_calls:
+            return
+        
+        call = active_calls[call_id]
+        user_id = None
+        
+        # Find sender
+        for uid, client_sid in connected_clients.items():
+            if client_sid == sid:
+                user_id = uid
+                break
+        
+        if not user_id:
+            return
+        
+        # Forward to peer
+        target_id = call['calleeId'] if user_id == call['callerId'] else call['callerId']
+        await emit_to_user(target_id, 'webrtc_ice_candidate', {
+            'callId': call_id,
+            'candidate': candidate
+        })
+        
+    except Exception as e:
+        logging.error(f"ICE candidate error: {e}")
 
 # ===== AUTH ROUTES (REAL AUTHENTICATION WITH GOOGLE SHEETS) =====
 
