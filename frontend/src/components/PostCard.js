@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Heart, MessageCircle, Repeat2, Share2, MoreHorizontal, Trash2, Bookmark, Flag, UserPlus, Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import ShareModal from "./ShareModal";
+import UniversalShareModal from "./UniversalShareModal";
 import CommentsSection from "./CommentsSection";
 
 const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
