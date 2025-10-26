@@ -4295,6 +4295,57 @@ backend:
   
   - agent: "testing"
     message: |
+      CALL FEATURES TESTING COMPLETED - ALL SUCCESS CRITERIA MET (5/5 TESTS PASSED)
+      
+      📞 **COMPREHENSIVE CALL FEATURES VERIFICATION**:
+      
+      ✅ **Test 1: Call Initiation** - POST /api/calls/initiate
+      - Successfully initiates calls between friends (demo_user ↔ u1)
+      - Returns: callId, channelName, callerToken, recipientToken, callType
+      - Friend validation working: 403 error for non-friends
+      - Agora tokens generated correctly for both participants
+      
+      ✅ **Test 2: Call Answer** - POST /api/calls/{callId}/answer
+      - Recipient (u1) can successfully answer incoming calls
+      - Call status updated to "ongoing" correctly
+      - Authorization verified: only recipient can answer
+      
+      ✅ **Test 3: Call End** - POST /api/calls/{callId}/end
+      - Either participant can end the call successfully
+      - Duration calculated correctly (seconds from start to end)
+      - Call status updated to "ended" with proper timestamps
+      
+      ✅ **Test 4: Call History** - GET /api/calls/history/demo_user
+      - Returns complete call history with enriched user data
+      - Includes caller and recipient information (name, avatar)
+      - Proper sorting (most recent first)
+      - All call metadata preserved (type, status, duration, timestamps)
+      
+      ✅ **Test 5: Video Call Support** - POST /api/calls/initiate (callType="video")
+      - Both "voice" and "video" call types supported
+      - Call type properly stored and returned in responses
+      - Same functionality for both call types
+      
+      🔧 **TECHNICAL IMPLEMENTATION VERIFIED**:
+      - Agora.io integration: Channel names and tokens generated correctly
+      - Database persistence: All call records stored with proper structure
+      - Friend system integration: Only friends can initiate calls
+      - Error handling: Proper HTTP status codes and error messages
+      - Authorization: Users can only answer/end calls they're part of
+      
+      🎯 **ALL USER REQUIREMENTS SATISFIED**:
+      ✅ All endpoints return 200 OK for valid requests
+      ✅ Call initiation creates proper Agora tokens and channels
+      ✅ Friend validation working (403 error if not friends)
+      ✅ Call records stored in database correctly
+      ✅ History shows enriched user data as requested
+      ✅ Both voice and video call types tested and working
+      
+      **FINAL VERDICT: Call features are fully functional and production-ready**
+      **No issues found - all systems working correctly as per requirements**
+  
+  - agent: "testing"
+    message: |
       COMPLETE EMAIL/PASSWORD AUTHENTICATION FLOW TESTING COMPLETED - ALL REQUIREMENTS VERIFIED
       
       ✅ COMPREHENSIVE TESTING RESULTS (10/10 TESTS PASSED):
