@@ -3,7 +3,7 @@ import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
 import { 
-  Settings, Grid, Users, Ticket, Edit3, Camera, X, Check, Phone, Video, MessageCircle
+  Settings, Grid, Users, Ticket, Edit3, Camera, X, Check, Phone, Video, MessageCircle, ShoppingBag
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
