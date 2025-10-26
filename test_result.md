@@ -4151,6 +4151,50 @@ backend:
           - AFTER: Daily.co audio rooms functional
           
           **SYSTEM IS PRODUCTION-READY** - Users can now create and join audio rooms
+
+  - task: "Call Features (Voice & Video Calls)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          CALL FEATURES TESTING COMPLETED - ALL 5 TESTS PASSED (100% SUCCESS RATE)
+          
+          🎯 **USER REQUESTED TEST SCENARIOS COMPLETED**:
+          ✅ Test 1: POST /api/calls/initiate - Call initiation with friend validation working
+          ✅ Test 2: POST /api/calls/{callId}/answer - Call answering functionality working
+          ✅ Test 3: POST /api/calls/{callId}/end - Call ending with duration calculation working
+          ✅ Test 4: GET /api/calls/history/demo_user - Call history with enriched user data working
+          ✅ Test 5: Video Call Support - Both voice and video call types supported
+          
+          📞 **CALL SYSTEM VERIFICATION**:
+          ✅ Friend validation: Only friends can initiate calls (403 error for non-friends)
+          ✅ Agora integration: Proper channel names and tokens generated for both users
+          ✅ Call lifecycle: Complete flow from initiate → answer → end working correctly
+          ✅ Duration calculation: Call duration properly calculated on call end
+          ✅ User data enrichment: Call history includes caller and recipient user data
+          ✅ Call types: Both "voice" and "video" call types supported
+          
+          🔧 **TECHNICAL FIXES APPLIED**:
+          - Fixed Agora token generation function (was API endpoint, now internal function)
+          - Fixed parameter handling (query parameters instead of JSON body)
+          - Added friendship establishment for testing
+          - Verified Agora credentials configuration
+          
+          🚀 **SUCCESS CRITERIA MET**:
+          ✅ All endpoints return 200 OK status
+          ✅ Call initiation creates proper Agora tokens and channel names
+          ✅ Friend validation working (403 error if not friends)
+          ✅ Call records stored in database with proper status tracking
+          ✅ History shows enriched user data (caller and recipient info)
+          ✅ Both voice and video call types functional
+          
+          **CALL FEATURES ARE FULLY FUNCTIONAL AND PRODUCTION-READY**
   
   - agent: "testing"
     message: |
