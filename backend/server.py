@@ -2302,8 +2302,8 @@ async def initiate_call(callerId: str, recipientId: str, callType: str):
         channel_name = f"call_{callerId}_{recipientId}_{uuid.uuid4().hex[:8]}"
         
         # Generate Agora tokens for both users
-        caller_token = generate_agora_token(channel_name, callerId)
-        recipient_token = generate_agora_token(channel_name, recipientId)
+        caller_token = generate_agora_token_internal(channel_name, callerId)
+        recipient_token = generate_agora_token_internal(channel_name, recipientId)
         
         # Create call record
         call = {
