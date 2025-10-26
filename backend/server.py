@@ -96,6 +96,9 @@ class User(BaseModel):
     verificationCode: Optional[str] = None
     resetPasswordToken: Optional[str] = None
     resetPasswordExpires: Optional[str] = None
+    friends: List[str] = Field(default_factory=list)  # List of friend user IDs
+    friendRequestsSent: List[str] = Field(default_factory=list)  # Pending requests sent
+    friendRequestsReceived: List[str] = Field(default_factory=list)  # Pending requests received
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class UserCreate(BaseModel):
