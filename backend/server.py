@@ -545,6 +545,7 @@ class DMMessage(BaseModel):
     text: Optional[str] = None
     mediaUrl: Optional[str] = None
     mimeType: Optional[str] = None
+    readBy: List[str] = Field(default_factory=list)  # User IDs who read this message
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     editedAt: Optional[str] = None
     deletedAt: Optional[str] = None
