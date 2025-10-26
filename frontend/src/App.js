@@ -19,6 +19,7 @@ import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
+import People from "./pages/People";
 import Settings from "./pages/Settings";
 import Rooms from "./pages/Rooms";
 import RoomDetailClubhouse from "./pages/RoomDetailClubhouse";
