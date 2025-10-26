@@ -19,7 +19,7 @@ class FriendRequestTester:
         self.session = requests.Session()
         self.test_results = []
         self.demo_token = None
-        self.demo_user_id = None
+        self.demo_user_id = "demo_user"  # Use seeded demo_user instead of Google Sheets user
         self.u1_user_id = "u1"
         self.u2_user_id = "u2"
         
