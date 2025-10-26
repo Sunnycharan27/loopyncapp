@@ -17,11 +17,13 @@ const Messenger = () => {
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [activeView, setActiveView] = useState("chats"); // chats, rooms, circles
+  const [activeView, setActiveView] = useState("chats"); // chats, circles
   const [searchQuery, setSearchQuery] = useState("");
   const [friendResults, setFriendResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [showCircles, setShowCircles] = useState(false);
+  const [showCreateCircle, setShowCreateCircle] = useState(false);
+  const [trustCircles, setTrustCircles] = useState([]);
+  const [selectedCircle, setSelectedCircle] = useState(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
