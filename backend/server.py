@@ -2189,8 +2189,27 @@ async def create_room(room: RoomCreate, userId: str):
         user = await db.users.find_one({"email": userId}, {"_id": 0})
     
     if not user:
-        logger.error(f"User not found for room creation. userId: {userId}")
-        raise HTTPException(status_code=404, detail=f"User not found: {userId}")
+        # User doesn't exist - this happens when localStorage has old user data
+        # Create a basic user entry
+        logger.warning(f"Creating missing user on-the-fly: {userId}")
+        try:
+            new_user = User(
+                id=userId,
+                handle=f"user_{userId[:8]}",
+                name="User",
+                email="",
+                avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={userId}"
+            )
+            user_doc = new_user.model_dump()
+            await db.users.insert_one(user_doc)
+            user = user_doc
+            logger.info(f"Created missing user: {userId}")
+        except Exception as e:
+            logger.error(f"Failed to create missing user: {str(e)}")
+            raise HTTPException(
+                status_code=400, 
+                detail="User session expired. Please logout and login again."
+            )
     
     # Use the actual user ID from database
     actual_user_id = user.get("id")
