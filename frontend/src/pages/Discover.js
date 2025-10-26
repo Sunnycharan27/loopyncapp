@@ -770,57 +770,6 @@ const Discover = () => {
 
       <BottomNav active="discover" />
       
-      {/* Top Up Modal */}
-      {showTopUpModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl p-6 max-w-md w-full">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Add Money</h3>
-              <button
-                onClick={() => setShowTopUpModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <label className="text-sm text-gray-400 mb-2 block">Enter Amount</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-white">₹</span>
-                <input
-                  type="number"
-                  value={topUpAmount}
-                  onChange={(e) => setTopUpAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full pl-10 pr-4 py-4 bg-gray-700 border-2 border-gray-600 rounded-xl text-white text-xl focus:border-cyan-400 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Quick Amount Buttons */}
-            <div className="grid grid-cols-3 gap-2 mb-6">
-              {[100, 500, 1000, 2000, 5000, 10000].map(amount => (
-                <button
-                  key={amount}
-                  onClick={() => setTopUpAmount(amount.toString())}
-                  className="py-3 px-4 bg-gray-700 hover:bg-cyan-400 hover:text-black rounded-lg font-semibold text-white transition-all"
-                >
-                  ₹{amount}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleTopUp}
-              className="w-full py-4 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold rounded-xl hover:opacity-90 transition-all"
-            >
-              Add Money
-            </button>
-          </div>
-        </div>
-      )}
-      
       {/* Find Your Parallel Modal */}
       {showParallels && (
         <FindYourParallel
