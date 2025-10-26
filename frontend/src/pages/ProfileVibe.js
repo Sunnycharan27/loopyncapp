@@ -453,39 +453,12 @@ const ProfileVibe = () => {
       <BottomNav active="profile" />
 
       <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        @keyframes gradient {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-float {
-          animation: float linear infinite;
-        }
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradient 10s ease infinite;
-        }
-        .animate-spin-slow {
-          animation: spin-slow 3s linear infinite;
-        }
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
-        }
-        .glass-card {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
         }
       `}</style>
     </div>
