@@ -70,9 +70,10 @@ const Notifications = () => {
   const fetchNotifications = async () => {
     try {
       const res = await axios.get(`${API}/notifications?userId=${currentUser.id}`);
-      setNotifications(res.data);
+      setNotifications(res.data || []);
     } catch (error) {
-      toast.error("Failed to load notifications");
+      console.error("Failed to load notifications:", error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
