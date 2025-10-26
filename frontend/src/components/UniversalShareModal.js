@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { X, Copy, Check, Link2, Facebook, Twitter, MessageCircle, Mail } from "lucide-react";
+import { X, Copy, Check, Link2, Facebook, Twitter, MessageCircle, Mail, Users } from "lucide-react";
 import { toast } from "sonner";
+import ShareToFriendsModal from "./ShareToFriendsModal";
 
-const UniversalShareModal = ({ item, type, onClose }) => {
+const UniversalShareModal = ({ item, type, onClose, currentUser }) => {
   const [copied, setCopied] = useState(false);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
   
   // Generate appropriate URL based on type
   const getShareUrl = () => {
