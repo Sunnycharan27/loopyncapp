@@ -3282,6 +3282,62 @@ async def upload_file(file: UploadFile = File(...)):
         "content_type": file.content_type
     }
 
+# ===== USER PROFILE UPDATE ROUTES =====
+
+class UserProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    handle: Optional[str] = None
+    bio: Optional[str] = None
+    avatar: Optional[str] = None
+    coverPhoto: Optional[str] = None
+
+@api_router.patch("/users/{userId}/profile")
+async def update_user_profile(userId: str, updates: UserProfileUpdate):
+    """Update user profile information"""
+    try:
+        # Get current user
+        user = await db.users.find_one({"id": userId}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Prepare update data
+        update_data = {}
+        if updates.name is not None:
+            update_data["name"] = updates.name
+        if updates.handle is not None:
+            # Check if handle is already taken by another user
+            existing = await db.users.find_one({"handle": updates.handle, "id": {"$ne": userId}}, {"_id": 0})
+            if existing:
+                raise HTTPException(status_code=400, detail="Handle already taken")
+            update_data["handle"] = updates.handle
+        if updates.bio is not None:
+            update_data["bio"] = updates.bio
+        if updates.avatar is not None:
+            update_data["avatar"] = updates.avatar
+        if updates.coverPhoto is not None:
+            update_data["coverPhoto"] = updates.coverPhoto
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No updates provided")
+        
+        # Update user
+        await db.users.update_one(
+            {"id": userId},
+            {"$set": update_data}
+        )
+        
+        # Get updated user
+        updated_user = await db.users.find_one({"id": userId}, {"_id": 0, "password": 0})
+        
+        return {
+            "message": "Profile updated successfully",
+            "user": updated_user
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ===== MESSAGE ROUTES =====
 
 @api_router.get("/messages")
