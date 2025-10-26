@@ -762,7 +762,8 @@ async def login(req: LoginRequest):
             handle=handle,
             name=user['name'],
             email=user['email'],
-            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}"
+            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}",
+            isVerified=True  # Existing users are verified
         )
         doc = new_mongo_user.model_dump()
         await db.users.insert_one(doc)
@@ -778,17 +779,13 @@ async def login(req: LoginRequest):
             "handle": mongo_user.get('handle', user['email'].split('@')[0]),
             "name": user['name'],
             "email": user['email'],
-            "avatar": mongo_user.get('avatar', f"https://api.dicebear.com/7.x/avataaars/svg?seed={user['email']}")
-        }
-    }
-    
-    return {
-        "token": token,
-        "user": {
-            "id": user['user_id'],
-            "handle": mongo_user.get('handle', user['email'].split('@')[0]),
-            "name": user['name'],
-            "email": user['email']
+            "avatar": mongo_user.get('avatar', f"https://api.dicebear.com/7.x/avataaars/svg?seed={user['email']}"),
+            "isVerified": mongo_user.get('isVerified', True),
+            "bio": mongo_user.get('bio', ''),
+            "walletBalance": mongo_user.get('walletBalance', 0.0),
+            "friends": mongo_user.get('friends', []),
+            "friendRequestsSent": mongo_user.get('friendRequestsSent', []),
+            "friendRequestsReceived": mongo_user.get('friendRequestsReceived', [])
         }
     }
 
