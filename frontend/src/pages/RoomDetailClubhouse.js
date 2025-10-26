@@ -8,6 +8,7 @@ import {
   Share2, Users, Crown, Shield, Volume2, VolumeX, LogOut
 } from "lucide-react";
 import { toast } from "sonner";
+import UniversalShareModal from "../components/UniversalShareModal";
 
 const RoomDetailClubhouse = () => {
   const { roomId } = useParams();
@@ -19,6 +20,7 @@ const RoomDetailClubhouse = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [isHandRaised, setIsHandRaised] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   
   // Agora client refs
   const agoraClient = useRef(null);
