@@ -14,7 +14,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://parallels-ai.preview.emergentagent.com/api"
+BACKEND_URL = "https://socialsuper-app.preview.emergentagent.com/api"
 
 class AuthPersistenceTester:
     def __init__(self):
