@@ -138,18 +138,46 @@ const UniversalShareModal = ({ item, type, onClose, currentUser }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-gradient-to-b from-gray-900 to-black w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up border border-gray-800">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">Share {type}</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition"
-          >
-            <X size={24} />
-          </button>
-        </div>
+    <>
+      {showFriendsModal ? (
+        <ShareToFriendsModal
+          currentUser={currentUser}
+          item={item}
+          type={type}
+          onClose={() => {
+            setShowFriendsModal(false);
+            onClose();
+          }}
+        />
+      ) : (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+          <div className="bg-gradient-to-b from-gray-900 to-black w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up border border-gray-800">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Share {type}</h3>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-white transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Share to Friends (In-App) */}
+            {currentUser && (
+              <button
+                onClick={() => setShowFriendsModal(true)}
+                className="w-full flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 transition mb-3 border border-cyan-500/30"
+              >
+                <div className="w-12 h-12 rounded-full bg-cyan-400/20 flex items-center justify-center">
+                  <Users size={24} className="text-cyan-400" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-white font-semibold">Share with Friends</p>
+                  <p className="text-sm text-gray-400">Send directly to your friends on Loopync</p>
+                </div>
+              </button>
+            )}
 
         {/* Native Share (Mobile) */}
         {navigator.share && (
