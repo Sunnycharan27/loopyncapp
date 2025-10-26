@@ -2892,13 +2892,13 @@ class BackendTester:
         """Ensure demo_user and u1 are friends for call testing"""
         try:
             # Send friend request from demo_user to u1
-            payload = {"fromUserId": "demo_user", "toUserId": "u1"}
-            response = self.session.post(f"{BACKEND_URL}/friends/request", json=payload)
+            params = {"fromUserId": "demo_user", "toUserId": "u1"}
+            response = self.session.post(f"{BACKEND_URL}/friends/request", params=params)
             
             if response.status_code == 200:
                 # Accept friend request from u1's side
-                payload = {"userId": "u1", "friendId": "demo_user"}
-                response = self.session.post(f"{BACKEND_URL}/friends/accept", json=payload)
+                params = {"userId": "u1", "friendId": "demo_user"}
+                response = self.session.post(f"{BACKEND_URL}/friends/accept", params=params)
                 
                 # Now retry call initiate
                 params = {
