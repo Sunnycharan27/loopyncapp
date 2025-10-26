@@ -308,18 +308,34 @@ const RoomDetailClubhouse = () => {
       // If promoted to speaker but don't have audio track
       if (isNowSpeaker && !hasAudioTrack) {
         try {
+          // Request microphone permission first
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+          } catch (permError) {
+            console.error("Microphone permission denied:", permError);
+            toast.error("Please allow microphone access to speak. Check browser permissions.");
+            return;
+          }
+          
           // Change client role to host
           await agoraClient.current.setClientRole("host");
           
           // Create and publish audio track
-          localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack();
+          localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack({
+            encoderConfig: "music_standard",
+          });
           await agoraClient.current.publish([localAudioTrack.current]);
           
           setIsMuted(false);
-          toast.success("You can now speak! Unmute to talk.");
+          toast.success("🎤 You're on stage! You can now speak.");
         } catch (error) {
           console.error("Failed to enable microphone:", error);
-          toast.error("Failed to enable microphone");
+          if (error.message?.includes("permission")) {
+            toast.error("Microphone access denied. Please allow microphone in browser settings.");
+          } else {
+            toast.error("Failed to enable microphone. Please try again.");
+          }
         }
       }
       
