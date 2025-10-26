@@ -287,6 +287,19 @@ function App() {
               }
             />
             <Route
+              path="/people"
+              element={
+                !authLoaded ? (
+                  <div className="min-h-screen grid place-items-center text-gray-400">Loading…</div>
+                ) : isAuthenticated ? (
+                  <People />
+                ) : (
+                  <Navigate to="/auth" />
+                )
+              }
+            />
+
+            <Route
               path="/viberooms"
               element={
                 !authLoaded ? (
