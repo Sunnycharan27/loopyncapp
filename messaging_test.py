@@ -375,14 +375,21 @@ class MessagingTester:
                         f"Message count didn't increase (still {len(updated_messages)})"
                     )
         else:
-            # Step 5: If no threads, try to create a new thread
-            print("\n2. No existing threads found - attempting to create new thread...")
-            thread_id = self.test_create_dm_thread()
+            # Step 5: If no threads, try to create a new thread between u1 and u2
+            print("\n2. No existing threads found - attempting to create new thread between u1 and u2...")
+            # Switch to u2 for thread creation test
+            self.demo_user_id = "u2"
+            thread_id = self.test_create_dm_thread_between_users("u1", "u2")
             
             if thread_id and thread_id != "existing":
                 print(f"\n3. Successfully created thread - testing messaging...")
                 self.test_send_message(thread_id)
                 self.test_get_thread_messages(thread_id)
+        
+        # Test with demo_user as well
+        print(f"\n5. Testing DM threads for original demo_user...")
+        self.demo_user_id = original_user_id
+        demo_threads = self.test_get_dm_threads()
         
         # Summary
         print("\n" + "=" * 80)
