@@ -3143,6 +3143,7 @@ class BackendTester:
         self.test_call_initiate()
         self.test_call_answer()
         self.test_call_end()
+        self.test_call_initiate_video()
         self.test_call_history()
         
         # File Upload Tests
