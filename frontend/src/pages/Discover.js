@@ -750,7 +750,8 @@ const Discover = () => {
                     <p className="text-sm text-gray-500 mt-2">Check back later for suggestions</p>
                   </div>
                 )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
