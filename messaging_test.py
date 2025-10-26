@@ -311,6 +311,22 @@ class MessagingTester:
         print("=" * 80)
         print()
         
+        # Step 0: Seed data to ensure we have users and friendships
+        print("0. Seeding baseline data...")
+        try:
+            response = self.session.post(f"{BACKEND_URL}/seed")
+            if response.status_code == 200:
+                data = response.json()
+                self.log_result(
+                    "Seed Data", 
+                    True, 
+                    f"Successfully seeded data: {data.get('users', 0)} users, {data.get('messages', 0)} messages"
+                )
+            else:
+                self.log_result("Seed Data", False, f"Seeding failed with status {response.status_code}")
+        except Exception as e:
+            self.log_result("Seed Data", False, f"Seeding error: {str(e)}")
+        
         # Step 1: Authenticate
         if not self.authenticate_demo_user():
             print("❌ Authentication failed - cannot proceed with messaging tests")
@@ -319,8 +335,10 @@ class MessagingTester:
         print("\n🔍 MESSAGING TEST SEQUENCE:")
         print("-" * 50)
         
-        # Step 2: Get DM threads for demo_user
-        print("1. Getting DM threads for demo_user...")
+        # Test with seeded user u1 who has existing threads
+        print("1. Getting DM threads for seeded user u1 (who has friends)...")
+        original_user_id = self.demo_user_id
+        self.demo_user_id = "u1"  # Switch to u1 for testing
         threads = self.test_get_dm_threads()
         
         if threads:
