@@ -265,6 +265,7 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
         <UniversalShareModal
           item={post}
           type="post"
+          currentUser={currentUser}
           onClose={() => setShowShareModal(false)}
         />
       )}
