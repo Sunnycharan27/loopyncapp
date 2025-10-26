@@ -791,6 +791,17 @@ const Messenger = () => {
           </form>
         </div>
       )}
+      
+      {/* Call Modal */}
+      {showCall && callData && (
+        <CallModal
+          callData={callData}
+          onClose={() => {
+            setShowCall(false);
+            setCallData(null);
+          }}
+        />
+      )}
     </div>
   );
 };
