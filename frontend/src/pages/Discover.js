@@ -34,44 +34,8 @@ const Discover = () => {
   useEffect(() => {
     if (activeTab === 'people') {
       fetchPeople();
-    } else if (activeTab === 'wallet') {
-      fetchWalletData();
     }
   }, [activeTab]);
-
-  const fetchWalletData = async () => {
-    try {
-      const [walletRes, creditsRes] = await Promise.all([
-        axios.get(`${API}/wallet?userId=${currentUser.id}`),
-        axios.get(`${API}/credits/${currentUser.id}`)
-      ]);
-      setWalletBalance(walletRes.data?.balance || 0);
-      setLoopCredits(creditsRes.data?.credits || 0);
-    } catch (error) {
-      console.error('Failed to fetch wallet data:', error);
-    }
-  };
-
-  const handleTopUp = async () => {
-    if (!topUpAmount || parseFloat(topUpAmount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    try {
-      await axios.post(`${API}/wallet/topup`, {
-        userId: currentUser.id,
-        amount: parseFloat(topUpAmount)
-      });
-      
-      toast.success(`₹${topUpAmount} added to wallet!`);
-      setShowTopUpModal(false);
-      setTopUpAmount("");
-      fetchWalletData();
-    } catch (error) {
-      toast.error("Failed to top up wallet");
-    }
-  };
 
   const fetchDiscoverData = async () => {
     try {
