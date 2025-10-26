@@ -60,6 +60,56 @@ const Onboarding = () => {
   };
 
   const handleFinish = async () => {
+    // Validate mandatory consents
+    if (!consents.dataCollection) {
+      toast.error("Data collection consent is required to use Loopync");
+      return;
+    }
+
+    if (selectedInterests.length < 2) {
+      toast.error("Please select at least 2 interests");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Save user interests and language - send as comma-separated string
+      const interestsString = selectedInterests.join(',');
+      const url = `${API}/users/${currentUser.id}/interests?interests=${encodeURIComponent(interestsString)}&language=${selectedLanguage}`;
+      
+      await axios.post(url);
+
+      // Save consent preferences
+      const consentUrl = `${API}/users/${currentUser.id}/consents`;
+      await axios.post(consentUrl, {
+        userId: currentUser.id,
+        ...consents,
+        kycCompleted: kycVerified,
+        aadhaarNumber: kycVerified ? aadhaarNumber : null
+      });
+
+      // Award onboarding credits
+      const creditsUrl = `${API}/credits/earn?userId=${currentUser.id}&amount=100&source=onboarding&description=${encodeURIComponent('Welcome bonus for completing onboarding')}`;
+      await axios.post(creditsUrl);
+
+      // Additional credits for KYC completion
+      if (kycVerified) {
+        const kycCreditsUrl = `${API}/credits/earn?userId=${currentUser.id}&amount=50&source=kyc&description=${encodeURIComponent('Bonus for completing eKYC verification')}`;
+        await axios.post(kycCreditsUrl);
+        toast.success("Welcome to Loopync! 🎉 +150 Loop Credits earned! (100 + 50 KYC Bonus)");
+      } else {
+        toast.success("Welcome to Loopync! 🎉 +100 Loop Credits earned!");
+      }
+      
+      // Update state and navigate to home (no page reload)
+      setNeedsOnboarding(false);
+      navigate('/');
+    } catch (error) {
+      console.error("Onboarding error:", error);
+      toast.error("Failed to save preferences. Please try again.");
+      setLoading(false);
+    }
+  };
 
   const handleSkipKYC = () => {
     toast.info("You can complete eKYC later from Settings");
