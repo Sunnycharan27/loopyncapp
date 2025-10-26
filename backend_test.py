@@ -2919,6 +2919,14 @@ class BackendTester:
         self.test_ai_recommend_venues()
         self.test_ai_recommend_events()
         
+        # NEW: Call Features Tests (REQUESTED)
+        print("\n📞 PRIORITY 10: CALL FEATURES (NEW ENDPOINTS)")
+        print("-" * 60)
+        self.test_call_initiate()
+        self.test_call_answer()
+        self.test_call_end()
+        self.test_call_history()
+        
         # File Upload Tests
         print("\n📁 FILE UPLOAD TESTS")
         print("-" * 60)
