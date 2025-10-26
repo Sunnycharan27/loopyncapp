@@ -270,12 +270,12 @@ const ProfileVibe = () => {
         <div className="px-4">
           {/* Posts Tab */}
           {activeTab === "posts" && (
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-2">
               {userPosts.length > 0 ? (
                 userPosts.map((post) => (
                   <div
                     key={post.id}
-                    className="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-75 transition-all border border-white/10 hover:border-cyan-400"
+                    className="aspect-square rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-all border border-gray-800 hover:border-cyan-400 group relative"
                     onClick={() => navigate(`/post/${post.id}`)}
                   >
                     {post.mediaUrl ? (
@@ -285,20 +285,26 @@ const ProfileVibe = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center p-3">
-                        <p className="text-xs text-center text-white/80 line-clamp-4">
+                      <div className="w-full h-full bg-gray-800 flex items-center justify-center p-3">
+                        <p className="text-xs text-center text-gray-400 line-clamp-4">
                           {post.text}
                         </p>
                       </div>
                     )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all"></div>
                   </div>
                 ))
               ) : (
-                <div className="col-span-3 glass-card p-12 rounded-2xl text-center">
-                  <Grid size={48} className="mx-auto mb-4 text-white/30" />
-                  <p className="text-white/60">No posts yet</p>
-                  <button className="mt-4 px-6 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full font-semibold">
-                    Create Post
+                <div className="col-span-3 bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700 flex items-center justify-center">
+                    <Grid size={32} className="text-gray-500" />
+                  </div>
+                  <p className="text-gray-400 mb-4">No posts yet</p>
+                  <button 
+                    onClick={() => toast.info("Create post feature coming soon!")}
+                    className="px-6 py-2.5 bg-cyan-400 hover:bg-cyan-500 text-black rounded-xl font-semibold transition-all"
+                  >
+                    Create Your First Post
                   </button>
                 </div>
               )}
@@ -307,29 +313,34 @@ const ProfileVibe = () => {
 
           {/* Tribes Tab */}
           {activeTab === "tribes" && (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {userTribes.length > 0 ? (
                 userTribes.map(tribe => (
                   <div
                     key={tribe.id}
-                    className="glass-card p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:border-cyan-400 transition-all cursor-pointer"
+                    className="bg-gray-800 border border-gray-700 p-4 rounded-xl hover:border-cyan-400 transition-all cursor-pointer group"
                     onClick={() => navigate(`/tribe/${tribe.id}`)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0">
                         <Users size={24} className="text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-white">{tribe.name}</h3>
-                        <p className="text-sm text-white/60">{tribe.members?.length || 0} members</p>
+                        <h3 className="font-bold text-white group-hover:text-cyan-400 transition-colors">{tribe.name}</h3>
+                        <p className="text-sm text-gray-400">{tribe.members?.length || 0} members</p>
+                      </div>
+                      <div className="text-gray-500 group-hover:text-cyan-400 transition-colors">
+                        <ArrowRight size={20} />
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="glass-card p-12 rounded-2xl text-center">
-                  <Users size={48} className="mx-auto mb-4 text-white/30" />
-                  <p className="text-white/60">No tribes joined yet</p>
+                <div className="bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-700 flex items-center justify-center">
+                    <Users size={32} className="text-gray-500" />
+                  </div>
+                  <p className="text-gray-400">No tribes joined yet</p>
                 </div>
               )}
             </div>
@@ -337,19 +348,25 @@ const ProfileVibe = () => {
 
           {/* Venues Tab */}
           {activeTab === "venues" && (
-            <div className="glass-card p-6 rounded-2xl text-center">
-              <Map size={48} className="mx-auto mb-4 text-cyan-400" />
-              <h3 className="text-xl font-bold mb-2">Venue Check-ins</h3>
-              <p className="text-white/60 mb-4">Interactive heatmap coming soon!</p>
-              <div className="w-full h-64 bg-white/5 rounded-xl border border-white/10"></div>
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
+                <Map size={32} className="text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-white">Venue Check-ins</h3>
+              <p className="text-gray-400 mb-6">Interactive heatmap showing your visited places</p>
+              <div className="w-full h-64 bg-gray-900 rounded-xl border border-gray-700 flex items-center justify-center">
+                <p className="text-gray-500">Map visualization coming soon</p>
+              </div>
             </div>
           )}
 
           {/* Marketplace Tab */}
           {activeTab === "marketplace" && (
-            <div className="glass-card p-12 rounded-2xl text-center">
-              <Store size={48} className="mx-auto mb-4 text-pink-400" />
-              <p className="text-white/60">No marketplace items yet</p>
+            <div className="bg-gray-800 border border-gray-700 rounded-2xl p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-r from-pink-400 to-rose-500 flex items-center justify-center">
+                <Store size={32} className="text-white" />
+              </div>
+              <p className="text-gray-400">No marketplace items yet</p>
             </div>
           )}
         </div>
