@@ -546,6 +546,124 @@ const Discover = () => {
               })}
             </div>
           )}
+
+
+          {activeTab === "people" && (
+            <div className="space-y-6">
+              {/* Friend Requests Section */}
+              {friendRequests.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    <Clock size={20} className="text-cyan-400" />
+                    Friend Requests ({friendRequests.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {friendRequests.map(user => (
+                      <div key={user.id} className="glass-card p-4">
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                            alt={user.name}
+                            className="w-16 h-16 rounded-full cursor-pointer"
+                            onClick={() => navigate(`/profile/${user.id}`)}
+                          />
+                          <div className="flex-1">
+                            <h3 
+                              className="font-semibold text-white cursor-pointer hover:underline"
+                              onClick={() => navigate(`/profile/${user.id}`)}
+                            >
+                              {user.name}
+                            </h3>
+                            <p className="text-sm text-gray-400">@{user.handle}</p>
+                            {user.bio && <p className="text-sm text-gray-300 mt-1">{user.bio}</p>}
+                            
+                            <div className="flex items-center gap-2 mt-3">
+                              <button
+                                onClick={() => handleAcceptRequest(user.id)}
+                                className="flex items-center gap-1 px-4 py-2 rounded-full bg-cyan-400 text-black hover:bg-cyan-300 transition font-medium"
+                              >
+                                <UserCheck size={18} />
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => handleRejectRequest(user.id)}
+                                className="flex items-center gap-1 px-4 py-2 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition"
+                              >
+                                <X size={18} />
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* People You May Know */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                  <UserPlus size={20} className="text-cyan-400" />
+                  People You May Know
+                </h3>
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full"></div>
+                  </div>
+                ) : people.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {people.slice(0, 12).map(user => (
+                      <div key={user.id} className="glass-card p-4 hover:bg-gray-800/50 transition-all">
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+                            alt={user.name}
+                            className="w-16 h-16 rounded-full cursor-pointer"
+                            onClick={() => navigate(`/profile/${user.id}`)}
+                          />
+                          <div className="flex-1">
+                            <h3 
+                              className="font-semibold text-white cursor-pointer hover:underline"
+                              onClick={() => navigate(`/profile/${user.id}`)}
+                            >
+                              {user.name}
+                            </h3>
+                            <p className="text-sm text-gray-400">@{user.handle}</p>
+                            {user.bio && <p className="text-sm text-gray-300 mt-1 line-clamp-2">{user.bio}</p>}
+                            {user.location && (
+                              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                <MapPin size={12} />
+                                {user.location}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center gap-2 mt-3">
+                              <FriendButton currentUser={currentUser} targetUser={user} />
+                              <button
+                                onClick={() => handleMessageClick(user)}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition text-sm"
+                              >
+                                <MessageCircle size={16} />
+                                Message
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="glass-card p-8 text-center">
+                    <Users size={48} className="mx-auto text-gray-600 mb-3" />
+                    <p className="text-gray-400">No new people to discover</p>
+                    <p className="text-sm text-gray-500 mt-2">Check back later for suggestions</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
         </>
         )}
