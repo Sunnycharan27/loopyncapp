@@ -246,6 +246,55 @@ const RoomDetailClubhouse = () => {
     return myRole === "host" || myRole === "moderator";
   };
 
+  // Update audio permissions when role changes
+  useEffect(() => {
+    const updateAudioPermissions = async () => {
+      if (!agoraClient.current || !isConnected) return;
+      
+      const myRole = getCurrentUserRole();
+      const isNowSpeaker = myRole !== "audience";
+      const hasAudioTrack = localAudioTrack.current !== null;
+
+      // If promoted to speaker but don't have audio track
+      if (isNowSpeaker && !hasAudioTrack) {
+        try {
+          // Change client role to host
+          await agoraClient.current.setClientRole("host");
+          
+          // Create and publish audio track
+          localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack();
+          await agoraClient.current.publish([localAudioTrack.current]);
+          
+          setIsMuted(false);
+          toast.success("You can now speak! Unmute to talk.");
+        } catch (error) {
+          console.error("Failed to enable microphone:", error);
+          toast.error("Failed to enable microphone");
+        }
+      }
+      
+      // If demoted to audience but have audio track
+      if (!isNowSpeaker && hasAudioTrack) {
+        try {
+          // Unpublish and close audio track
+          await agoraClient.current.unpublish([localAudioTrack.current]);
+          localAudioTrack.current.close();
+          localAudioTrack.current = null;
+          
+          // Change client role to audience
+          await agoraClient.current.setClientRole("audience");
+          
+          setIsMuted(true);
+          toast.info("Moved to audience");
+        } catch (error) {
+          console.error("Failed to disable microphone:", error);
+        }
+      }
+    };
+
+    updateAudioPermissions();
+  }, [room?.participants, isConnected]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
