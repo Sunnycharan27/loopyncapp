@@ -2240,6 +2240,157 @@ async def raise_hand(roomId: str, userId: str):
     
     return {"message": "Hand raised" if p.get("raisedHand") else "Hand lowered", "participants": participants}
 
+
+# ===== CALL FEATURES (Voice & Video) =====
+# One-on-one calls between friends using Agora
+
+@api_router.post("/calls/initiate")
+async def initiate_call(callerId: str, recipientId: str, callType: str):
+    """Initiate a voice or video call between friends"""
+    try:
+        # Check if users are friends
+        caller = await db.users.find_one({"id": callerId}, {"_id": 0})
+        recipient = await db.users.find_one({"id": recipientId}, {"_id": 0})
+        
+        if not caller or not recipient:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Verify friendship
+        caller_friends = caller.get("friends", [])
+        if recipientId not in caller_friends:
+            raise HTTPException(status_code=403, detail="Can only call friends")
+        
+        # Generate unique channel name for this call
+        channel_name = f"call_{callerId}_{recipientId}_{uuid.uuid4().hex[:8]}"
+        
+        # Generate Agora tokens for both users
+        caller_token = generate_agora_token(channel_name, callerId)
+        recipient_token = generate_agora_token(channel_name, recipientId)
+        
+        # Create call record
+        call = {
+            "id": str(uuid.uuid4()),
+            "callerId": callerId,
+            "recipientId": recipientId,
+            "channelName": channel_name,
+            "callType": callType,  # "voice" or "video"
+            "status": "initiated",  # initiated, ongoing, ended, missed
+            "startedAt": datetime.now(timezone.utc).isoformat(),
+            "endedAt": None,
+            "duration": 0
+        }
+        
+        await db.calls.insert_one(call)
+        
+        return {
+            "callId": call["id"],
+            "channelName": channel_name,
+            "callerToken": caller_token,
+            "recipientToken": recipient_token,
+            "callType": callType,
+            "caller": {
+                "id": caller["id"],
+                "name": caller["name"],
+                "avatar": caller.get("avatar")
+            },
+            "recipient": {
+                "id": recipient["id"],
+                "name": recipient["name"],
+                "avatar": recipient.get("avatar")
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error initiating call: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/calls/{callId}/answer")
+async def answer_call(callId: str, userId: str):
+    """Answer an incoming call"""
+    try:
+        call = await db.calls.find_one({"id": callId}, {"_id": 0})
+        if not call:
+            raise HTTPException(status_code=404, detail="Call not found")
+        
+        # Verify user is the recipient
+        if userId != call["recipientId"]:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        # Update call status
+        await db.calls.update_one(
+            {"id": callId},
+            {"$set": {"status": "ongoing"}}
+        )
+        
+        return {"message": "Call answered", "status": "ongoing"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error answering call: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/calls/{callId}/end")
+async def end_call(callId: str, userId: str):
+    """End an ongoing call"""
+    try:
+        call = await db.calls.find_one({"id": callId}, {"_id": 0})
+        if not call:
+            raise HTTPException(status_code=404, detail="Call not found")
+        
+        # Verify user is participant
+        if userId not in [call["callerId"], call["recipientId"]]:
+            raise HTTPException(status_code=403, detail="Not authorized")
+        
+        # Calculate duration
+        started_at = datetime.fromisoformat(call["startedAt"])
+        ended_at = datetime.now(timezone.utc)
+        duration = int((ended_at - started_at).total_seconds())
+        
+        # Update call record
+        await db.calls.update_one(
+            {"id": callId},
+            {"$set": {
+                "status": "ended",
+                "endedAt": ended_at.isoformat(),
+                "duration": duration
+            }}
+        )
+        
+        return {"message": "Call ended", "duration": duration}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error ending call: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/calls/history/{userId}")
+async def get_call_history(userId: str, limit: int = 50):
+    """Get call history for a user"""
+    try:
+        calls = await db.calls.find(
+            {"$or": [{"callerId": userId}, {"recipientId": userId}]},
+            {"_id": 0}
+        ).sort("startedAt", -1).limit(limit).to_list(limit)
+        
+        # Enrich with user data
+        for call in calls:
+            caller = await db.users.find_one({"id": call["callerId"]}, {"_id": 0, "name": 1, "avatar": 1})
+            recipient = await db.users.find_one({"id": call["recipientId"]}, {"_id": 0, "name": 1, "avatar": 1})
+            
+            call["caller"] = caller
+            call["recipient"] = recipient
+        
+        return calls
+        
+    except Exception as e:
+        logger.error(f"Error fetching call history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @api_router.post("/rooms/{roomId}/invite-to-stage")
 async def invite_to_stage(roomId: str, userId: str, targetUserId: str):
     """Pull audience member to stage as speaker (moderator/host only)"""
