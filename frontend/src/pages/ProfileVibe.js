@@ -214,36 +214,36 @@ const ProfileVibe = () => {
         {/* 2. Vibe Matrix - AI Activity Map */}
         <div className="px-4 py-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Target className="text-cyan-400" />
-            Vibe Matrix
-          </h2>
-          <div className="glass-card p-6 rounded-[32px] backdrop-blur-xl bg-white/5 border border-white/10">
-            <div className="grid grid-cols-5 gap-4">
-              {[
-                { label: "Posts", value: vibeMatrix.posts, icon: Grid, color: "from-cyan-400 to-blue-500" },
-                { label: "Tribes", value: vibeMatrix.tribes, icon: Users, color: "from-purple-400 to-pink-500" },
-                { label: "Venues", value: vibeMatrix.venues, icon: MapPin, color: "from-green-400 to-emerald-500" },
-                { label: "Events", value: vibeMatrix.events, icon: Calendar, color: "from-yellow-400 to-orange-500" },
-                { label: "Market", value: vibeMatrix.marketplace, icon: ShoppingBag, color: "from-pink-400 to-rose-500" }
-              ].map((item, idx) => (
-                <button
-                  key={idx}
-                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-all border border-white/10 hover:border-white/20"
-                >
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${item.color} flex items-center justify-center shadow-lg`}>
-                    <item.icon size={20} className="text-white" />
-                  </div>
-                  <span className="text-2xl font-bold">{item.value}</span>
-                  <span className="text-xs text-white/60">{item.label}</span>
-                </button>
-              ))}
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center">
+              <Target size={18} className="text-white" />
             </div>
+            Activity Overview
+          </h2>
+          <div className="grid grid-cols-5 gap-3">
+            {[
+              { label: "Posts", value: vibeMatrix.posts, icon: Grid, gradient: "from-cyan-400 to-blue-500" },
+              { label: "Tribes", value: vibeMatrix.tribes, icon: Users, gradient: "from-purple-400 to-pink-500" },
+              { label: "Venues", value: vibeMatrix.venues, icon: MapPin, gradient: "from-green-400 to-emerald-500" },
+              { label: "Events", value: vibeMatrix.events, icon: Calendar, gradient: "from-yellow-400 to-orange-500" },
+              { label: "Market", value: vibeMatrix.marketplace, icon: ShoppingBag, gradient: "from-pink-400 to-rose-500" }
+            ].map((item, idx) => (
+              <button
+                key={idx}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-800 hover:bg-gray-750 transition-all border border-gray-700 hover:border-gray-600"
+              >
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${item.gradient} flex items-center justify-center shadow-lg`}>
+                  <item.icon size={18} className="text-white" />
+                </div>
+                <span className="text-2xl font-bold text-white">{item.value}</span>
+                <span className="text-xs text-gray-400">{item.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* 3. Scroll Tabs - Four Dimensions */}
         <div className="px-4 mb-4">
-          <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+          <div className="bg-gray-800 rounded-xl p-1 border border-gray-700 inline-flex gap-1">
             {[
               { id: "posts", label: "Posts", icon: Grid },
               { id: "tribes", label: "Tribes", icon: Users },
@@ -253,10 +253,10 @@ const ProfileVibe = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold whitespace-nowrap transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-lg'
-                    : 'bg-white/10 text-white/60 hover:bg-white/20'
+                    ? 'bg-cyan-400 text-black shadow-lg'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
                 }`}
               >
                 <tab.icon size={18} />
