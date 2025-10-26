@@ -799,12 +799,19 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     mongo_user = await db.users.find_one({"id": current_user['user_id']}, {"_id": 0})
     
     if not mongo_user:
-        # If not in MongoDB, return basic info from Google Sheets
-        return {
-            "id": current_user['user_id'],
-            "name": current_user['name'],
-            "email": current_user['email']
-        }
+        # If not in MongoDB, create basic user entry
+        handle = current_user['email'].split('@')[0]
+        new_user = User(
+            id=current_user['user_id'],
+            handle=handle,
+            name=current_user['name'],
+            email=current_user['email'],
+            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}",
+            isVerified=True
+        )
+        doc = new_user.model_dump()
+        await db.users.insert_one(doc)
+        return doc
     
     return mongo_user
 
