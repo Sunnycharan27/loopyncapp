@@ -9,7 +9,7 @@ import { useWebSocket } from "../context/WebSocketContext";
 
 const Notifications = () => {
   const { currentUser } = useContext(AuthContext);
-  const { friendRequests: wsRequests, connected } = useWebSocket();
+  const { connected } = useWebSocket() || { connected: false };
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
@@ -21,20 +21,14 @@ const Notifications = () => {
     fetchFriendRequests();
   }, []);
 
-  // Real-time friend requests from WebSocket
-  useEffect(() => {
-    if (wsRequests.length > 0) {
-      // Add new requests from WebSocket
-      fetchFriendRequests();
-    }
-  }, [wsRequests]);
-
   const fetchFriendRequests = async () => {
     try {
       const res = await axios.get(`${API}/friend-requests?userId=${currentUser.id}`);
-      setFriendRequests(res.data.filter(req => req.status === 'pending' && req.toUserId === currentUser.id));
+      const incoming = res.data?.filter(req => req.status === 'pending' && req.toUserId === currentUser.id) || [];
+      setFriendRequests(incoming);
     } catch (error) {
       console.error("Failed to load friend requests", error);
+      setFriendRequests([]);
     }
   };
 
