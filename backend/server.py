@@ -4122,6 +4122,28 @@ async def complete_challenge(challengeId: str, userId: str):
     
     return {"success": True, "reward": challenge["reward"]}
 
+# ===== QR CODE HELPER =====
+
+def generate_qr_code_base64(data: str) -> str:
+    """Generate QR code and return as base64 string"""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert to base64
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    img_str = base64.b64encode(buffer.getvalue()).decode()
+    
+    return f"data:image/png;base64,{img_str}"
+
 # ===== EVENT TICKETS ROUTES =====
 
 @api_router.post("/events/{eventId}/tickets")
@@ -4142,7 +4164,13 @@ async def claim_event_ticket(eventId: str, userId: str, tier: str = "General"):
         userId=userId,
         tier=tier
     )
-    await db.event_tickets.insert_one(ticket.model_dump())
+    ticket_dict = ticket.model_dump()
+    
+    # Generate QR code with ticket information
+    qr_data = f"TICKET:{ticket_dict['id']}:QR:{ticket_dict['qrCode']}:EVENT:{eventId}"
+    ticket_dict['qrCodeImage'] = generate_qr_code_base64(qr_data)
+    
+    await db.event_tickets.insert_one(ticket_dict)
     
     return {"success": True, "ticket": ticket.model_dump()}
 
