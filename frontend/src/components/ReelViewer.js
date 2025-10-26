@@ -279,6 +279,7 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
         <UniversalShareModal
           item={currentReel}
           type="reel"
+          currentUser={currentUser}
           onClose={() => setShowShare(false)}
         />
       )}
