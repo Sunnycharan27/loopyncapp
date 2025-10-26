@@ -7,6 +7,7 @@ import VibeZone from "./pages/VibeZone";
 import Tribes from "./pages/Tribes";
 import TribeDetail from "./pages/TribeDetail";
 import Wallet from "./pages/Wallet";
+import LoopPay from "./pages/LoopPay";
 import Discover from "./pages/Discover";
 import Venues from "./pages/Venues";
 import VenueDetail from "./pages/VenueDetail";
