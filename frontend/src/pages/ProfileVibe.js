@@ -59,11 +59,12 @@ const ProfileVibe = () => {
       setLoading(true);
       
       // Fetch all data in parallel
-      const [postsRes, reelsRes, tribesRes, creditsRes] = await Promise.all([
+      const [postsRes, reelsRes, tribesRes, creditsRes, ticketsRes] = await Promise.all([
         axios.get(`${API}/posts`),
         axios.get(`${API}/reels`),
         axios.get(`${API}/tribes`),
-        axios.get(`${API}/credits/${currentUser.id}`)
+        axios.get(`${API}/credits/${currentUser.id}`),
+        axios.get(`${API}/tickets/${currentUser.id}`)
       ]);
 
       const myPosts = postsRes.data.filter(p => p.authorId === currentUser.id);
