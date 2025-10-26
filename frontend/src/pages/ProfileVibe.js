@@ -17,6 +17,7 @@ const ProfileVibe = () => {
   const [userTribes, setUserTribes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userTickets, setUserTickets] = useState([]);
+  const [marketplaceItems, setMarketplaceItems] = useState([]);
   const [loopCredits, setLoopCredits] = useState(0);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState("");
