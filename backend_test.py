@@ -3094,6 +3094,458 @@ class BackendTester:
         except Exception as e:
             self.log_result("Call Initiate Video", False, f"Exception occurred: {str(e)}")
 
+    def test_viberoom_creation_demo_user(self):
+        """Test 1: VibeRoom Creation with demo_user"""
+        try:
+            payload = {
+                "name": "Demo Room Test",
+                "description": "Testing room creation with demo user",
+                "category": "general",
+                "isPrivate": False,
+                "tags": ["test", "demo"]
+            }
+            params = {"userId": "demo_user"}
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('id' in data and 'name' in data and 'hostId' in data and 
+                    'agoraChannel' in data and 'participants' in data):
+                    self.demo_room_id = data['id']
+                    self.log_result(
+                        "VibeRoom Creation (Demo User)", 
+                        True, 
+                        f"Successfully created room: {data['name']} (ID: {data['id']})",
+                        f"Host: {data['hostId']}, Agora Channel: {data['agoraChannel']}, Participants: {len(data['participants'])}"
+                    )
+                else:
+                    self.log_result(
+                        "VibeRoom Creation (Demo User)", 
+                        False, 
+                        "Room creation response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "VibeRoom Creation (Demo User)", 
+                    False, 
+                    f"Room creation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("VibeRoom Creation (Demo User)", False, f"Exception occurred: {str(e)}")
+    
+    def test_viberoom_creation_existing_user(self):
+        """Test 2: VibeRoom Creation with existing user (u1)"""
+        try:
+            payload = {
+                "name": "Existing User Room",
+                "description": "Testing room creation with existing user u1",
+                "category": "music",
+                "isPrivate": False,
+                "tags": ["music", "test"]
+            }
+            params = {"userId": "u1"}
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('id' in data and 'name' in data and 'hostId' in data and 
+                    'agoraChannel' in data and 'participants' in data):
+                    self.existing_user_room_id = data['id']
+                    self.log_result(
+                        "VibeRoom Creation (Existing User)", 
+                        True, 
+                        f"Successfully created room: {data['name']} (ID: {data['id']})",
+                        f"Host: {data['hostId']}, Agora Channel: {data['agoraChannel']}, Category: {data['category']}"
+                    )
+                else:
+                    self.log_result(
+                        "VibeRoom Creation (Existing User)", 
+                        False, 
+                        "Room creation response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "VibeRoom Creation (Existing User)", 
+                    False, 
+                    f"Room creation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("VibeRoom Creation (Existing User)", False, f"Exception occurred: {str(e)}")
+    
+    def test_viberoom_creation_nonexistent_user(self):
+        """Test 3: VibeRoom Creation with non-existent userId (should create user on-the-fly)"""
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            new_user_id = f"newuser_{timestamp}"
+            
+            payload = {
+                "name": "New User Room",
+                "description": "Testing room creation with non-existent user",
+                "category": "tech",
+                "isPrivate": False,
+                "tags": ["tech", "new"]
+            }
+            params = {"userId": new_user_id}
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms", json=payload, params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('id' in data and 'name' in data and 'hostId' in data and 
+                    'agoraChannel' in data and 'participants' in data):
+                    self.new_user_room_id = data['id']
+                    self.log_result(
+                        "VibeRoom Creation (Non-existent User)", 
+                        True, 
+                        f"Successfully created room and user on-the-fly: {data['name']} (ID: {data['id']})",
+                        f"Host: {data['hostId']}, Created user: {new_user_id}"
+                    )
+                else:
+                    self.log_result(
+                        "VibeRoom Creation (Non-existent User)", 
+                        False, 
+                        "Room creation response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "VibeRoom Creation (Non-existent User)", 
+                    False, 
+                    f"Room creation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("VibeRoom Creation (Non-existent User)", False, f"Exception occurred: {str(e)}")
+    
+    def test_get_room_details(self):
+        """Test 4: Get Room Details"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Get Room Details", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            response = self.session.get(f"{BACKEND_URL}/rooms/{self.demo_room_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('id' in data and 'name' in data and 'hostId' in data and 
+                    'agoraChannel' in data and 'participants' in data):
+                    self.log_result(
+                        "Get Room Details", 
+                        True, 
+                        f"Successfully retrieved room details: {data['name']}",
+                        f"ID: {data['id']}, Host: {data['hostId']}, Participants: {len(data['participants'])}, Status: {data.get('status', 'unknown')}"
+                    )
+                else:
+                    self.log_result(
+                        "Get Room Details", 
+                        False, 
+                        "Room details response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Get Room Details", 
+                    False, 
+                    f"Get room details failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Get Room Details", False, f"Exception occurred: {str(e)}")
+    
+    def test_agora_token_publisher(self):
+        """Test 5: Agora Token Generation for Publisher Role (Speaker)"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Agora Token Publisher", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            params = {
+                "channelName": self.demo_room_id,
+                "uid": 12345,
+                "role": "publisher"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/agora/token", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('token' in data and 'appId' in data and 'channelName' in data and 
+                    'uid' in data and 'success' in data):
+                    self.publisher_token = data['token']
+                    self.log_result(
+                        "Agora Token Publisher", 
+                        True, 
+                        f"Successfully generated publisher token for channel: {data['channelName']}",
+                        f"UID: {data['uid']}, AppId: {data['appId']}, Success: {data['success']}"
+                    )
+                else:
+                    self.log_result(
+                        "Agora Token Publisher", 
+                        False, 
+                        "Token response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Agora Token Publisher", 
+                    False, 
+                    f"Token generation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Agora Token Publisher", False, f"Exception occurred: {str(e)}")
+    
+    def test_agora_token_subscriber(self):
+        """Test 6: Agora Token Generation for Subscriber Role (Audience)"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Agora Token Subscriber", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            params = {
+                "channelName": self.demo_room_id,
+                "uid": 67890,
+                "role": "subscriber"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/agora/token", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('token' in data and 'appId' in data and 'channelName' in data and 
+                    'uid' in data and 'success' in data):
+                    self.subscriber_token = data['token']
+                    self.log_result(
+                        "Agora Token Subscriber", 
+                        True, 
+                        f"Successfully generated subscriber token for channel: {data['channelName']}",
+                        f"UID: {data['uid']}, AppId: {data['appId']}, Success: {data['success']}"
+                    )
+                else:
+                    self.log_result(
+                        "Agora Token Subscriber", 
+                        False, 
+                        "Token response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Agora Token Subscriber", 
+                    False, 
+                    f"Token generation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Agora Token Subscriber", False, f"Exception occurred: {str(e)}")
+    
+    def test_join_room_as_audience(self):
+        """Test 7: Join Room as Audience Member"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Join Room as Audience", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            params = {"userId": "u2"}
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms/{self.demo_room_id}/join", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('message' in data and 'room' in data and 'participant' in data):
+                    participant = data['participant']
+                    if (participant.get('role') == 'audience' and 
+                        participant.get('userId') == 'u2'):
+                        self.log_result(
+                            "Join Room as Audience", 
+                            True, 
+                            f"Successfully joined room as audience: {participant['userName']}",
+                            f"Role: {participant['role']}, Muted: {participant.get('isMuted', 'unknown')}"
+                        )
+                    else:
+                        self.log_result(
+                            "Join Room as Audience", 
+                            False, 
+                            "Participant role or userId incorrect",
+                            f"Participant: {participant}"
+                        )
+                else:
+                    self.log_result(
+                        "Join Room as Audience", 
+                        False, 
+                        "Join room response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Join Room as Audience", 
+                    False, 
+                    f"Join room failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Join Room as Audience", False, f"Exception occurred: {str(e)}")
+    
+    def test_raise_hand_functionality(self):
+        """Test 8: Raise Hand Functionality"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Raise Hand Functionality", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            params = {"userId": "u2"}
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms/{self.demo_room_id}/raise-hand", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('message' in data and 'participants' in data):
+                    # Find u2 in participants and check if hand is raised
+                    participants = data['participants']
+                    u2_participant = next((p for p in participants if p['userId'] == 'u2'), None)
+                    
+                    if u2_participant and u2_participant.get('raisedHand'):
+                        self.log_result(
+                            "Raise Hand Functionality", 
+                            True, 
+                            f"Successfully raised hand: {data['message']}",
+                            f"User: {u2_participant['userName']}, Hand Raised: {u2_participant['raisedHand']}"
+                        )
+                    else:
+                        self.log_result(
+                            "Raise Hand Functionality", 
+                            False, 
+                            "Hand raise not reflected in participant data",
+                            f"u2 participant: {u2_participant}"
+                        )
+                else:
+                    self.log_result(
+                        "Raise Hand Functionality", 
+                        False, 
+                        "Raise hand response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Raise Hand Functionality", 
+                    False, 
+                    f"Raise hand failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Raise Hand Functionality", False, f"Exception occurred: {str(e)}")
+    
+    def test_invite_to_stage(self):
+        """Test 9: Invite to Stage (Audience → Speaker)"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Invite to Stage", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            params = {
+                "userId": "demo_user",  # Host inviting
+                "targetUserId": "u2"    # Audience member being invited
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/rooms/{self.demo_room_id}/invite-to-stage", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('message' in data and 'participants' in data):
+                    # Find u2 in participants and check if role changed to speaker
+                    participants = data['participants']
+                    u2_participant = next((p for p in participants if p['userId'] == 'u2'), None)
+                    
+                    if (u2_participant and u2_participant.get('role') == 'speaker' and 
+                        not u2_participant.get('isMuted', True)):
+                        self.log_result(
+                            "Invite to Stage", 
+                            True, 
+                            f"Successfully invited to stage: {data['message']}",
+                            f"User: {u2_participant['userName']}, Role: {u2_participant['role']}, Muted: {u2_participant['isMuted']}"
+                        )
+                    else:
+                        self.log_result(
+                            "Invite to Stage", 
+                            False, 
+                            "Role change not reflected correctly in participant data",
+                            f"u2 participant: {u2_participant}"
+                        )
+                else:
+                    self.log_result(
+                        "Invite to Stage", 
+                        False, 
+                        "Invite to stage response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Invite to Stage", 
+                    False, 
+                    f"Invite to stage failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Invite to Stage", False, f"Exception occurred: {str(e)}")
+    
+    def test_speaker_token_generation(self):
+        """Test 10: Verify Speaker Can Get Publisher Token for Audio"""
+        if not hasattr(self, 'demo_room_id') or not self.demo_room_id:
+            self.log_result("Speaker Token Generation", False, "Skipped - no demo room ID available")
+            return
+            
+        try:
+            # u2 is now a speaker, should be able to get publisher token
+            params = {
+                "channelName": self.demo_room_id,
+                "uid": 11111,  # Different UID for u2
+                "role": "publisher"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/agora/token", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('token' in data and 'appId' in data and 'success' in data and data['success']):
+                    self.log_result(
+                        "Speaker Token Generation", 
+                        True, 
+                        f"Speaker can successfully get publisher token for audio",
+                        f"Channel: {data['channelName']}, UID: {data['uid']}, Token length: {len(data['token'])}"
+                    )
+                else:
+                    self.log_result(
+                        "Speaker Token Generation", 
+                        False, 
+                        "Token generation unsuccessful",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Speaker Token Generation", 
+                    False, 
+                    f"Speaker token generation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Speaker Token Generation", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
