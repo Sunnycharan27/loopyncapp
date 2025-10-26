@@ -1832,46 +1832,13 @@ async def generate_agora_token(channelName: str, uid: int, role: str = "publishe
 
 @api_router.post("/rooms")
 async def create_room(room: RoomCreate, userId: str):
-    """Create a new Vibe Room with Daily.co integration"""
-    import httpx
+    """Create a new Vibe Room with Agora audio (Clubhouse-style)"""
     
     user = await db.users.find_one({"id": userId}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Create Daily.co room first
-    daily_api_key = os.environ.get('DAILY_API_KEY')
-    daily_room_url = None
-    daily_room_name = None
-    
-    if daily_api_key:
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    "https://api.daily.co/v1/rooms",
-                    json={
-                        "properties": {
-                            "enable_chat": False,
-                            "enable_screenshare": False,
-                            "start_video_off": True,
-                            "start_audio_off": False,
-                            "exp": int(datetime.now(timezone.utc).timestamp()) + 86400  # 24 hours
-                        }
-                    },
-                    headers={
-                        "Authorization": f"Bearer {daily_api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    timeout=30.0
-                )
-                
-                if response.status_code == 200:
-                    daily_room = response.json()
-                    daily_room_url = daily_room.get("url")
-                    daily_room_name = daily_room.get("name")
-        except Exception as e:
-            print(f"Failed to create Daily room: {e}")
-    
+    # Create room with Agora channel name (room ID will be the channel)
     new_room = VibeRoom(
         name=room.name,
         description=room.description,
@@ -1896,9 +1863,10 @@ async def create_room(room: RoomCreate, userId: str):
     )
     
     room_dict = new_room.model_dump()
-    if daily_room_url:
-        room_dict["dailyRoomUrl"] = daily_room_url
-        room_dict["dailyRoomName"] = daily_room_name
+    
+    # Agora uses channel name (we'll use room ID as channel name)
+    # Store the channel name for reference
+    room_dict["agoraChannel"] = room_dict["id"]
     
     result = await db.vibe_rooms.insert_one(room_dict)
     # Remove MongoDB _id before returning
