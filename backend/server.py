@@ -2007,6 +2007,44 @@ async def get_tribe_posts(tribeId: str, limit: int = 50):
 
 # ===== AGORA.IO INTEGRATION (CLUBHOUSE-STYLE AUDIO) =====
 
+def generate_agora_token_internal(channel_name: str, uid: str, role: str = "publisher") -> str:
+    """
+    Internal function to generate Agora RTC token
+    """
+    try:
+        from agora_token_builder.RtcTokenBuilder import RtcTokenBuilder, Role_Publisher, Role_Subscriber
+        
+        app_id = os.environ.get('AGORA_APP_ID')
+        app_certificate = os.environ.get('AGORA_APP_CERTIFICATE')
+        
+        if not app_id or not app_certificate:
+            raise Exception("Agora credentials not configured")
+        
+        # Token expires in 24 hours
+        expiration_time_in_seconds = 86400
+        current_timestamp = int(datetime.now(timezone.utc).timestamp())
+        privilege_expired_ts = current_timestamp + expiration_time_in_seconds
+        
+        # Determine role
+        agora_role = Role_Publisher if role == "publisher" else Role_Subscriber
+        
+        # Convert uid to int (Agora expects integer uid)
+        uid_int = hash(uid) % (2**32)  # Convert string to 32-bit int
+        
+        # Build token
+        token = RtcTokenBuilder.buildTokenWithUid(
+            app_id, 
+            app_certificate, 
+            channel_name, 
+            uid_int, 
+            agora_role, 
+            privilege_expired_ts
+        )
+        
+        return token
+    except Exception as e:
+        raise Exception(f"Error generating Agora token: {str(e)}")
+
 @api_router.post("/agora/token")
 async def generate_agora_token(channelName: str, uid: int, role: str = "publisher"):
     """
