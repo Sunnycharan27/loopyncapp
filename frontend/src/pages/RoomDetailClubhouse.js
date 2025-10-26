@@ -275,12 +275,26 @@ const RoomDetailClubhouse = () => {
         return;
       }
       toast.error("Microphone not available");
+      console.error("❌ Cannot toggle mute - no audio track available");
       return;
     }
 
-    const newMutedState = !isMuted;
-    await localAudioTrack.current.setEnabled(!newMutedState);
-    setIsMuted(newMutedState);
+    try {
+      const newMutedState = !isMuted;
+      await localAudioTrack.current.setEnabled(!newMutedState);
+      setIsMuted(newMutedState);
+      
+      if (newMutedState) {
+        console.log("🔇 Microphone muted");
+        toast.info("🔇 Microphone muted");
+      } else {
+        console.log("🔊 Microphone unmuted - you can be heard!");
+        toast.success("🔊 Microphone unmuted");
+      }
+    } catch (error) {
+      console.error("Failed to toggle mute:", error);
+      toast.error("Failed to toggle microphone");
+    }
   };
 
   const handleRaiseHand = async () => {
