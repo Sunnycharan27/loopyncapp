@@ -4172,18 +4172,23 @@ async def claim_event_ticket(eventId: str, userId: str, tier: str = "General"):
     
     await db.event_tickets.insert_one(ticket_dict)
     
-    return {"success": True, "ticket": ticket.model_dump()}
+    return {"success": True, "ticket": ticket_dict}
 
 @api_router.get("/tickets/{userId}")
 async def get_user_tickets(userId: str):
     """Get user's event tickets"""
     tickets = await db.event_tickets.find({"userId": userId, "status": "active"}, {"_id": 0}).to_list(100)
     
-    # Enrich with event details
+    # Enrich with event details and regenerate QR codes if needed
     for ticket in tickets:
         event = await db.events.find_one({"id": ticket["eventId"]}, {"_id": 0})
         if event:
             ticket["event"] = event
+        
+        # Regenerate QR code if not present
+        if "qrCodeImage" not in ticket:
+            qr_data = f"TICKET:{ticket['id']}:QR:{ticket['qrCode']}:EVENT:{ticket['eventId']}"
+            ticket['qrCodeImage'] = generate_qr_code_base64(qr_data)
     
     return tickets
 
