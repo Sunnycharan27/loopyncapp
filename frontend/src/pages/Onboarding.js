@@ -13,11 +13,6 @@ const Onboarding = () => {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // eKYC state
-  const [aadhaarNumber, setAadhaarNumber] = useState("");
-  const [kycVerified, setKycVerified] = useState(false);
-  const [verifyingKyc, setVerifyingKyc] = useState(false);
-  
   // Consent state
   const [consents, setConsents] = useState({
     dataCollection: false,
