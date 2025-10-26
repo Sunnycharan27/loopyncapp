@@ -111,18 +111,36 @@ const RoomDetailClubhouse = () => {
 
       // Event listeners
       agoraClient.current.on("user-published", async (user, mediaType) => {
-        await agoraClient.current.subscribe(user, mediaType);
-        if (mediaType === "audio") {
-          user.audioTrack.play();
+        try {
+          console.log(`User ${user.uid} published ${mediaType}`);
+          await agoraClient.current.subscribe(user, mediaType);
+          
+          if (mediaType === "audio") {
+            console.log(`Playing audio for user ${user.uid}`);
+            user.audioTrack.play();
+            toast.success(`${user.uid} is now speaking`);
+          }
+        } catch (error) {
+          console.error(`Error subscribing to user ${user.uid}:`, error);
+          toast.error(`Failed to receive audio from user ${user.uid}`);
         }
       });
 
-      agoraClient.current.on("user-unpublished", (user) => {
-        // User stopped publishing
+      agoraClient.current.on("user-unpublished", (user, mediaType) => {
+        console.log(`User ${user.uid} unpublished ${mediaType}`);
+        if (mediaType === "audio") {
+          toast.info(`${user.uid} stopped speaking`);
+        }
       });
 
       agoraClient.current.on("user-left", (user) => {
+        console.log(`User ${user.uid} left the room`);
         fetchRoom();
+      });
+      
+      agoraClient.current.on("user-joined", (user) => {
+        console.log(`User ${user.uid} joined the room`);
+        toast.info(`User ${user.uid} joined`);
       });
 
       // Join channel
