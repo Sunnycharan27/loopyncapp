@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { API } from "../App";
-import { Heart, MessageCircle, Share, Volume2, VolumeX, Music, Bookmark, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, Share, Volume2, VolumeX, Music, Bookmark, MoreHorizontal, AlertCircle } from "lucide-react";
 import ReelCommentsModal from "./ReelCommentsModal";
 import ReelShareModal from "./ReelShareModal";
 
@@ -11,29 +11,33 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [bookmarked, setBookmarked] = useState({});
+  const [videoErrors, setVideoErrors] = useState({});
   const videoRefs = useRef([]);
   const containerRef = useRef(null);
 
+  // Filter out reels with broken videos
+  const validReels = reels.filter(reel => !videoErrors[reel.id]);
+
   useEffect(() => {
     // Track view
-    if (reels[currentIndex]) {
-      axios.post(`${API}/reels/${reels[currentIndex].id}/view`);
+    if (validReels[currentIndex]) {
+      axios.post(`${API}/reels/${validReels[currentIndex].id}/view`).catch(() => {});
     }
-  }, [currentIndex, reels]);
+  }, [currentIndex, validReels]);
 
   useEffect(() => {
     const handleScroll = () => {
       if (!containerRef.current) return;
       const scrollTop = containerRef.current.scrollTop;
       const newIndex = Math.round(scrollTop / window.innerHeight);
-      if (newIndex !== currentIndex && newIndex >= 0 && newIndex < reels.length) {
+      if (newIndex !== currentIndex && newIndex >= 0 && newIndex < validReels.length) {
         setCurrentIndex(newIndex);
         
         // Pause all videos except current
         videoRefs.current.forEach((video, idx) => {
           if (video) {
             if (idx === newIndex) {
-              video.play();
+              video.play().catch(() => {});
             } else {
               video.pause();
             }
@@ -47,9 +51,33 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
       container.addEventListener('scroll', handleScroll);
       return () => container.removeEventListener('scroll', handleScroll);
     }
-  }, [currentIndex, reels.length]);
+  }, [currentIndex, validReels.length]);
 
-  const currentReel = reels[currentIndex];
+  const handleVideoError = (reelId) => {
+    console.error(`Video failed to load for reel: ${reelId}`);
+    setVideoErrors(prev => ({ ...prev, [reelId]: true }));
+  };
+
+  if (validReels.length === 0) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-black p-8 text-center">
+        <div className="glass-card p-8 max-w-md">
+          <AlertCircle size={64} className="text-cyan-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-3">No Reels Available</h2>
+          <p className="text-gray-400 mb-6">
+            Be the first to create amazing content! Click the + button below to start creating your first reel.
+          </p>
+          <div className="text-sm text-gray-500">
+            {videoErrors && Object.keys(videoErrors).length > 0 && (
+              <p>Some videos failed to load. They have been filtered out.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentReel = validReels[currentIndex];
   if (!currentReel) return null;
 
   const isLiked = currentReel.likedBy?.includes(currentUser?.id);
@@ -71,12 +99,24 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
       // Show heart animation
       const heart = document.createElement('div');
       heart.innerHTML = '❤️';
-      heart.style.cssText = 'position:absolute;font-size:100px;animation:heartPop 0.8s;pointer-events:none;';
+      heart.style.cssText = 'position:absolute;font-size:100px;animation:heartPop 0.8s;pointer-events:none;z-index:10;';
       heart.style.left = e.clientX - 50 + 'px';
       heart.style.top = e.clientY - 50 + 'px';
       e.currentTarget.appendChild(heart);
       setTimeout(() => heart.remove(), 800);
     }
+  };
+
+  const getVideoSource = (reel) => {
+    let videoUrl = reel.videoUrl;
+    
+    // If it's a relative path, prepend the API base
+    if (videoUrl?.startsWith('/uploads')) {
+      return `${API}${videoUrl}`;
+    }
+    
+    // Return as-is for external URLs
+    return videoUrl;
   };
 
   return (
@@ -86,7 +126,7 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
         className="h-screen overflow-y-scroll snap-y snap-mandatory"
         style={{ scrollBehavior: 'smooth' }}
       >
-        {reels.map((reel, idx) => (
+        {validReels.map((reel, idx) => (
           <div
             key={reel.id}
             data-testid="reel-viewer"
@@ -96,17 +136,19 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
             {/* Video */}
             <video
               ref={el => videoRefs.current[idx] = el}
-              src={reel.videoUrl?.startsWith('/uploads') ? `${(import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)}/api${reel.videoUrl}` : reel.videoUrl}
+              src={getVideoSource(reel)}
               className="w-full h-full object-cover"
               loop
               autoPlay={idx === currentIndex}
               muted={muted}
               playsInline
-              poster={reel.thumb?.startsWith('/uploads') ? `${(import.meta.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL)}/api${reel.thumb}` : reel.thumb}
+              poster={reel.thumb}
+              onError={() => handleVideoError(reel.id)}
+              crossOrigin="anonymous"
             />
 
             {/* Top Bar */}
-            <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent">
+            <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Music size={18} className="text-white" />
@@ -119,7 +161,7 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
             </div>
 
             {/* Overlay Info */}
-            <div className="absolute bottom-20 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="absolute bottom-20 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent z-10">
               <div className="flex items-start gap-4">
                 <img
                   src={reel.author?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
@@ -137,7 +179,7 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
             </div>
 
             {/* Side Actions */}
-            <div className="absolute right-4 bottom-32 flex flex-col gap-5">
+            <div className="absolute right-4 bottom-32 flex flex-col gap-5 z-10">
               {/* Like */}
               <button
                 data-testid="reel-like-btn"
@@ -214,7 +256,7 @@ const ReelViewer = ({ reels, currentUser, onLike }) => {
             </div>
 
             {/* Music Track */}
-            <div className="absolute bottom-20 right-4">
+            <div className="absolute bottom-20 right-4 z-10">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 animate-spin-slow flex items-center justify-center">
                 <Music size={20} className="text-white" />
               </div>
