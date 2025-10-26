@@ -733,5 +733,3 @@ const LoopPay = () => {
 };
 
 export default LoopPay;
-
-export default LoopPay;
