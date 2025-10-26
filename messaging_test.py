@@ -229,11 +229,15 @@ class MessagingTester:
     
     def test_create_dm_thread(self):
         """Test 4: POST /api/dm/threads - Create a new DM thread between two users"""
+        return self.test_create_dm_thread_between_users(self.demo_user_id, "u1")
+    
+    def test_create_dm_thread_between_users(self, user1_id, user2_id):
+        """Create DM thread between specific users"""
         try:
-            # Try to create thread between demo_user and u1
+            # Try to create thread between specified users
             payload = {
-                "user1Id": self.demo_user_id,
-                "user2Id": "u1"
+                "user1Id": user1_id,
+                "user2Id": user2_id
             }
             
             response = self.session.post(f"{BACKEND_URL}/dm/threads", json=payload)
@@ -245,7 +249,7 @@ class MessagingTester:
                 self.log_result(
                     "Create DM Thread", 
                     True, 
-                    f"Successfully created DM thread between {self.demo_user_id} and u1",
+                    f"Successfully created DM thread between {user1_id} and {user2_id}",
                     f"Thread ID: {thread_id}"
                 )
                 return thread_id
@@ -270,7 +274,7 @@ class MessagingTester:
                     return None
             else:
                 # Try alternative endpoint format
-                params = {"userId": self.demo_user_id, "peerUserId": "u1"}
+                params = {"userId": user1_id, "peerUserId": user2_id}
                 response = self.session.post(f"{BACKEND_URL}/dm/thread", params=params)
                 
                 if response.status_code == 200:
