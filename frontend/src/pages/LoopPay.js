@@ -4,7 +4,7 @@ import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
 import { 
   ArrowLeft, Zap, Plus, Gift, Clock, TrendingUp, Award,
-  ShoppingBag, Ticket, MessageCircle, Film, Users, X
+  ShoppingBag, Ticket, Film, Users, X, CreditCard, Smartphone, Building
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
