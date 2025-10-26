@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 const AGORA_APP_ID = process.env.REACT_APP_AGORA_APP_ID || '';
 
-const CallModal = ({ callType, recipientUser, onClose, currentUser, agoraToken, channelName }) => {
+const CallModal = ({ callData, onClose }) => {
   const [localAudioTrack, setLocalAudioTrack] = useState(null);
   const [localVideoTrack, setLocalVideoTrack] = useState(null);
   const [remoteUsers, setRemoteUsers] = useState({});
@@ -19,6 +19,8 @@ const CallModal = ({ callType, recipientUser, onClose, currentUser, agoraToken, 
   const remoteVideoRef = useRef(null);
   const callStartTimeRef = useRef(null);
   const durationIntervalRef = useRef(null);
+
+  const { recipientUser, myToken, channelName, callType, callId } = callData;
 
   useEffect(() => {
     initializeCall();
