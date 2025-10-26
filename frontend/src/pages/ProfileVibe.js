@@ -27,6 +27,7 @@ const ProfileVibe = () => {
   const [achievements, setAchievements] = useState([]);
   const [mutualFriends, setMutualFriends] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userTickets, setUserTickets] = useState([]);
   
   // Edit states
   const [isEditingName, setIsEditingName] = useState(false);
