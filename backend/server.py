@@ -668,13 +668,18 @@ async def typing(sid, data):
 async def signup(req: UserCreate):
     """
     Register a new user with email and password.
-    User data is stored in Google Sheets (or demo mode).
+    User is immediately logged in without verification.
     """
     try:
         # Check if handle already exists in MongoDB
         existing_handle = await db.users.find_one({"handle": req.handle}, {"_id": 0})
         if existing_handle:
             raise HTTPException(status_code=400, detail=f"Username '@{req.handle}' is already taken. Please choose a different username.")
+        
+        # Check if email already exists
+        existing_email = await db.users.find_one({"email": req.email}, {"_id": 0})
+        if existing_email:
+            raise HTTPException(status_code=400, detail=f"Email '{req.email}' is already registered. Please login instead.")
         
         # Create user in Google Sheets
         user = sheets_db.create_user(
@@ -683,43 +688,37 @@ async def signup(req: UserCreate):
             password=req.password
         )
         
-        # Generate verification code
-        verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-        
-        # Also create user in MongoDB for app data (posts, tribes, etc.)
+        # Create user in MongoDB for app data - VERIFIED by default
         mongo_user = User(
             id=user['user_id'],
             handle=req.handle,
             name=req.name,
             email=req.email,
             avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={req.handle}",
-            isVerified=False,
-            verificationCode=verification_code
+            isVerified=True,  # Auto-verified
+            bio="",
+            walletBalance=0.0
         )
         doc = mongo_user.model_dump()
         await db.users.insert_one(doc)
         
-        # Mock email - log to console
-        print(f"\n=== VERIFICATION EMAIL ===")
-        print(f"To: {req.email}")
-        print(f"Subject: Verify your Loopync account")
-        print(f"Code: {verification_code}")
-        print(f"========================\n")
-        
-        # Generate JWT token
+        # Generate JWT token and log user in immediately
         token = create_access_token(user['user_id'])
         
         return {
             "token": token,
-            "needsVerification": True,
-            "verificationCode": verification_code,  # Only for testing
             "user": {
                 "id": user['user_id'],
                 "handle": req.handle,
                 "name": user['name'],
                 "email": user['email'],
                 "avatar": mongo_user.avatar,
-                "isVerified": False
+                "isVerified": True,
+                "bio": "",
+                "walletBalance": 0.0,
+                "friends": [],
+                "friendRequestsSent": [],
+                "friendRequestsReceived": []
             }
         }
     except HTTPException:
