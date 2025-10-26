@@ -109,11 +109,13 @@ class VibeRoomAudioTester:
                 data = response.json()
                 if 'id' in data and 'agoraChannel' in data:
                     self.test_room_id = data['id']
+                    # Update demo_user_id to the host that created the room
+                    self.demo_user_id = host_user_id
                     self.log_result(
                         "Create Test Room", 
                         True, 
                         f"Successfully created test room: {data['name']}",
-                        f"Room ID: {self.test_room_id}, Agora Channel: {data['agoraChannel']}"
+                        f"Room ID: {self.test_room_id}, Agora Channel: {data['agoraChannel']}, Host: {host_user_id}"
                     )
                     return True
                 else:
