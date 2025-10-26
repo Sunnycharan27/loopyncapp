@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import BottomNav from "../components/BottomNav";
-import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign, Search, X, UserPlus, Sparkles, MessageCircle, Clock, UserCheck } from "lucide-react";
+import { MapPin, Calendar, Users, Star, ArrowRight, ShoppingBag, DollarSign, Search, X, UserPlus, Sparkles, MessageCircle, Clock, UserCheck, Zap, TrendingUp, Award } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import FindYourParallel from "../components/FindYourParallel";
