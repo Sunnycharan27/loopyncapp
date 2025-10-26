@@ -2537,6 +2537,300 @@ class BackendTester:
         except Exception as e:
             self.log_result("Daily.co Token Generation", False, f"Exception occurred: {str(e)}")
 
+    def test_ai_taste_dna(self):
+        """Test AI TasteDNA Generation"""
+        try:
+            user_id = "demo_user"
+            response = self.session.get(f"{BACKEND_URL}/ai/taste-dna/{user_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('categories' in data and 'topInterests' in data and 'personalityType' in data):
+                    categories = data['categories']
+                    # Validate categories have proper percentages
+                    required_cats = ['food', 'music', 'spiritual', 'social', 'fitness', 'art']
+                    valid_categories = all(
+                        cat in categories and 
+                        isinstance(categories[cat], (int, float)) and 
+                        0 <= categories[cat] <= 100 
+                        for cat in required_cats
+                    )
+                    
+                    if valid_categories and isinstance(data['topInterests'], list) and data['personalityType']:
+                        self.log_result(
+                            "AI TasteDNA Generation", 
+                            True, 
+                            f"Successfully generated TasteDNA for {user_id}",
+                            f"Personality: {data['personalityType']}, Top Interests: {data['topInterests'][:3]}"
+                        )
+                    else:
+                        self.log_result(
+                            "AI TasteDNA Generation", 
+                            False, 
+                            "TasteDNA response has invalid data structure",
+                            f"Categories valid: {valid_categories}, Response: {data}"
+                        )
+                else:
+                    self.log_result(
+                        "AI TasteDNA Generation", 
+                        False, 
+                        "TasteDNA response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "AI TasteDNA Generation", 
+                    False, 
+                    f"TasteDNA generation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("AI TasteDNA Generation", False, f"Exception occurred: {str(e)}")
+
+    def test_ai_find_parallels(self):
+        """Test AI Find Parallels (Similar Users)"""
+        try:
+            user_id = "demo_user"
+            response = self.session.get(f"{BACKEND_URL}/ai/find-parallels/{user_id}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        # Check if users have match scores >= 60%
+                        valid_parallels = all(
+                            'matchScore' in user and 
+                            isinstance(user['matchScore'], (int, float)) and 
+                            user['matchScore'] >= 60 and
+                            'commonInterests' in user and
+                            'reason' in user
+                            for user in data
+                        )
+                        
+                        if valid_parallels:
+                            avg_score = sum(user['matchScore'] for user in data) / len(data)
+                            self.log_result(
+                                "AI Find Parallels", 
+                                True, 
+                                f"Found {len(data)} similar users with match scores >= 60%",
+                                f"Average match score: {avg_score:.1f}%, Top match: {data[0]['name']} ({data[0]['matchScore']}%)"
+                            )
+                        else:
+                            self.log_result(
+                                "AI Find Parallels", 
+                                False, 
+                                "Parallels response has invalid match scores or missing fields",
+                                f"First user: {data[0] if data else 'None'}"
+                            )
+                    else:
+                        self.log_result(
+                            "AI Find Parallels", 
+                            True, 
+                            "No similar users found (acceptable if user base is small)",
+                            "Empty parallels list is valid"
+                        )
+                else:
+                    self.log_result(
+                        "AI Find Parallels", 
+                        False, 
+                        "Find parallels response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "AI Find Parallels", 
+                    False, 
+                    f"Find parallels failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("AI Find Parallels", False, f"Exception occurred: {str(e)}")
+
+    def test_ai_recommend_content(self):
+        """Test AI Content Recommendations"""
+        try:
+            params = {
+                'userId': 'demo_user',
+                'type': 'posts'
+            }
+            response = self.session.get(f"{BACKEND_URL}/ai/recommend/content", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        # Check if posts have recommendation scores
+                        valid_recommendations = all(
+                            'recommendationScore' in post and 
+                            isinstance(post['recommendationScore'], (int, float)) and
+                            post['recommendationScore'] > 0
+                            for post in data
+                        )
+                        
+                        if valid_recommendations:
+                            avg_score = sum(post['recommendationScore'] for post in data) / len(data)
+                            self.log_result(
+                                "AI Content Recommendations", 
+                                True, 
+                                f"Successfully recommended {len(data)} posts",
+                                f"Average recommendation score: {avg_score:.1f}, Top score: {max(post['recommendationScore'] for post in data)}"
+                            )
+                        else:
+                            self.log_result(
+                                "AI Content Recommendations", 
+                                False, 
+                                "Content recommendations missing valid scores",
+                                f"First post: {data[0] if data else 'None'}"
+                            )
+                    else:
+                        self.log_result(
+                            "AI Content Recommendations", 
+                            True, 
+                            "No content recommendations found (acceptable if no matching content)",
+                            "Empty recommendations list is valid"
+                        )
+                else:
+                    self.log_result(
+                        "AI Content Recommendations", 
+                        False, 
+                        "Content recommendations response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "AI Content Recommendations", 
+                    False, 
+                    f"Content recommendations failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("AI Content Recommendations", False, f"Exception occurred: {str(e)}")
+
+    def test_ai_recommend_venues(self):
+        """Test AI Venue Recommendations"""
+        try:
+            params = {'userId': 'demo_user'}
+            response = self.session.get(f"{BACKEND_URL}/ai/recommend/venues", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        # Check if venues have recommendation scores
+                        valid_recommendations = all(
+                            'recommendationScore' in venue and 
+                            isinstance(venue['recommendationScore'], (int, float)) and
+                            venue['recommendationScore'] > 0 and
+                            'name' in venue and
+                            'location' in venue
+                            for venue in data
+                        )
+                        
+                        if valid_recommendations:
+                            hyderabad_venues = [v for v in data if 'hyderabad' in v.get('location', '').lower()]
+                            avg_score = sum(venue['recommendationScore'] for venue in data) / len(data)
+                            self.log_result(
+                                "AI Venue Recommendations", 
+                                True, 
+                                f"Successfully recommended {len(data)} venues ({len(hyderabad_venues)} in Hyderabad)",
+                                f"Average recommendation score: {avg_score:.1f}, Top venue: {data[0]['name']} ({data[0]['recommendationScore']})"
+                            )
+                        else:
+                            self.log_result(
+                                "AI Venue Recommendations", 
+                                False, 
+                                "Venue recommendations missing valid scores or required fields",
+                                f"First venue: {data[0] if data else 'None'}"
+                            )
+                    else:
+                        self.log_result(
+                            "AI Venue Recommendations", 
+                            True, 
+                            "No venue recommendations found (acceptable if no matching venues)",
+                            "Empty recommendations list is valid"
+                        )
+                else:
+                    self.log_result(
+                        "AI Venue Recommendations", 
+                        False, 
+                        "Venue recommendations response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "AI Venue Recommendations", 
+                    False, 
+                    f"Venue recommendations failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("AI Venue Recommendations", False, f"Exception occurred: {str(e)}")
+
+    def test_ai_recommend_events(self):
+        """Test AI Event Recommendations"""
+        try:
+            params = {'userId': 'demo_user'}
+            response = self.session.get(f"{BACKEND_URL}/ai/recommend/events", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        # Check if events have recommendation scores
+                        valid_recommendations = all(
+                            'recommendationScore' in event and 
+                            isinstance(event['recommendationScore'], (int, float)) and
+                            event['recommendationScore'] > 0 and
+                            'name' in event and
+                            'date' in event
+                            for event in data
+                        )
+                        
+                        if valid_recommendations:
+                            hyderabad_events = [e for e in data if 'hyderabad' in e.get('location', '').lower()]
+                            avg_score = sum(event['recommendationScore'] for event in data) / len(data)
+                            self.log_result(
+                                "AI Event Recommendations", 
+                                True, 
+                                f"Successfully recommended {len(data)} events ({len(hyderabad_events)} in Hyderabad)",
+                                f"Average recommendation score: {avg_score:.1f}, Top event: {data[0]['name']} ({data[0]['recommendationScore']})"
+                            )
+                        else:
+                            self.log_result(
+                                "AI Event Recommendations", 
+                                False, 
+                                "Event recommendations missing valid scores or required fields",
+                                f"First event: {data[0] if data else 'None'}"
+                            )
+                    else:
+                        self.log_result(
+                            "AI Event Recommendations", 
+                            True, 
+                            "No event recommendations found (acceptable if no matching events)",
+                            "Empty recommendations list is valid"
+                        )
+                else:
+                    self.log_result(
+                        "AI Event Recommendations", 
+                        False, 
+                        "Event recommendations response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "AI Event Recommendations", 
+                    False, 
+                    f"Event recommendations failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("AI Event Recommendations", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
