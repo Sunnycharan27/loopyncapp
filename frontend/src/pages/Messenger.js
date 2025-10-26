@@ -38,6 +38,7 @@ const Messenger = () => {
 
   useEffect(() => {
     fetchThreads();
+    fetchTrustCircles();
   }, []);
 
   useEffect(() => {
