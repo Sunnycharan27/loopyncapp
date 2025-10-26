@@ -2616,6 +2616,15 @@ class BackendTester:
         self.test_list_all_rooms()
         self.test_daily_token_generation()
         
+        # NEW: AI Parallels Engine Tests (REQUESTED)
+        print("\n🤖 PRIORITY 9: AI PARALLELS ENGINE (NEW ENDPOINTS)")
+        print("-" * 60)
+        self.test_ai_taste_dna()
+        self.test_ai_find_parallels()
+        self.test_ai_recommend_content()
+        self.test_ai_recommend_venues()
+        self.test_ai_recommend_events()
+        
         # File Upload Tests
         print("\n📁 FILE UPLOAD TESTS")
         print("-" * 60)
