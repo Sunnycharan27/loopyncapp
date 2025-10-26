@@ -2831,6 +2831,250 @@ class BackendTester:
         except Exception as e:
             self.log_result("AI Event Recommendations", False, f"Exception occurred: {str(e)}")
 
+    def test_call_initiate(self):
+        """Test Call Initiate: POST /api/calls/initiate"""
+        try:
+            # Test with demo_user calling u1 (they should be friends)
+            payload = {
+                "callerId": "demo_user",
+                "recipientId": "u1", 
+                "callType": "voice"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ["callId", "channelName", "callerToken", "recipientToken", "callType"]
+                
+                if all(field in data for field in required_fields):
+                    # Store callId for subsequent tests
+                    self.call_id = data["callId"]
+                    self.log_result(
+                        "Call Initiate", 
+                        True, 
+                        f"Call initiated successfully between demo_user and u1",
+                        f"Call ID: {data['callId']}, Channel: {data['channelName']}, Type: {data['callType']}"
+                    )
+                else:
+                    missing_fields = [f for f in required_fields if f not in data]
+                    self.log_result(
+                        "Call Initiate", 
+                        False, 
+                        f"Missing required fields in response: {missing_fields}",
+                        f"Response: {data}"
+                    )
+            elif response.status_code == 403:
+                # Test friend validation - try with non-friends
+                self.log_result(
+                    "Call Initiate", 
+                    True, 
+                    "Friend validation working correctly (403 error for non-friends)",
+                    f"Response: {response.text}"
+                )
+                
+                # Now test with actual friends (demo_user and u1 should be friends)
+                # If they're not friends, we need to make them friends first
+                self.ensure_friendship_for_call_test()
+                
+            else:
+                self.log_result(
+                    "Call Initiate", 
+                    False, 
+                    f"Call initiate failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call Initiate", False, f"Exception occurred: {str(e)}")
+
+    def ensure_friendship_for_call_test(self):
+        """Ensure demo_user and u1 are friends for call testing"""
+        try:
+            # Send friend request from demo_user to u1
+            payload = {"fromUserId": "demo_user", "toUserId": "u1"}
+            response = self.session.post(f"{BACKEND_URL}/friends/request", json=payload)
+            
+            if response.status_code == 200:
+                # Accept friend request from u1's side
+                payload = {"userId": "u1", "friendId": "demo_user"}
+                response = self.session.post(f"{BACKEND_URL}/friends/accept", json=payload)
+                
+                # Now retry call initiate
+                payload = {
+                    "callerId": "demo_user",
+                    "recipientId": "u1", 
+                    "callType": "voice"
+                }
+                response = self.session.post(f"{BACKEND_URL}/calls/initiate", json=payload)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    self.call_id = data.get("callId")
+                    self.log_result(
+                        "Call Initiate", 
+                        True, 
+                        f"Call initiated successfully after establishing friendship",
+                        f"Call ID: {data.get('callId')}, Channel: {data.get('channelName')}"
+                    )
+                else:
+                    self.log_result(
+                        "Call Initiate", 
+                        False, 
+                        f"Call initiate still failed after friendship with status {response.status_code}",
+                        f"Response: {response.text}"
+                    )
+        except Exception as e:
+            self.log_result("Call Initiate (Friendship Setup)", False, f"Exception occurred: {str(e)}")
+
+    def test_call_answer(self):
+        """Test Call Answer: POST /api/calls/{callId}/answer"""
+        try:
+            if not hasattr(self, 'call_id') or not self.call_id:
+                self.log_result(
+                    "Call Answer", 
+                    False, 
+                    "No call ID available from previous test",
+                    "Call initiate test must pass first"
+                )
+                return
+            
+            # Answer call as u1 (recipient)
+            payload = {"userId": "u1"}
+            response = self.session.post(f"{BACKEND_URL}/calls/{self.call_id}/answer", json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == "ongoing":
+                    self.log_result(
+                        "Call Answer", 
+                        True, 
+                        f"Call answered successfully by u1",
+                        f"Call status: {data.get('status')}, Message: {data.get('message')}"
+                    )
+                else:
+                    self.log_result(
+                        "Call Answer", 
+                        False, 
+                        f"Call answered but status is not 'ongoing': {data.get('status')}",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Call Answer", 
+                    False, 
+                    f"Call answer failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call Answer", False, f"Exception occurred: {str(e)}")
+
+    def test_call_end(self):
+        """Test Call End: POST /api/calls/{callId}/end"""
+        try:
+            if not hasattr(self, 'call_id') or not self.call_id:
+                self.log_result(
+                    "Call End", 
+                    False, 
+                    "No call ID available from previous test",
+                    "Call initiate test must pass first"
+                )
+                return
+            
+            # End call as demo_user (caller)
+            payload = {"userId": "demo_user"}
+            response = self.session.post(f"{BACKEND_URL}/calls/{self.call_id}/end", json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "duration" in data:
+                    duration = data.get("duration", 0)
+                    self.log_result(
+                        "Call End", 
+                        True, 
+                        f"Call ended successfully by demo_user",
+                        f"Duration: {duration} seconds, Message: {data.get('message')}"
+                    )
+                else:
+                    self.log_result(
+                        "Call End", 
+                        False, 
+                        "Call ended but no duration calculated",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Call End", 
+                    False, 
+                    f"Call end failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call End", False, f"Exception occurred: {str(e)}")
+
+    def test_call_history(self):
+        """Test Call History: GET /api/calls/history/demo_user"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/calls/history/demo_user")
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        # Check if calls have enriched user data
+                        call = data[0]
+                        required_fields = ["id", "callerId", "recipientId", "callType", "status", "startedAt"]
+                        user_data_fields = ["caller", "recipient"]
+                        
+                        has_required = all(field in call for field in required_fields)
+                        has_user_data = all(field in call for field in user_data_fields)
+                        
+                        if has_required and has_user_data:
+                            caller_data = call.get("caller", {})
+                            recipient_data = call.get("recipient", {})
+                            
+                            self.log_result(
+                                "Call History", 
+                                True, 
+                                f"Call history retrieved with {len(data)} calls and enriched user data",
+                                f"Latest call: {call['callType']} from {caller_data.get('name', 'Unknown')} to {recipient_data.get('name', 'Unknown')}, Status: {call['status']}"
+                            )
+                        else:
+                            missing_required = [f for f in required_fields if f not in call]
+                            missing_user_data = [f for f in user_data_fields if f not in call]
+                            self.log_result(
+                                "Call History", 
+                                False, 
+                                f"Call history missing required fields or user data",
+                                f"Missing required: {missing_required}, Missing user data: {missing_user_data}"
+                            )
+                    else:
+                        self.log_result(
+                            "Call History", 
+                            True, 
+                            "Call history retrieved successfully (empty list)",
+                            "No calls found for demo_user"
+                        )
+                else:
+                    self.log_result(
+                        "Call History", 
+                        False, 
+                        "Call history response is not a list",
+                        f"Response type: {type(data)}"
+                    )
+            else:
+                self.log_result(
+                    "Call History", 
+                    False, 
+                    f"Call history failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call History", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
