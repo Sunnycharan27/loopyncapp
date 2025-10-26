@@ -248,7 +248,7 @@ const Onboarding = () => {
                     toast.info('Proceeding with default interests for now');
                     setSelectedInterests(['music','tech']);
                   }
-                  setStep(4);
+                  setStep(3);
                 }}
                 className="flex-1 py-4 rounded-full font-bold text-lg bg-gradient-to-r from-cyan-400 to-purple-500 text-white hover:opacity-90"
                 data-testid="onboarding-continue-interests"
