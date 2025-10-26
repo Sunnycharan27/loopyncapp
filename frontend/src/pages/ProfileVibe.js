@@ -448,7 +448,6 @@ const ProfileVibe = () => {
           </button>
         ))}
       </div>
-      </div>
 
       <BottomNav active="profile" />
 
