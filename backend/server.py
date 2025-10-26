@@ -5114,6 +5114,315 @@ async def delete_notification(notificationId: str):
     
     return analytics
 
+
+# ===== PARALLELS AI ENGINE =====
+# AI-powered recommendation and matching system
+
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+import json
+
+# Initialize LLM with Emergent LLM key
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+
+@api_router.get("/ai/taste-dna/{userId}")
+async def get_taste_dna(userId: str):
+    """Generate user's TasteDNA based on their activity"""
+    try:
+        # Fetch user activity data
+        user = await db.users.find_one({"id": userId}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get user's posts, likes, check-ins
+        posts = await db.posts.find({"author": userId}, {"_id": 0}).to_list(100)
+        liked_posts = await db.posts.find({"likes": userId}, {"_id": 0}).to_list(100)
+        
+        # Get interests from onboarding
+        interests = user.get("interests", [])
+        
+        # Initialize AI chat
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"taste-dna-{userId}",
+            system_message="You are an AI that analyzes user behavior to generate taste profiles. Return ONLY valid JSON, no markdown formatting."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        # Create prompt for AI
+        prompt = f"""Analyze this user's activity and generate their TasteDNA profile.
+
+User Interests: {', '.join(interests) if interests else 'Not specified'}
+Number of Posts: {len(posts)}
+Number of Likes: {len(liked_posts)}
+
+Based on this data, generate a taste profile with:
+1. categories: food, music, spiritual, social, fitness, art (each 0-100%)
+2. topInterests: array of 3-5 specific interests
+3. personalityType: one of [Explorer, Creator, Social, Spiritual]
+
+Return ONLY this JSON structure:
+{{
+  "categories": {{
+    "food": <number>,
+    "music": <number>,
+    "spiritual": <number>,
+    "social": <number>,
+    "fitness": <number>,
+    "art": <number>
+  }},
+  "topInterests": [<interests>],
+  "personalityType": "<type>"
+}}"""
+        
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        
+        # Parse AI response
+        try:
+            # Clean response - remove markdown code blocks if present
+            clean_response = response.strip()
+            if clean_response.startswith("```json"):
+                clean_response = clean_response[7:]
+            if clean_response.startswith("```"):
+                clean_response = clean_response[3:]
+            if clean_response.endswith("```"):
+                clean_response = clean_response[:-3]
+            clean_response = clean_response.strip()
+            
+            taste_dna = json.loads(clean_response)
+            
+            # Store in database
+            await db.taste_dna.update_one(
+                {"userId": userId},
+                {"$set": {**taste_dna, "updatedAt": datetime.now(timezone.utc).isoformat()}},
+                upsert=True
+            )
+            
+            return taste_dna
+        except json.JSONDecodeError:
+            # Fallback to rule-based generation
+            return generate_fallback_taste_dna(user, posts, liked_posts, interests)
+            
+    except Exception as e:
+        logger.error(f"Error generating taste DNA: {str(e)}")
+        # Return fallback
+        return generate_fallback_taste_dna(user, [], [], [])
+
+def generate_fallback_taste_dna(user, posts, liked_posts, interests):
+    """Generate taste DNA without AI"""
+    # Simple rule-based approach
+    categories = {
+        "food": min(100, len([i for i in interests if 'food' in i.lower() or 'cafe' in i.lower()]) * 20 + 50),
+        "music": min(100, len([i for i in interests if 'music' in i.lower()]) * 20 + 40),
+        "spiritual": min(100, len([i for i in interests if 'spiritual' in i.lower() or 'temple' in i.lower()]) * 20 + 30),
+        "social": min(100, len(posts) * 5 + len(liked_posts) * 2 + 40),
+        "fitness": min(100, len([i for i in interests if 'fitness' in i.lower() or 'gym' in i.lower()]) * 20 + 30),
+        "art": min(100, len([i for i in interests if 'art' in i.lower() or 'creative' in i.lower()]) * 20 + 40)
+    }
+    
+    return {
+        "categories": categories,
+        "topInterests": interests[:3] if interests else ["Social", "Food", "Music"],
+        "personalityType": "Explorer"
+    }
+
+@api_router.get("/ai/find-parallels/{userId}")
+async def find_parallels(userId: str):
+    """Find users with similar tastes and interests"""
+    try:
+        # Get user's taste DNA
+        user_taste = await db.taste_dna.find_one({"userId": userId}, {"_id": 0})
+        if not user_taste:
+            # Generate it first
+            user_taste = await get_taste_dna(userId)
+        
+        # Get current user
+        current_user = await db.users.find_one({"id": userId}, {"_id": 0})
+        if not current_user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Get all other users
+        all_users = await db.users.find({"id": {"$ne": userId}}, {"_id": 0}).to_list(None)
+        
+        # Get taste DNA for all users
+        parallels = []
+        for user in all_users[:20]:  # Limit to 20 for performance
+            other_taste = await db.taste_dna.find_one({"userId": user["id"]}, {"_id": 0})
+            
+            if not other_taste:
+                # Generate taste DNA for this user
+                try:
+                    other_taste = await get_taste_dna(user["id"])
+                except:
+                    continue
+            
+            # Calculate match score based on category similarity
+            user_cats = user_taste.get("categories", {})
+            other_cats = other_taste.get("categories", {})
+            
+            # Calculate similarity (inverse of total difference)
+            total_diff = sum(abs(user_cats.get(cat, 0) - other_cats.get(cat, 0)) for cat in user_cats.keys())
+            max_diff = 600  # Max possible difference (6 categories * 100)
+            match_score = int(100 * (1 - total_diff / max_diff))
+            
+            # Find common interests
+            user_interests = set(user_taste.get("topInterests", []))
+            other_interests = set(other_taste.get("topInterests", []))
+            common_interests = list(user_interests & other_interests)
+            
+            # Only include if match score is above 60%
+            if match_score >= 60:
+                parallels.append({
+                    **user,
+                    "matchScore": match_score,
+                    "commonInterests": common_interests if common_interests else ["Similar taste in content"],
+                    "reason": f"You both love {', '.join(common_interests[:2])}" if common_interests else "Similar activity patterns and interests"
+                })
+        
+        # Sort by match score
+        parallels.sort(key=lambda x: x["matchScore"], reverse=True)
+        
+        return parallels[:10]  # Return top 10 matches
+        
+    except Exception as e:
+        logger.error(f"Error finding parallels: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/ai/recommend/content")
+async def recommend_content(userId: str, type: str = "posts"):
+    """Recommend posts or reels based on user's taste"""
+    try:
+        # Get user's taste DNA
+        user_taste = await db.taste_dna.find_one({"userId": userId}, {"_id": 0})
+        if not user_taste:
+            user_taste = await get_taste_dna(userId)
+        
+        # Get user's interests
+        interests = user_taste.get("topInterests", [])
+        
+        # Get content (posts or reels)
+        collection = db.posts if type == "posts" else db.reels
+        all_content = await collection.find({}, {"_id": 0}).to_list(100)
+        
+        # Simple keyword matching for now
+        recommended = []
+        for content in all_content:
+            score = 0
+            text = content.get("text", "") + " " + content.get("caption", "")
+            
+            for interest in interests:
+                if interest.lower() in text.lower():
+                    score += 20
+            
+            if score > 0:
+                recommended.append({**content, "recommendationScore": score})
+        
+        # Sort by score
+        recommended.sort(key=lambda x: x.get("recommendationScore", 0), reverse=True)
+        
+        return recommended[:20]
+        
+    except Exception as e:
+        logger.error(f"Error recommending content: {str(e)}")
+        return []
+
+@api_router.get("/ai/recommend/venues")
+async def recommend_venues(userId: str):
+    """Recommend venues based on user's taste"""
+    try:
+        # Get user's taste DNA
+        user_taste = await db.taste_dna.find_one({"userId": userId}, {"_id": 0})
+        if not user_taste:
+            user_taste = await get_taste_dna(userId)
+        
+        # Get user's categories
+        categories = user_taste.get("categories", {})
+        
+        # Get all venues
+        venues = await db.venues.find({}, {"_id": 0}).to_list(100)
+        
+        # Score venues based on user's preferences
+        scored_venues = []
+        for venue in venues:
+            score = 0
+            venue_type = venue.get("type", "")
+            
+            # Match venue type to user preferences
+            if venue_type == "cafe" or venue_type == "restaurant":
+                score += categories.get("food", 0) * 0.8
+            elif venue_type == "temple":
+                score += categories.get("spiritual", 0) * 1.0
+            elif venue_type == "pub":
+                score += categories.get("social", 0) * 0.8
+            elif venue_type == "mall":
+                score += categories.get("social", 0) * 0.5
+            
+            # Add rating bonus
+            score += venue.get("rating", 0) * 5
+            
+            if score > 30:
+                scored_venues.append({**venue, "recommendationScore": int(score)})
+        
+        # Sort by score
+        scored_venues.sort(key=lambda x: x.get("recommendationScore", 0), reverse=True)
+        
+        return scored_venues[:10]
+        
+    except Exception as e:
+        logger.error(f"Error recommending venues: {str(e)}")
+        return []
+
+@api_router.get("/ai/recommend/events")
+async def recommend_events(userId: str):
+    """Recommend events based on user's taste"""
+    try:
+        # Get user's taste DNA
+        user_taste = await db.taste_dna.find_one({"userId": userId}, {"_id": 0})
+        if not user_taste:
+            user_taste = await get_taste_dna(userId)
+        
+        # Get user's interests
+        interests = user_taste.get("topInterests", [])
+        categories = user_taste.get("categories", {})
+        
+        # Get all events
+        events = await db.events.find({}, {"_id": 0}).to_list(100)
+        
+        # Score events
+        scored_events = []
+        for event in events:
+            score = 0
+            event_name = event.get("name", "").lower()
+            event_desc = event.get("description", "").lower()
+            
+            # Match with interests
+            for interest in interests:
+                if interest.lower() in event_name or interest.lower() in event_desc:
+                    score += 20
+            
+            # Match with categories
+            if "music" in event_name or "concert" in event_name:
+                score += categories.get("music", 0) * 0.5
+            if "food" in event_name or "festival" in event_name:
+                score += categories.get("food", 0) * 0.5
+            if "tech" in event_name or "startup" in event_name:
+                score += categories.get("social", 0) * 0.3
+            
+            # Add vibe meter bonus
+            score += event.get("vibeMeter", 0) * 0.5
+            
+            if score > 20:
+                scored_events.append({**event, "recommendationScore": int(score)})
+        
+        # Sort by score
+        scored_events.sort(key=lambda x: x.get("recommendationScore", 0), reverse=True)
+        
+        return scored_events[:10]
+        
+    except Exception as e:
+        logger.error(f"Error recommending events: {str(e)}")
+        return []
+
+
 # Include router
 app.include_router(api_router)
 
