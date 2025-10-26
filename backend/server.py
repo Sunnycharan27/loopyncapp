@@ -5645,6 +5645,69 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+
+@app.on_event("startup")
+async def startup_db_indexes():
+    """Create database indexes for optimal performance with 100k+ users"""
+    try:
+        # Users collection indexes
+        await db.users.create_index("id", unique=True)
+        await db.users.create_index("email", unique=True)
+        await db.users.create_index("handle", unique=True)
+        await db.users.create_index("friends")  # For friend lookups
+        await db.users.create_index("friendRequestsSent")
+        await db.users.create_index("friendRequestsReceived")
+        
+        # Posts collection indexes
+        await db.posts.create_index("id", unique=True)
+        await db.posts.create_index("authorId")  # For user's posts
+        await db.posts.create_index([("createdAt", -1)])  # For timeline sorting
+        await db.posts.create_index("likes")  # For like lookups
+        
+        # Reels collection indexes
+        await db.reels.create_index("id", unique=True)
+        await db.reels.create_index("authorId")
+        await db.reels.create_index([("createdAt", -1)])
+        
+        # DM threads indexes
+        await db.dm_threads.create_index("id", unique=True)
+        await db.dm_threads.create_index("user1Id")
+        await db.dm_threads.create_index("user2Id")
+        await db.dm_threads.create_index([("lastMessageAt", -1)])
+        
+        # DM messages indexes
+        await db.dm_messages.create_index("id", unique=True)
+        await db.dm_messages.create_index("threadId")
+        await db.dm_messages.create_index([("createdAt", -1)])
+        
+        # Calls collection indexes
+        await db.calls.create_index("id", unique=True)
+        await db.calls.create_index("callerId")
+        await db.calls.create_index("recipientId")
+        await db.calls.create_index([("startedAt", -1)])
+        
+        # Notifications indexes
+        await db.notifications.create_index("id", unique=True)
+        await db.notifications.create_index("userId")
+        await db.notifications.create_index([("createdAt", -1)])
+        
+        # Events and Venues indexes
+        await db.events.create_index("id", unique=True)
+        await db.venues.create_index("id", unique=True)
+        await db.venues.create_index("type")  # For filtering by type
+        
+        # Tribes indexes
+        await db.tribes.create_index("id", unique=True)
+        await db.tribes.create_index("members")
+        
+        # TasteDNA indexes
+        await db.taste_dna.create_index("userId", unique=True)
+        
+        logger.info("✅ Database indexes created successfully - Ready for 100k+ users")
+    except Exception as e:
+        logger.error(f"Error creating database indexes: {str(e)}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
