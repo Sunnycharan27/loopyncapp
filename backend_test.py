@@ -3589,8 +3589,8 @@ class BackendTester:
         self.test_invalid_token_access()
         self.test_no_token_access()
         
-        # Priority 2: Core Social Features
-        print("\n📱 PRIORITY 2: CORE SOCIAL FEATURES")
+        # Priority 5: Core Social Features
+        print("\n📱 PRIORITY 5: CORE SOCIAL FEATURES")
         print("-" * 60)
         self.test_seed_data()  # Create test data first
         self.test_posts_timeline()
@@ -3599,8 +3599,8 @@ class BackendTester:
         self.test_create_reel()
         self.test_global_search()
         
-        # Priority 3: Friend System & Messaging
-        print("\n👥 PRIORITY 3: FRIEND SYSTEM & MESSAGING")
+        # Priority 6: Friend System & Messaging
+        print("\n👥 PRIORITY 6: FRIEND SYSTEM & MESSAGING")
         print("-" * 60)
         self.test_send_friend_request()
         self.test_get_friend_requests()
@@ -3611,16 +3611,16 @@ class BackendTester:
         self.test_get_dm_messages()
         self.test_send_media_dm_message()
         
-        # Priority 4: Events & Venues (Recently Fixed)
-        print("\n🎪 PRIORITY 4: EVENTS & VENUES (RECENTLY FIXED)")
+        # Priority 7: Events & Venues (Recently Fixed)
+        print("\n🎪 PRIORITY 7: EVENTS & VENUES (RECENTLY FIXED)")
         print("-" * 60)
         self.test_events_list()
         self.test_event_details()
         self.test_venues_list()
         self.test_venue_details()
         
-        # Priority 5: Wallet & Other Features
-        print("\n💰 PRIORITY 5: WALLET & OTHER FEATURES")
+        # Priority 8: Wallet & Other Features
+        print("\n💰 PRIORITY 8: WALLET & OTHER FEATURES")
         print("-" * 60)
         self.test_wallet_balance()
         self.test_music_search()
