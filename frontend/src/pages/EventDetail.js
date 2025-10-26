@@ -140,11 +140,16 @@ const EventDetail = () => {
   return (
     <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       {/* Header with Back Button */}
-      <div className="sticky top-0 z-10 glass-surface px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="text-cyan-400">
-          <ArrowLeft size={24} />
+      <div className="sticky top-0 z-10 glass-surface px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="text-cyan-400">
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="text-xl font-bold text-white">Book Tickets</h1>
+        </div>
+        <button onClick={() => setShowShareModal(true)} className="text-cyan-400 hover:text-cyan-300 transition">
+          <Share2 size={22} />
         </button>
-        <h1 className="text-xl font-bold text-white">Book Tickets</h1>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6">
