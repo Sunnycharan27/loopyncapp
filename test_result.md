@@ -5197,3 +5197,41 @@ backend:
       **FINAL VERDICT: VIBEROOM AUDIO/MICROPHONE FUNCTIONALITY IS FULLY OPERATIONAL**
       **Users can successfully be invited to stage and speak using their microphones**
       **No issues found - all systems working correctly. Main agent can summarize and finish.**
+  - agent: "main"
+    message: |
+      NEW VIBEROOM TESTING REQUEST - VERIFY RECENT FIXES
+
+      🎯 **USER REQUEST**: Test and verify VibeRoom creation and microphone fixes
+
+      📋 **RECENT FIXES APPLIED (Need Verification)**:
+      1. **VibeRoom Creation Issue**: 
+         - Fixed stale localStorage user data causing incorrect userId
+         - Backend now robustly finds or creates users on-the-fly
+         - Frontend detects stale data and forces re-login
+      
+      2. **Microphone Service in VibeRooms**: 
+         - Enhanced error handling for invited speakers
+         - Better logging around Agora audio subscription
+         - Improved audio event listeners in RoomDetailClubhouse.js
+
+      🧪 **TESTING REQUIRED**:
+      **Backend Testing (Priority 1)**:
+      - Verify room creation with various userId scenarios (existing, new, stale)
+      - Test Agora token generation for both publisher and subscriber roles
+      - Validate audio subscription endpoints
+      - Test complete room lifecycle: create → join → raise hand → invite to stage → speak
+
+      **Focus Areas**:
+      1. Room creation robustness with different user states
+      2. Agora.io integration (not Daily.co - migration completed)
+      3. Speaker promotion and audio publishing functionality
+      4. Error handling for edge cases
+
+      **Success Criteria**:
+      ✅ Room creation succeeds even with non-existent userId
+      ✅ Agora tokens generated correctly for audio/video
+      ✅ Invited speakers can publish audio successfully
+      ✅ No 500 errors or backend crashes
+      ✅ All endpoints return proper status codes
+
+      Please test thoroughly and report findings.
