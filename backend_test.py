@@ -3205,6 +3205,7 @@ class BackendTester:
         print(f"  👥 Friend/Messaging: {sum(1 for r in friend_tests if r['success'])}/{len(friend_tests)} passed")
         print(f"  🎪 Events/Venues: {sum(1 for r in venue_tests if r['success'])}/{len(venue_tests)} passed")
         print(f"  🤖 AI Parallels Engine: {sum(1 for r in ai_tests if r['success'])}/{len(ai_tests)} passed")
+        print(f"  📞 Call Features: {sum(1 for r in call_tests if r['success'])}/{len(call_tests)} passed")
         print(f"  💰 Other Features: {sum(1 for r in other_tests if r['success'])}/{len(other_tests)} passed")
         
         if total - passed > 0:
