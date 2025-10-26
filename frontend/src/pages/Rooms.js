@@ -189,7 +189,7 @@ const CreateRoomModal = ({ onClose, onSuccess, currentUser }) => {
     }
 
     if (!currentUser || !currentUser.id) {
-      toast.error("User not authenticated. Please login again.");
+      toast.error("Session expired. Please logout and login again.");
       return;
     }
 
@@ -212,8 +212,19 @@ const CreateRoomModal = ({ onClose, onSuccess, currentUser }) => {
       window.location.href = `/viberooms/${res.data.id}`;
     } catch (error) {
       console.error("Room creation error:", error);
-      const errorMsg = error.response?.data?.detail || "Failed to create room";
-      toast.error(errorMsg);
+      const errorMsg = error.response?.data?.detail || error.message || "Failed to create room";
+      
+      // If session expired, prompt user to re-login
+      if (errorMsg.includes("session expired") || errorMsg.includes("User not found")) {
+        toast.error("Session expired. Please logout and login again.");
+        setTimeout(() => {
+          localStorage.removeItem("loopync_token");
+          localStorage.removeItem("loopync_user");
+          window.location.href = "/auth";
+        }, 2000);
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setCreating(false);
     }
