@@ -807,6 +807,122 @@ const Discover = () => {
             </div>
           )}
 
+          {/* Wallet Tab */}
+          {activeTab === "wallet" && (
+            <div className="space-y-6">
+              {/* Wallet Header Card */}
+              <div className="glass-card p-6 bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold">LoopPay Wallet</h2>
+                  <DollarSign size={32} />
+                </div>
+                <div className="mb-2">
+                  <p className="text-sm opacity-90">Total Balance</p>
+                  <h3 className="text-4xl font-bold">₹{walletBalance.toFixed(2)}</h3>
+                </div>
+                <div className="flex items-center gap-2 text-sm opacity-90">
+                  <span>{currentUser.name}</span>
+                  <span>•</span>
+                  <span>ID: *{currentUser.id.slice(-5)}</span>
+                </div>
+              </div>
+
+              {/* Loop Credits Card */}
+              <div className="glass-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                      <Zap size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Loop Credits</h3>
+                      <p className="text-sm text-gray-400">Reward points</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-bold text-cyan-400">{loopCredits}</p>
+                    <p className="text-xs text-gray-500">Credits</p>
+                  </div>
+                </div>
+                <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-300">
+                    💡 Earn credits by completing activities, inviting friends, and making purchases!
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setShowTopUpModal(true)}
+                  className="glass-card p-4 hover:bg-cyan-400/10 transition-all text-center"
+                >
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-cyan-400/20 flex items-center justify-center">
+                    <DollarSign size={24} className="text-cyan-400" />
+                  </div>
+                  <p className="font-semibold text-white">Add Money</p>
+                  <p className="text-xs text-gray-400 mt-1">Top up wallet</p>
+                </button>
+
+                <button
+                  onClick={() => navigate('/wallet')}
+                  className="glass-card p-4 hover:bg-cyan-400/10 transition-all text-center"
+                >
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-purple-400/20 flex items-center justify-center">
+                    <Clock size={24} className="text-purple-400" />
+                  </div>
+                  <p className="font-semibold text-white">Transactions</p>
+                  <p className="text-xs text-gray-400 mt-1">View history</p>
+                </button>
+              </div>
+
+              {/* QR Code for Payments */}
+              <div className="glass-card p-6 text-center">
+                <h3 className="text-lg font-semibold text-white mb-4">Pay at Store</h3>
+                <div className="bg-white p-4 rounded-lg inline-block">
+                  <div className="w-48 h-48 flex items-center justify-center bg-gray-100">
+                    <p className="text-gray-400 text-sm">QR Code</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-400 mt-4">Scan this code at partner stores</p>
+              </div>
+
+              {/* Features */}
+              <div className="glass-card p-6">
+                <h3 className="text-lg font-semibold text-white mb-4">Wallet Features</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-400/20 flex items-center justify-center flex-shrink-0">
+                      <Star size={16} className="text-green-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-sm">Instant Payments</p>
+                      <p className="text-xs text-gray-400">Pay at events, venues & marketplace</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-400/20 flex items-center justify-center flex-shrink-0">
+                      <TrendingUp size={16} className="text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-sm">Earn Rewards</p>
+                      <p className="text-xs text-gray-400">Get Loop Credits on every transaction</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-purple-400/20 flex items-center justify-center flex-shrink-0">
+                      <Award size={16} className="text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-sm">Exclusive Offers</p>
+                      <p className="text-xs text-gray-400">Access special deals with Loop Credits</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
         </>
         )}
