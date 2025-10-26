@@ -350,7 +350,7 @@ const Messenger = () => {
               </div>
             </div>
 
-            {/* Tabs */}
+            {/* Tabs - Only Chats and Trust Circles */}
             <div className="flex gap-2 overflow-x-auto scrollbar-hide">
               <button
                 onClick={() => setActiveView("chats")}
@@ -362,17 +362,6 @@ const Messenger = () => {
               >
                 <Send size={16} />
                 Chats
-              </button>
-              <button
-                onClick={() => setActiveView("rooms")}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm transition-all ${
-                  activeView === "rooms"
-                    ? 'bg-gradient-to-r from-cyan-400 to-purple-500 text-white'
-                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-                }`}
-              >
-                <Users size={16} />
-                Vibe Rooms
               </button>
               <button
                 onClick={() => setActiveView("circles")}
