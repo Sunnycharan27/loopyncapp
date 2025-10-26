@@ -45,8 +45,8 @@ const CallModal = ({ callData, onClose }) => {
       const uid = await client.join(
         AGORA_APP_ID,
         channelName,
-        agoraToken,
-        currentUser.id
+        myToken,
+        null // Let Agora assign UID
       );
 
       // Create local tracks
