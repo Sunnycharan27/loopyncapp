@@ -2628,6 +2628,38 @@ async def mark_notification_read(notificationId: str):
     await db.notifications.update_one({"id": notificationId}, {"$set": {"read": True}})
     return {"success": True}
 
+@api_router.post("/share")
+async def share_content(fromUserId: str, toUserId: str, contentType: str, contentId: str, message: str, link: str):
+    """Share content with a friend - creates a notification"""
+    try:
+        from_user = await db.users.find_one({"id": fromUserId}, {"_id": 0})
+        if not from_user:
+            raise HTTPException(status_code=404, detail="Sender not found")
+        
+        to_user = await db.users.find_one({"id": toUserId}, {"_id": 0})
+        if not to_user:
+            raise HTTPException(status_code=404, detail="Recipient not found")
+        
+        # Create notification
+        notification = Notification(
+            userId=toUserId,
+            type="share",
+            message=message,
+            link=link,
+            read=False,
+            fromUserId=fromUserId,
+            fromUserName=from_user.get("name", "Someone"),
+            fromUserAvatar=from_user.get("avatar", ""),
+            contentType=contentType,
+            contentId=contentId
+        )
+        
+        await db.notifications.insert_one(notification.model_dump())
+        
+        return {"success": True, "message": "Content shared successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to share: {str(e)}")
+
 # ===== VENUE ROUTES =====
 
 @api_router.get("/venues")
