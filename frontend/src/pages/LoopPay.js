@@ -33,10 +33,13 @@ const LoopPay = () => {
   const fetchWalletData = async () => {
     try {
       setLoading(true);
-      const creditsRes = await axios.get(`${API}/credits/${currentUser.id}`);
-      const walletRes = await axios.get(`${API}/wallet?userId=${currentUser.id}`);
+      const [creditsRes, walletRes] = await Promise.all([
+        axios.get(`${API}/credits/${currentUser.id}`),
+        axios.get(`${API}/wallet?userId=${currentUser.id}`)
+      ]);
       
       setLoopCredits(creditsRes.data?.credits || 0);
+      setWalletBalance(walletRes.data?.balance || 0);
       setTransactions(walletRes.data?.transactions || []);
       
       // Calculate weekly stats
@@ -57,9 +60,10 @@ const LoopPay = () => {
       setSpentThisWeek(spent);
       
       // Set rank based on credits
-      if (loopCredits >= 1000) setVibeRank("Aurora");
-      else if (loopCredits >= 500) setVibeRank("Gold");
-      else if (loopCredits >= 200) setVibeRank("Silver");
+      const credits = creditsRes.data?.credits || 0;
+      if (credits >= 1000) setVibeRank("Aurora");
+      else if (credits >= 500) setVibeRank("Gold");
+      else if (credits >= 200) setVibeRank("Silver");
       else setVibeRank("Bronze");
       
     } catch (error) {
