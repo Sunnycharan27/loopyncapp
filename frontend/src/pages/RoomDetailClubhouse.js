@@ -192,27 +192,35 @@ const RoomDetailClubhouse = () => {
 
       // Join channel
       await agoraClient.current.join(appId, room.agoraChannel, token, uid);
+      console.log(`✅ Joined Agora channel: ${room.agoraChannel} with UID: ${uid}`);
 
       // Create and publish local audio track for speakers/hosts
       if (myRole !== "audience") {
         try {
+          console.log(`🎤 Creating microphone audio track for ${myRole}...`);
           localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack({
             encoderConfig: "music_standard",
           });
+          console.log(`✅ Microphone track created successfully`);
+          
           await agoraClient.current.publish([localAudioTrack.current]);
+          console.log(`✅ Audio track published successfully - You can now be heard!`);
+          
           setIsMuted(false);
-          toast.success("You're now on stage! Others can hear you.");
+          toast.success("🎤 You're on stage! Others can hear you.");
         } catch (audioError) {
-          console.error("Failed to create/publish audio track:", audioError);
+          console.error("❌ Failed to create/publish audio track:", audioError);
           toast.error("Failed to enable microphone. Please check your device settings.");
           throw audioError;
         }
       } else {
+        console.log(`👂 Joined as audience - listening only`);
         setIsMuted(true);
       }
 
       setIsConnected(true);
-      toast.success("Connected to audio room!");
+      toast.success("🎵 Connected to audio room!");
+      console.log(`✅ Audio initialization complete. Role: ${myRole}, Muted: ${myRole === "audience"}`);
       
     } catch (error) {
       console.error("Failed to initialize Agora audio:", error);
