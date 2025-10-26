@@ -196,8 +196,15 @@ class Notification(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     userId: str
-    type: str  # post_like, tribe_join, order_ready, ticket_bought, dm
+    type: str  # post_like, tribe_join, order_ready, ticket_bought, dm, share
     payload: dict = Field(default_factory=dict)
+    message: str = ""
+    link: str = ""
+    fromUserId: str = ""
+    fromUserName: str = ""
+    fromUserAvatar: str = ""
+    contentType: str = ""
+    contentId: str = ""
     read: bool = False
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
