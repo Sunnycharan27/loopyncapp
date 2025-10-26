@@ -1218,6 +1218,214 @@ async def search_all(q: str, currentUserId: str = None, limit: int = 20):
         "events": events
     }
 
+# ===== FRIEND MANAGEMENT ROUTES =====
+
+@api_router.post("/friends/request")
+async def send_friend_request(fromUserId: str, toUserId: str):
+    """Send a friend request"""
+    if fromUserId == toUserId:
+        raise HTTPException(status_code=400, detail="Cannot send friend request to yourself")
+    
+    from_user = await db.users.find_one({"id": fromUserId}, {"_id": 0})
+    to_user = await db.users.find_one({"id": toUserId}, {"_id": 0})
+    
+    if not from_user or not to_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if already friends
+    if toUserId in from_user.get("friends", []):
+        return {"success": False, "message": "Already friends"}
+    
+    # Check if request already sent
+    if toUserId in from_user.get("friendRequestsSent", []):
+        return {"success": False, "message": "Friend request already sent"}
+    
+    # Check if there's a pending request from the other user
+    if toUserId in from_user.get("friendRequestsReceived", []):
+        # Auto-accept and become friends
+        await db.users.update_one(
+            {"id": fromUserId},
+            {
+                "$addToSet": {"friends": toUserId},
+                "$pull": {"friendRequestsReceived": toUserId}
+            }
+        )
+        await db.users.update_one(
+            {"id": toUserId},
+            {
+                "$addToSet": {"friends": fromUserId},
+                "$pull": {"friendRequestsSent": fromUserId}
+            }
+        )
+        
+        # Create notification
+        notification = Notification(
+            userId=toUserId,
+            type="friend_accept",
+            message=f"{from_user.get('name')} accepted your friend request!",
+            fromUserId=fromUserId,
+            fromUserName=from_user.get("name", ""),
+            fromUserAvatar=from_user.get("avatar", ""),
+            link=f"/profile/{fromUserId}"
+        )
+        await db.notifications.insert_one(notification.model_dump())
+        
+        return {"success": True, "message": "Friend request accepted automatically", "nowFriends": True}
+    
+    # Add to sent/received lists
+    await db.users.update_one(
+        {"id": fromUserId},
+        {"$addToSet": {"friendRequestsSent": toUserId}}
+    )
+    await db.users.update_one(
+        {"id": toUserId},
+        {"$addToSet": {"friendRequestsReceived": fromUserId}}
+    )
+    
+    # Create notification
+    notification = Notification(
+        userId=toUserId,
+        type="friend_request",
+        message=f"{from_user.get('name')} sent you a friend request",
+        fromUserId=fromUserId,
+        fromUserName=from_user.get("name", ""),
+        fromUserAvatar=from_user.get("avatar", ""),
+        link=f"/profile/{fromUserId}"
+    )
+    await db.notifications.insert_one(notification.model_dump())
+    
+    return {"success": True, "message": "Friend request sent"}
+
+@api_router.post("/friends/accept")
+async def accept_friend_request(userId: str, friendId: str):
+    """Accept a friend request"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    friend = await db.users.find_one({"id": friendId}, {"_id": 0})
+    
+    if not user or not friend:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if there's a pending request
+    if friendId not in user.get("friendRequestsReceived", []):
+        raise HTTPException(status_code=400, detail="No pending friend request from this user")
+    
+    # Add to friends lists and remove from pending
+    await db.users.update_one(
+        {"id": userId},
+        {
+            "$addToSet": {"friends": friendId},
+            "$pull": {"friendRequestsReceived": friendId}
+        }
+    )
+    await db.users.update_one(
+        {"id": friendId},
+        {
+            "$addToSet": {"friends": userId},
+            "$pull": {"friendRequestsSent": userId}
+        }
+    )
+    
+    # Create notification
+    notification = Notification(
+        userId=friendId,
+        type="friend_accept",
+        message=f"{user.get('name')} accepted your friend request!",
+        fromUserId=userId,
+        fromUserName=user.get("name", ""),
+        fromUserAvatar=user.get("avatar", ""),
+        link=f"/profile/{userId}"
+    )
+    await db.notifications.insert_one(notification.model_dump())
+    
+    return {"success": True, "message": "Friend request accepted"}
+
+@api_router.post("/friends/reject")
+async def reject_friend_request(userId: str, friendId: str):
+    """Reject a friend request"""
+    # Remove from pending lists
+    await db.users.update_one(
+        {"id": userId},
+        {"$pull": {"friendRequestsReceived": friendId}}
+    )
+    await db.users.update_one(
+        {"id": friendId},
+        {"$pull": {"friendRequestsSent": userId}}
+    )
+    
+    return {"success": True, "message": "Friend request rejected"}
+
+@api_router.delete("/friends/remove")
+async def unfriend(userId: str, friendId: str):
+    """Remove a friend (unfriend)"""
+    # Remove from both friends lists
+    await db.users.update_one(
+        {"id": userId},
+        {"$pull": {"friends": friendId}}
+    )
+    await db.users.update_one(
+        {"id": friendId},
+        {"$pull": {"friends": userId}}
+    )
+    
+    return {"success": True, "message": "Friend removed"}
+
+@api_router.get("/users/{userId}/friends")
+async def get_user_friends(userId: str):
+    """Get user's friends list"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    friend_ids = user.get("friends", [])
+    friends = []
+    
+    for friend_id in friend_ids:
+        friend = await db.users.find_one({"id": friend_id}, {"_id": 0, "id": 1, "name": 1, "handle": 1, "avatar": 1, "bio": 1})
+        if friend:
+            friends.append(friend)
+    
+    return friends
+
+@api_router.get("/users/{userId}/friend-requests")
+async def get_friend_requests(userId: str):
+    """Get pending friend requests (received and sent)"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    received_ids = user.get("friendRequestsReceived", [])
+    sent_ids = user.get("friendRequestsSent", [])
+    
+    received = []
+    for req_id in received_ids:
+        requester = await db.users.find_one({"id": req_id}, {"_id": 0, "id": 1, "name": 1, "handle": 1, "avatar": 1, "bio": 1})
+        if requester:
+            received.append(requester)
+    
+    sent = []
+    for req_id in sent_ids:
+        recipient = await db.users.find_one({"id": req_id}, {"_id": 0, "id": 1, "name": 1, "handle": 1, "avatar": 1, "bio": 1})
+        if recipient:
+            sent.append(recipient)
+    
+    return {"received": received, "sent": sent}
+
+@api_router.get("/users/{userId}/friend-status/{targetUserId}")
+async def get_friend_status(userId: str, targetUserId: str):
+    """Get friendship status between two users"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if targetUserId in user.get("friends", []):
+        return {"status": "friends"}
+    elif targetUserId in user.get("friendRequestsSent", []):
+        return {"status": "request_sent"}
+    elif targetUserId in user.get("friendRequestsReceived", []):
+        return {"status": "request_received"}
+    else:
+        return {"status": "none"}
+
 # ===== POST ROUTES (TIMELINE) =====
 
 @api_router.get("/posts")
