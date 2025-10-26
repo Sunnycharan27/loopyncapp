@@ -17,7 +17,7 @@ import Marketplace from "./pages/Marketplace";
 import Onboarding from "./pages/Onboarding";
 import Messenger from "./pages/Messenger";
 import Notifications from "./pages/Notifications";
-import Profile from "./pages/Profile";
+import Profile from "./pages/ProfileNew";
 import UserProfile from "./pages/UserProfile";
 import People from "./pages/People";
 import Settings from "./pages/Settings";
