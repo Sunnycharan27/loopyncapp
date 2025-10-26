@@ -110,6 +110,12 @@ class UserCreate(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    
+    @field_validator('password')
+    @classmethod
+    def strip_password_whitespace(cls, v: str) -> str:
+        """Strip leading and trailing whitespace from password"""
+        return v.strip() if v else v
 
 class UserResponse(BaseModel):
     user_id: str
