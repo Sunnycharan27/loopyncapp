@@ -492,10 +492,11 @@ const ProfileVibe = () => {
 
         {/* 3. Scroll Tabs - Four Dimensions */}
         <div className="px-4 mb-4">
-          <div className="glass-surface rounded-xl p-1 inline-flex gap-1">
+          <div className="glass-surface rounded-xl p-1 inline-flex gap-1 overflow-x-auto hide-scrollbar">
             {[
               { id: "posts", label: "Posts", icon: Grid },
               { id: "tribes", label: "Tribes", icon: Users },
+              { id: "tickets", label: "Tickets", icon: Ticket },
               { id: "venues", label: "Venues", icon: Map },
               { id: "marketplace", label: "Market", icon: Store }
             ].map(tab => (
