@@ -3,7 +3,7 @@ import axios from "axios";
 import { API } from "../App";
 import { Heart, MessageCircle, Share, Volume2, VolumeX, Music, Bookmark, MoreHorizontal, AlertCircle } from "lucide-react";
 import ReelCommentsModal from "./ReelCommentsModal";
-import ReelShareModal from "./ReelShareModal";
+import UniversalShareModal from "./UniversalShareModal";
 
 const ReelViewer = ({ reels, currentUser, onLike }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
