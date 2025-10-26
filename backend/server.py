@@ -5963,6 +5963,12 @@ async def startup_db_indexes():
         # TasteDNA indexes
         await db.taste_dna.create_index("userId", unique=True)
         
+        # Vibe Capsules (Stories) indexes with TTL for 24-hour expiration
+        await db.vibe_capsules.create_index("id", unique=True)
+        await db.vibe_capsules.create_index("authorId")
+        await db.vibe_capsules.create_index([("createdAt", -1)])
+        await db.vibe_capsules.create_index("expiresAt", expireAfterSeconds=0)  # TTL index for auto-deletion
+        
         logger.info("✅ Database indexes created successfully - Ready for 100k+ users")
     except Exception as e:
         logger.warning(f"⚠️ Some indexes already exist or had issues: {str(e)}")
