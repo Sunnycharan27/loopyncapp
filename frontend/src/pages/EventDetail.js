@@ -2,9 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Users, Star, Clock, Ticket, ArrowLeft, Info } from "lucide-react";
+import { Calendar, MapPin, Users, Star, Clock, Ticket, ArrowLeft, Info, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "../components/BottomNav";
+import UniversalShareModal from "../components/UniversalShareModal";
 
 const EventDetail = () => {
   const { eventId } = useParams();
@@ -16,6 +17,7 @@ const EventDetail = () => {
   const [ticketCount, setTicketCount] = useState(1);
   const [showSeats, setShowSeats] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     fetchEventDetails();
