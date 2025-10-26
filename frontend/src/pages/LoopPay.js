@@ -148,9 +148,8 @@ const LoopPay = () => {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        {/* Balance Card */}
+        {/* Money Balance Card */}
         <div className="relative overflow-hidden rounded-3xl p-6 backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl">
-          {/* Animated particles background */}
           <div className="absolute inset-0 overflow-hidden">
             {[...Array(10)].map((_, i) => (
               <div
@@ -185,32 +184,47 @@ const LoopPay = () => {
             </div>
 
             <div className="mb-2">
-              <p className="text-white/60 text-sm mb-1">Your Balance</p>
+              <p className="text-white/60 text-sm mb-1">Wallet Balance</p>
               <div className="flex items-baseline gap-2">
-                <h2 className="text-5xl font-bold text-white">{loopCredits}</h2>
-                <Zap size={32} className="text-[#5AFF9C]" />
+                <h2 className="text-5xl font-bold text-white">₹{walletBalance.toFixed(2)}</h2>
               </div>
             </div>
 
-            <p className="text-white/40 text-xs">Loop Credits</p>
+            <button
+              onClick={() => setShowAddMoneyModal(true)}
+              className="mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#00E0FF] to-[#5AFF9C] text-black font-bold hover:opacity-90 transition-all"
+            >
+              + Add Money
+            </button>
           </div>
 
-          {/* Glow effect */}
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#00E0FF]/20 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
-          >
-            <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-[#5AFF9C]/20 to-[#00E0FF]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Plus size={24} className="text-[#5AFF9C]" />
+        {/* Loop Credits Card */}
+        <div className="p-6 rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
+                <Zap size={28} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white/60 text-sm">Loop Credits</p>
+                <h3 className="text-3xl font-bold text-white">{loopCredits}</h3>
+              </div>
             </div>
-            <p className="text-white text-sm font-semibold">Add</p>
-          </button>
+            <button
+              onClick={() => setShowAddCreditsModal(true)}
+              className="px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 transition-all"
+            >
+              Earn More
+            </button>
+          </div>
+          <p className="text-white/40 text-xs mt-4">Earn credits through activities and redeem for rewards</p>
+        </div>
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setShowRedeemModal(true)}
             className="p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
@@ -218,7 +232,7 @@ const LoopPay = () => {
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-[#FF3DB3]/20 to-[#00E0FF]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Gift size={24} className="text-[#FF3DB3]" />
             </div>
-            <p className="text-white text-sm font-semibold">Redeem</p>
+            <p className="text-white text-sm font-semibold">Redeem Credits</p>
           </button>
 
           <button
@@ -228,7 +242,7 @@ const LoopPay = () => {
             <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-gradient-to-r from-[#00E0FF]/20 to-[#FF3DB3]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Clock size={24} className="text-[#00E0FF]" />
             </div>
-            <p className="text-white text-sm font-semibold">History</p>
+            <p className="text-white text-sm font-semibold">Transactions</p>
           </button>
         </div>
 
