@@ -79,3 +79,4 @@ litellm==1.78.5
 openai==1.99.9
 aiohttp==3.13.1
 python-socketio==5.14.2
+agora_token_builder==1.0.0
