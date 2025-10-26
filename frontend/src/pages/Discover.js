@@ -691,16 +691,17 @@ const Discover = () => {
               )}
 
               {/* People You May Know */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                  <UserPlus size={20} className="text-cyan-400" />
-                  People You May Know
-                </h3>
-                {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full"></div>
-                  </div>
-                ) : people.length > 0 ? (
+              {(!searchQuery || searchQuery.length < 2) && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    <UserPlus size={20} className="text-cyan-400" />
+                    People You May Know
+                  </h3>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full"></div>
+                    </div>
+                  ) : people.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {people.slice(0, 12).map(user => (
                       <div key={user.id} className="glass-card p-4 hover:bg-gray-800/50 transition-all">
