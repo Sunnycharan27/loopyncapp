@@ -514,7 +514,7 @@ const Onboarding = () => {
                 Back
               </button>
               <button
-                onClick={handleComplete}
+                onClick={handleFinish}
                 disabled={!consents.dataCollection || loading}
                 className={`flex-1 py-4 rounded-full font-bold text-lg ${
                   consents.dataCollection && !loading
