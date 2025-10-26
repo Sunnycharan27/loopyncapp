@@ -1179,7 +1179,7 @@ backend:
   - task: "Complete Email/Password Authentication Flow Testing"
     implemented: true
     working: true
-    file: "/app/auth_flow_test.py"
+    file: "/app/auth_user_data_test.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
@@ -1226,6 +1226,83 @@ backend:
           
           **AUTHENTICATION SYSTEM IS FULLY FUNCTIONAL AND PRODUCTION-READY**
           All critical authentication requirements verified working correctly.
+      - working: true
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE AUTHENTICATION AND USER DATA TESTING COMPLETED - ALL 13 TESTS PASSED (100% SUCCESS RATE)
+          
+          🔐 TEST SUITE 1: COMPLETE AUTHENTICATION FLOW (4/4 TESTS PASSED):
+          ✅ Test Signup (New User) - POST /api/auth/signup
+            - Returns token, user object with id, handle, name, email, avatar
+            - User has friends arrays initialized (empty)
+            - Token and user_id saved for next tests
+          
+          ✅ Test Handle Availability - GET /api/auth/check-handle/{handle}
+            - Returns {"available": false} for existing handle (testuser20251026_031453)
+            - Returns {"available": true} for new handle (availablehandle20251026031453)
+          
+          ✅ Test Login (Existing User) - POST /api/auth/login
+            - Returns token and complete user object for demo@loopync.com
+            - User data includes friends, friendRequestsSent, friendRequestsReceived
+            - Demo token and demo_user_id saved
+          
+          ✅ Test Get Current User (/auth/me) - GET /api/auth/me
+            - Returns complete user object with all fields
+            - JWT token validation working correctly
+          
+          🎯 TEST SUITE 2: USER DATA & FRIEND SYSTEM (6/6 TESTS PASSED):
+          ✅ Get User by ID - GET /api/users/{userId}
+            - Returns complete user profile for demo user
+          
+          ✅ Get User Friends - GET /api/users/{userId}/friends
+            - Returns array (empty initially, as expected)
+          
+          ✅ Send Friend Request - POST /api/friends/request
+            - Successfully sends friend request from demo user to test user
+            - Returns success message and creates friend request
+          
+          ✅ Check Friend Status - GET /api/users/{userId}/friend-status/{targetUserId}
+            - Demo user → Test user: {"status": "request_sent"}
+            - Test user → Demo user: {"status": "request_received"}
+          
+          ✅ Get Pending Friend Requests - GET /api/users/{userId}/friend-requests
+            - Returns received and sent arrays
+            - Demo user found in test user's received array
+          
+          ✅ Accept Friend Request - POST /api/friends/accept
+            - Successfully accepts friend request
+            - Test user now in demo user's friends array
+            - Demo user now in test user's friends array
+            - Permanent friendship established
+          
+          🚫 TEST SUITE 3: ERROR HANDLING (3/3 TESTS PASSED):
+          ✅ Test Login with Wrong Password - POST /api/auth/login
+            - Returns 401 error for wrong password
+            - Correctly rejects invalid credentials
+          
+          ✅ Test Signup with Duplicate Handle - POST /api/auth/signup
+            - Returns 400 error about handle already taken
+            - Error message: "Username '@testuser20251026_031453' is already taken"
+          
+          ✅ Test Protected Route without Token - GET /api/auth/me
+            - Returns 403 error for missing token
+            - Correctly protects route from unauthorized access
+          
+          🎯 SUCCESS CRITERIA VERIFICATION - ALL MET:
+          ✅ All authentication flows work correctly
+          ✅ User data is complete and consistent
+          ✅ Friend system creates permanent friendships
+          ✅ Error handling works properly
+          ✅ JWT tokens are generated and validated correctly
+          
+          📊 FINAL TEST RESULTS:
+          - Total Tests: 13
+          - Passed: 13 ✅
+          - Failed: 0 ❌
+          - Success Rate: 100.0%
+          
+          **COMPREHENSIVE AUTHENTICATION AND USER DATA SYSTEM IS FULLY FUNCTIONAL AND PRODUCTION-READY**
+          All user-requested test scenarios completed successfully with detailed verification.
 
   - task: "Complete VibeRooms Clubhouse Integration with Daily.co Real API Testing"
     implemented: true
