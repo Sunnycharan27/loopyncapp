@@ -16,7 +16,6 @@ const VibeCapsuleUpload = ({ currentUser, onUploadComplete }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
     const isImage = file.type.startsWith("image/");
     const isVideo = file.type.startsWith("video/");
 
@@ -25,37 +24,31 @@ const VibeCapsuleUpload = ({ currentUser, onUploadComplete }) => {
       return;
     }
 
-    // Validate video duration (15-30 seconds)
-    if (isVideo) {
-      const video = document.createElement("video");
-      video.preload = "metadata";
-      video.onloadedmetadata = function() {
-        window.URL.revokeObjectURL(video.src);
-        if (video.duration < 15 || video.duration > 30) {
-          toast.error("Video must be between 15-30 seconds");
-          return;
-        }
-      };
-      video.src = URL.createObjectURL(file);
+    // Validate file size (max 50MB for video, 10MB for image)
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`File too large. Max ${isVideo ? '50MB for video' : '10MB for image'}`);
+      return;
     }
 
     setUploading(true);
     setMediaType(isImage ? "image" : "video");
 
     try {
-      // Upload to Cloudinary
+      // Upload to backend
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("upload_preset", "loopync_preset"); // You'll need to set this in Cloudinary
 
-      const cloudinaryUrl = isImage
-        ? "https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload"
-        : "https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/video/upload";
+      const uploadRes = await axios.post(`${API}/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        }
+      });
 
-      // For demo, we'll use a mock URL
-      // In production, replace with actual Cloudinary upload
-      const mockUrl = URL.createObjectURL(file);
-      setMediaUrl(mockUrl);
+      const uploadedUrl = `${API}${uploadRes.data.url}`;
+      setMediaUrl(uploadedUrl);
       
       toast.success("Media uploaded successfully!");
     } catch (error) {
@@ -63,6 +56,7 @@ const VibeCapsuleUpload = ({ currentUser, onUploadComplete }) => {
       toast.error("Failed to upload media");
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
