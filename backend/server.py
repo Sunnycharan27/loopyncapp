@@ -2139,22 +2139,36 @@ async def generate_agora_token(channelName: str, uid: int, role: str = "publishe
 async def create_room(room: RoomCreate, userId: str):
     """Create a new Vibe Room with Agora audio (Clubhouse-style)"""
     
+    # Try to find user by id, handle, or email
     user = await db.users.find_one({"id": userId}, {"_id": 0})
+    
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # Try by handle if userId looks like a handle
+        user = await db.users.find_one({"handle": userId}, {"_id": 0})
+    
+    if not user:
+        # Try by email if userId looks like an email
+        user = await db.users.find_one({"email": userId}, {"_id": 0})
+    
+    if not user:
+        logger.error(f"User not found for room creation. userId: {userId}")
+        raise HTTPException(status_code=404, detail=f"User not found: {userId}")
+    
+    # Use the actual user ID from database
+    actual_user_id = user.get("id")
     
     # Create room with Agora channel name (room ID will be the channel)
     new_room = VibeRoom(
         name=room.name,
         description=room.description,
         category=room.category,
-        hostId=userId,
+        hostId=actual_user_id,
         hostName=user.get("name", "Unknown"),
-        moderators=[userId],
+        moderators=[actual_user_id],
         isPrivate=room.isPrivate,
         tags=room.tags,
         participants=[{
-            "userId": userId,
+            "userId": actual_user_id,
             "userName": user.get("name", "Unknown"),
             "avatar": user.get("avatar", ""),
             "joinedAt": datetime.now(timezone.utc).isoformat(),
