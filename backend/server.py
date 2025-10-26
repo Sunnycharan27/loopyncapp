@@ -3586,6 +3586,11 @@ async def book_event_ticket(eventId: str, userId: str, tier: str = "General", qu
         ticket_dict["eventLocation"] = event.get("location", "")
         ticket_dict["eventImage"] = event.get("image", "")
         ticket_dict["price"] = price_per_ticket
+        
+        # Generate QR code
+        qr_data = f"TICKET:{ticket_dict['id']}:QR:{ticket_dict['qrCode']}:EVENT:{eventId}"
+        ticket_dict['qrCodeImage'] = generate_qr_code_base64(qr_data)
+        
         await db.event_tickets.insert_one(ticket_dict)
         tickets.append(ticket_dict)
     
