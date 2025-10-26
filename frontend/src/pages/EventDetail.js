@@ -397,6 +397,15 @@ const EventDetail = () => {
         </div>
       </div>
 
+      {/* Share Modal */}
+      {showShareModal && (
+        <UniversalShareModal
+          item={event}
+          type="event"
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
+
       <BottomNav active="discover" />
     </div>
   );
