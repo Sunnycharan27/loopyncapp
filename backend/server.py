@@ -16,6 +16,10 @@ import shutil
 import random
 import razorpay
 import jwt
+import qrcode
+import io
+import base64
+from PIL import Image
 
 # Import the Google Sheets database module
 from sheets_db import init_sheets_db
