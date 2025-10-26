@@ -2835,13 +2835,13 @@ class BackendTester:
         """Test Call Initiate: POST /api/calls/initiate"""
         try:
             # Test with demo_user calling u1 (they should be friends)
-            payload = {
+            params = {
                 "callerId": "demo_user",
                 "recipientId": "u1", 
                 "callType": "voice"
             }
             
-            response = self.session.post(f"{BACKEND_URL}/calls/initiate", json=payload)
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
             
             if response.status_code == 200:
                 data = response.json()
