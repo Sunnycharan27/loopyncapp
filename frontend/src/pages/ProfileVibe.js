@@ -596,6 +596,95 @@ const ProfileVibe = () => {
             </div>
           )}
 
+          {/* Tickets Tab */}
+          {activeTab === "tickets" && (
+            <div className="space-y-3">
+              {userTickets.length > 0 ? (
+                userTickets.map(ticket => (
+                  <div
+                    key={ticket.id}
+                    className="glass-card p-4 rounded-xl hover:bg-cyan-400/5 transition-all"
+                  >
+                    <div className="flex gap-4">
+                      {/* Event Image */}
+                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
+                        {ticket.event?.image ? (
+                          <img
+                            src={ticket.event.image}
+                            alt={ticket.event?.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-purple-400 to-pink-500">
+                            <Calendar size={32} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Ticket Info */}
+                      <div className="flex-1">
+                        <h3 className="font-bold text-white mb-1">{ticket.event?.name || 'Event'}</h3>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <Calendar size={14} />
+                            <span>{ticket.event?.date || 'Date TBD'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <MapPin size={14} />
+                            <span>{ticket.event?.location || 'Location TBD'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-400 text-xs font-semibold">
+                              {ticket.tier}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-green-400/20 text-green-400 text-xs font-semibold">
+                              {ticket.status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* QR Code */}
+                      <div className="flex-shrink-0">
+                        <div className="w-20 h-20 rounded-lg bg-white p-1 flex items-center justify-center">
+                          {ticket.qrCodeImage ? (
+                            <img
+                              src={ticket.qrCodeImage}
+                              alt="QR Code"
+                              className="w-full h-full"
+                            />
+                          ) : (
+                            <div className="text-xs text-gray-500 text-center">No QR</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ticket ID */}
+                    <div className="mt-3 pt-3 border-t border-gray-800">
+                      <p className="text-xs text-gray-500">
+                        Ticket ID: <span className="text-gray-400 font-mono">{ticket.id.slice(0, 8)}</span>
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="glass-card p-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
+                    <Ticket size={32} className="text-gray-500" />
+                  </div>
+                  <p className="text-gray-400 mb-4">No tickets yet</p>
+                  <button 
+                    onClick={() => navigate('/discover')}
+                    className="px-6 py-2.5 bg-cyan-400 hover:bg-cyan-500 text-black rounded-xl font-semibold transition-all"
+                  >
+                    Browse Events
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Venues Tab */}
           {activeTab === "venues" && (
             <div className="glass-card p-8 text-center">
