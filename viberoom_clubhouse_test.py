@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://socialsuper-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://tribe-messenger.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@loopync.com"
 DEMO_PASSWORD = "password123"
 DAILY_API_KEY = "c84172cc30949874adcdd45f4c8cf2819d6e9fc12628de00608f156662be0e79"

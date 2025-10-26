@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://socialsuper-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://tribe-messenger.preview.emergentagent.com/api"
 
 def test_password_hashing_verification():
     """Test to verify passwords are properly hashed with bcrypt"""

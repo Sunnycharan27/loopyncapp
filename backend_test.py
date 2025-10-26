@@ -12,7 +12,7 @@ from datetime import datetime
 from PIL import Image
 
 # Configuration
-BACKEND_URL = "https://socialsuper-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://tribe-messenger.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@loopync.com"
 DEMO_PASSWORD = "password123"
 
@@ -483,7 +483,7 @@ class BackendTester:
             
         try:
             # Construct the full URL for file retrieval
-            file_url = f"https://socialsuper-app.preview.emergentagent.com/api{self.uploaded_file_url}"
+            file_url = f"https://tribe-messenger.preview.emergentagent.com/api{self.uploaded_file_url}"
             
             response = self.session.get(file_url)
             
