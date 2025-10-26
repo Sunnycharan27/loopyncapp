@@ -9,6 +9,7 @@ import ComposerModal from "../components/ComposerModal";
 import LiveActivityFeed from "../components/LiveActivityFeed";
 import StreakCounter from "../components/StreakCounter";
 import MoodSelector from "../components/MoodSelector";
+import VibeCapsules from "../components/VibeCapsules";
 import { toast } from "sonner";
 import { emergentApi } from "../services/emergentApi";
 // import GuidedTours from "../components/GuidedTours";
