@@ -2901,12 +2901,12 @@ class BackendTester:
                 response = self.session.post(f"{BACKEND_URL}/friends/accept", json=payload)
                 
                 # Now retry call initiate
-                payload = {
+                params = {
                     "callerId": "demo_user",
                     "recipientId": "u1", 
                     "callType": "voice"
                 }
-                response = self.session.post(f"{BACKEND_URL}/calls/initiate", json=payload)
+                response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
                 
                 if response.status_code == 200:
                     data = response.json()
