@@ -128,12 +128,21 @@ const Discover = () => {
               <h1 className="text-2xl font-bold neon-text">Discover</h1>
               <p className="text-sm text-gray-400">Explore venues, events, marketplace & tribes</p>
             </div>
-            <button
-              onClick={() => setShowSearch(!showSearch)}
-              className="w-10 h-10 rounded-full flex items-center justify-center bg-cyan-400/20 text-cyan-400 hover:bg-cyan-400/30 transition-all"
-            >
-              {showSearch ? <X size={20} /> : <Search size={20} />}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowParallels(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90 transition-all"
+              >
+                <Sparkles size={18} />
+                Find Your Parallel
+              </button>
+              <button
+                onClick={() => setShowSearch(!showSearch)}
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-cyan-400/20 text-cyan-400 hover:bg-cyan-400/30 transition-all"
+              >
+                {showSearch ? <X size={20} /> : <Search size={20} />}
+              </button>
+            </div>
           </div>
 
           {/* Search Bar */}
