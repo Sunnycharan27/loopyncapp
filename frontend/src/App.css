@@ -50,6 +50,16 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 8px 32px rgba(0, 224, 255, 0.08);
 }
 
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .glass-surface {
   background: rgba(18, 20, 39, 0.85);
   backdrop-filter: blur(12px);
