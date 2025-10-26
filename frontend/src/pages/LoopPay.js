@@ -330,13 +330,93 @@ const LoopPay = () => {
         </div>
       </div>
 
-      {/* Add Credits Modal */}
-      {showAddModal && (
+      {/* Add Money Modal */}
+      {showAddMoneyModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-md rounded-3xl backdrop-blur-xl bg-[#0F021E]/90 border border-white/10 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Add Credits</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-white/60 hover:text-white">
+              <h3 className="text-xl font-bold text-white">Add Money to Wallet</h3>
+              <button onClick={() => setShowAddMoneyModal(false)} className="text-white/60 hover:text-white">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Amount Input */}
+              <div>
+                <label className="text-sm text-white/60 mb-2 block">Enter Amount</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-white">₹</span>
+                  <input
+                    type="number"
+                    value={addMoneyAmount}
+                    onChange={(e) => setAddMoneyAmount(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full pl-10 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white text-xl focus:border-[#00E0FF] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Amount Buttons */}
+              <div className="grid grid-cols-3 gap-2">
+                {[100, 500, 1000, 2000, 5000, 10000].map(amount => (
+                  <button
+                    key={amount}
+                    onClick={() => setAddMoneyAmount(amount.toString())}
+                    className="py-3 bg-white/5 hover:bg-[#00E0FF] hover:text-black rounded-xl font-semibold text-white transition-all border border-white/10"
+                  >
+                    ₹{amount}
+                  </button>
+                ))}
+              </div>
+
+              {/* Payment Method Selection */}
+              <div>
+                <label className="text-sm text-white/60 mb-2 block">Payment Method</label>
+                <div className="space-y-2">
+                  {[
+                    { id: 'upi', label: 'UPI (PhonePe, GPay, Paytm)' },
+                    { id: 'card', label: 'Debit/Credit Card' },
+                    { id: 'netbanking', label: 'Net Banking' }
+                  ].map(method => (
+                    <button
+                      key={method.id}
+                      onClick={() => setPaymentMethod(method.id)}
+                      className={`w-full p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                        paymentMethod === method.id
+                          ? 'border-[#00E0FF] bg-[#00E0FF]/10'
+                          : 'border-white/10 bg-white/5'
+                      }`}
+                    >
+                      <span className="text-white text-sm font-semibold">{method.label}</span>
+                      {paymentMethod === method.id && (
+                        <div className="w-5 h-5 rounded-full bg-[#00E0FF] flex items-center justify-center">
+                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleAddMoney}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#00E0FF] to-[#5AFF9C] text-black font-bold hover:opacity-90 transition-all"
+              >
+                Add ₹{addMoneyAmount || '0'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Credits Modal */}
+      {showAddCreditsModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md rounded-3xl backdrop-blur-xl bg-[#0F021E]/90 border border-white/10 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Earn Loop Credits</h3>
+              <button onClick={() => setShowAddCreditsModal(false)} className="text-white/60 hover:text-white">
                 <X size={24} />
               </button>
             </div>
@@ -344,15 +424,20 @@ const LoopPay = () => {
             <div className="space-y-4">
               <div className="text-center p-8 rounded-2xl bg-white/5 border border-white/10">
                 <Zap size={48} className="mx-auto mb-3 text-[#00E0FF]" />
-                <p className="text-white/60 text-sm mb-2">Mock Transaction</p>
-                <p className="text-white text-lg font-bold">+100 Credits</p>
+                <p className="text-white/60 text-sm mb-4">Earn credits by:</p>
+                <div className="space-y-2 text-left">
+                  <p className="text-white text-sm">• Creating posts & reels</p>
+                  <p className="text-white text-sm">• Engaging with community</p>
+                  <p className="text-white text-sm">• Completing tribe challenges</p>
+                  <p className="text-white text-sm">• Attending events</p>
+                </div>
               </div>
 
               <button
                 onClick={handleAddCredits}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#00E0FF] to-[#5AFF9C] text-black font-bold hover:opacity-90 transition-all"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold hover:opacity-90 transition-all"
               >
-                Add Credits
+                Get Free 100 Credits (Demo)
               </button>
             </div>
           </div>
