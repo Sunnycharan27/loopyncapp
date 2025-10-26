@@ -458,11 +458,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete Email/Password Authentication Flow Testing"
+    - "Friend Request Functionality"
   stuck_tasks:
     - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
     - "Standalone Events Page"
+    - "Friend Request Functionality"
   test_all: false
   test_priority: "high_first"
 
