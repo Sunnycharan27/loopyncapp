@@ -1999,6 +1999,140 @@ async def create_reel(reel: ReelCreate, authorId: str):
     doc["author"] = author
     return doc
 
+# ===== VIBE CAPSULES (STORIES) ROUTES =====
+
+@api_router.get("/capsules")
+async def get_active_capsules(userId: Optional[str] = None):
+    """Get all active (non-expired) Vibe Capsules"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Query for non-expired capsules
+    query = {"expiresAt": {"$gt": now}}
+    
+    # If userId provided, get capsules from user's friends
+    if userId:
+        user = await db.users.find_one({"id": userId}, {"_id": 0})
+        if user and user.get("friends"):
+            # Get capsules from friends + user's own capsules
+            friend_ids = user["friends"] + [userId]
+            query["authorId"] = {"$in": friend_ids}
+    
+    capsules = await db.vibe_capsules.find(query, {"_id": 0}).sort("createdAt", -1).to_list(100)
+    
+    # Add author info and group by author
+    capsules_by_author = {}
+    for capsule in capsules:
+        author = await db.users.find_one({"id": capsule["authorId"]}, {"_id": 0})
+        if author:
+            capsule["author"] = {
+                "id": author["id"],
+                "handle": author["handle"],
+                "name": author["name"],
+                "avatar": author.get("avatar", "")
+            }
+            
+            author_id = capsule["authorId"]
+            if author_id not in capsules_by_author:
+                capsules_by_author[author_id] = {
+                    "author": capsule["author"],
+                    "capsules": []
+                }
+            capsules_by_author[author_id]["capsules"].append(capsule)
+    
+    return {"stories": list(capsules_by_author.values())}
+
+@api_router.post("/capsules")
+async def create_capsule(capsule: VibeCapsuleCreate, authorId: str):
+    """Create a new Vibe Capsule (Story)"""
+    capsule_obj = VibeCapsule(authorId=authorId, **capsule.model_dump())
+    doc = capsule_obj.model_dump()
+    
+    # Insert into MongoDB (with TTL index on expiresAt)
+    await db.vibe_capsules.insert_one(doc)
+    doc.pop('_id', None)
+    
+    # Add author info
+    author = await db.users.find_one({"id": authorId}, {"_id": 0})
+    if author:
+        doc["author"] = {
+            "id": author["id"],
+            "handle": author["handle"],
+            "name": author["name"],
+            "avatar": author.get("avatar", "")
+        }
+    
+    return doc
+
+@api_router.post("/capsules/{capsuleId}/view")
+async def view_capsule(capsuleId: str, userId: str):
+    """Mark capsule as viewed by user"""
+    result = await db.vibe_capsules.update_one(
+        {"id": capsuleId},
+        {"$addToSet": {"views": userId}}
+    )
+    
+    if result.modified_count > 0:
+        return {"message": "View recorded"}
+    
+    raise HTTPException(status_code=404, detail="Capsule not found")
+
+@api_router.post("/capsules/{capsuleId}/react")
+async def react_to_capsule(capsuleId: str, userId: str, reaction: str):
+    """Add reaction to capsule"""
+    result = await db.vibe_capsules.update_one(
+        {"id": capsuleId},
+        {"$set": {f"reactions.{userId}": reaction}}
+    )
+    
+    if result.modified_count > 0:
+        return {"message": "Reaction added"}
+    
+    raise HTTPException(status_code=404, detail="Capsule not found")
+
+@api_router.get("/capsules/{authorId}/insights")
+async def get_capsule_insights(authorId: str):
+    """Get Capsule Insights for creator"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Get all capsules (including expired) for this author
+    capsules = await db.vibe_capsules.find(
+        {"authorId": authorId}, 
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(100)
+    
+    total_views = sum(len(c.get("views", [])) for c in capsules)
+    total_reactions = sum(len(c.get("reactions", {})) for c in capsules)
+    
+    # Get top reactors
+    reactor_counts = {}
+    for capsule in capsules:
+        for user_id in capsule.get("reactions", {}).keys():
+            reactor_counts[user_id] = reactor_counts.get(user_id, 0) + 1
+    
+    top_reactors = sorted(reactor_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    # Enrich top reactors with user data
+    top_reactor_details = []
+    for user_id, count in top_reactors:
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
+        if user:
+            top_reactor_details.append({
+                "user": {
+                    "id": user["id"],
+                    "name": user["name"],
+                    "avatar": user.get("avatar", "")
+                },
+                "reactionCount": count
+            })
+    
+    return {
+        "totalCapsules": len(capsules),
+        "totalViews": total_views,
+        "totalReactions": total_reactions,
+        "topReactors": top_reactor_details,
+        "capsules": capsules
+    }
+
 @api_router.post("/reels/{reelId}/like")
 async def toggle_like_reel(reelId: str, userId: str):
     reel = await db.reels.find_one({"id": reelId}, {"_id": 0})
