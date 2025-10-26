@@ -88,6 +88,19 @@ const RoomDetailClubhouse = () => {
       const uid = hashCode(currentUser.id) % 10000; // Keep within 0-9999
       const role = myRole === "audience" ? "subscriber" : "publisher";
       
+      // Request microphone permission early for speakers/hosts
+      if (myRole !== "audience") {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop()); // Release the stream
+          toast.success("Microphone access granted!");
+        } catch (permError) {
+          console.error("Microphone permission denied:", permError);
+          toast.error("Please allow microphone access to speak in this room. Check your browser permissions.");
+          throw new Error("Microphone permission denied");
+        }
+      }
+      
       const tokenRes = await axios.post(
         `${API}/agora/token?channelName=${encodeURIComponent(room.agoraChannel)}&uid=${uid}&role=${role}`
       );
@@ -118,18 +131,18 @@ const RoomDetailClubhouse = () => {
           if (mediaType === "audio") {
             console.log(`Playing audio for user ${user.uid}`);
             user.audioTrack.play();
-            toast.success(`${user.uid} is now speaking`);
+            toast.success(`User is now speaking`);
           }
         } catch (error) {
           console.error(`Error subscribing to user ${user.uid}:`, error);
-          toast.error(`Failed to receive audio from user ${user.uid}`);
+          toast.error(`Failed to receive audio`);
         }
       });
 
       agoraClient.current.on("user-unpublished", (user, mediaType) => {
         console.log(`User ${user.uid} unpublished ${mediaType}`);
         if (mediaType === "audio") {
-          toast.info(`${user.uid} stopped speaking`);
+          toast.info(`User stopped speaking`);
         }
       });
 
@@ -140,7 +153,7 @@ const RoomDetailClubhouse = () => {
       
       agoraClient.current.on("user-joined", (user) => {
         console.log(`User ${user.uid} joined the room`);
-        toast.info(`User ${user.uid} joined`);
+        toast.info(`User joined`);
       });
 
       // Join channel
@@ -148,19 +161,38 @@ const RoomDetailClubhouse = () => {
 
       // Create and publish local audio track for speakers/hosts
       if (myRole !== "audience") {
-        localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack();
-        await agoraClient.current.publish([localAudioTrack.current]);
-        setIsMuted(false);
+        try {
+          localAudioTrack.current = await AgoraRTC.createMicrophoneAudioTrack({
+            encoderConfig: "music_standard",
+          });
+          await agoraClient.current.publish([localAudioTrack.current]);
+          setIsMuted(false);
+          toast.success("You're now on stage! Others can hear you.");
+        } catch (audioError) {
+          console.error("Failed to create/publish audio track:", audioError);
+          toast.error("Failed to enable microphone. Please check your device settings.");
+          throw audioError;
+        }
       } else {
         setIsMuted(true);
       }
 
       setIsConnected(true);
-      toast.success("Connected to audio!");
+      toast.success("Connected to audio room!");
       
     } catch (error) {
       console.error("Failed to initialize Agora audio:", error);
-      toast.error(`Failed to connect to audio: ${error.message || 'Unknown error'}`);
+      
+      // Provide user-friendly error messages
+      if (error.message?.includes("permission")) {
+        toast.error("Microphone access denied. Please allow microphone in your browser settings.");
+      } else if (error.message?.includes("NotFoundError")) {
+        toast.error("No microphone found. Please connect a microphone device.");
+      } else if (error.code === "INVALID_OPERATION") {
+        toast.error("Failed to connect. Please try leaving and rejoining the room.");
+      } else {
+        toast.error(`Failed to connect to audio: ${error.message || 'Please try again'}`);
+      }
     }
   };
 
