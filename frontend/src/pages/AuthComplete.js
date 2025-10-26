@@ -37,12 +37,16 @@ const AuthComplete = () => {
 
     setLoading(true);
     try {
+      console.log("Attempting login with:", { email });
       const res = await axios.post(`${API}/auth/login`, { email, password });
+      console.log("Login response:", res.data);
       login(res.data.token, res.data.user);
       toast.success(`Welcome back, ${res.data.user.name}!`);
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Invalid credentials");
+      console.error("Login error:", error.response?.data || error.message);
+      const errorMsg = error.response?.data?.detail || "Invalid email or password";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
