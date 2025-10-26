@@ -567,23 +567,6 @@ const Messenger = () => {
               </div>
             </div>
           )}
-                  className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform"
-                  onClick={() => toast.info("Circle details coming soon!")}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${circle.color} flex items-center justify-center text-3xl`}>
-                      {circle.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-white mb-1">{circle.name}</h3>
-                      <p className="text-sm text-gray-400">{circle.members} members</p>
-                    </div>
-                    <ArrowLeft size={20} className="text-gray-500 rotate-180" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       ) : (
         // Chat View with Context Card
