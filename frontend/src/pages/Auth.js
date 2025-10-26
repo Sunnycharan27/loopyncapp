@@ -234,20 +234,6 @@ const Auth = () => {
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Login"}
           </button>
         </div>
-
-        <div className="mt-6 pt-6 border-t border-gray-700">
-          <button
-            data-testid="demo-login-btn"
-            onClick={demoLogin}
-            className="w-full py-3 rounded-full border border-cyan-400 text-cyan-400 hover:bg-cyan-400/10"
-            disabled={loading}
-          >
-            Quick Demo Login
-            <div className="text-xs text-gray-400 mt-1">
-              Email: demo@loopync.com | Password: password123
-            </div>
-          </button>
-        </div>
       </div>
     </div>
   );
