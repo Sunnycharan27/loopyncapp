@@ -39,7 +39,7 @@ class FriendRequestTester:
             print(f"   Details: {details}")
     
     def setup_authentication(self):
-        """Setup: Login with demo user"""
+        """Setup: Login with demo user and use seeded demo_user for testing"""
         try:
             payload = {
                 "email": DEMO_EMAIL,
@@ -52,13 +52,13 @@ class FriendRequestTester:
                 data = response.json()
                 if 'token' in data and 'user' in data:
                     self.demo_token = data['token']
-                    self.demo_user_id = data['user']['id']
+                    # Keep demo_user_id as "demo_user" for testing with seeded data
                     
                     self.log_result(
                         "Setup Authentication", 
                         True, 
-                        f"Successfully logged in as {data['user']['name']}",
-                        f"User ID: {self.demo_user_id}"
+                        f"Successfully logged in as {data['user']['name']} (using demo_user for testing)",
+                        f"Auth User ID: {data['user']['id']}, Test User ID: {self.demo_user_id}"
                     )
                     return True
                 else:
