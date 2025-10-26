@@ -91,6 +91,9 @@ class VibeRoomAudioTester:
     def create_test_room(self):
         """Create a test VibeRoom for audio testing"""
         try:
+            # Use seeded user u1 as host since demo user might not be in MongoDB
+            host_user_id = "u1"
+            
             payload = {
                 "name": "Audio Test Room",
                 "description": "Testing audio/microphone functionality",
@@ -98,7 +101,7 @@ class VibeRoomAudioTester:
                 "isPrivate": False,
                 "tags": ["test", "audio"]
             }
-            params = {"userId": self.demo_user_id}
+            params = {"userId": host_user_id}
             
             response = self.session.post(f"{BACKEND_URL}/rooms", json=payload, params=params)
             
