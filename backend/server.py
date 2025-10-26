@@ -164,6 +164,28 @@ class ReelCreate(BaseModel):
     thumb: str
     caption: str = ""
 
+class VibeCapsule(BaseModel):
+    """Vibe Capsules (Stories) - 24-hour expiring content"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    authorId: str
+    mediaType: str  # "image" or "video"
+    mediaUrl: str
+    thumbnailUrl: Optional[str] = None
+    caption: str = ""
+    duration: int = 15  # seconds for video
+    views: List[str] = Field(default_factory=list)  # List of user IDs who viewed
+    reactions: dict = Field(default_factory=dict)  # {userId: reaction_emoji}
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    expiresAt: str = Field(default_factory=lambda: (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat())
+
+class VibeCapsuleCreate(BaseModel):
+    mediaType: str
+    mediaUrl: str
+    thumbnailUrl: Optional[str] = None
+    caption: str = ""
+    duration: int = 15
+
 class Tribe(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
