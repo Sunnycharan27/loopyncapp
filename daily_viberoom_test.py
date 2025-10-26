@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://vibe-connect-26.preview.emergentagent.com/api"
+BACKEND_URL = "https://parallels-ai.preview.emergentagent.com/api"
 DEMO_USER_ID = "demo_user"
 
 class DailyVibeRoomTester:

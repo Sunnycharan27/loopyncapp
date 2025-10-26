@@ -1,104 +1,79 @@
 <analysis>
-The AI engineer systematically developed the Loopync application from an initial MVP state, adding significant features and addressing critical bugs across the full stack. The work commenced with stabilizing core authentication and data loading, followed by making the Wallet section fully functional with QR codes and payments. A major focus was the development of Vibe Rooms, evolving from basic chat to a Clubhouse-style real-time audio platform using Daily.co, including stage management and invitations. User profiles were enhanced with follower/following displays and comprehensive Instagram-style settings. The engineer also implemented a robust authentication system with email verification and password reset. The process involved iterative bug fixing (e.g., clipboard API, auth errors, Daily.co connectivity), comprehensive testing, and responding to detailed user requests. The latest work focused on resolving persistent Daily.co audio connection issues in VibeRooms, demonstrating a commitment to full feature functionality.
+The AI engineer systematically evolved the Loopync application. Initially, a critical Failed to connect to audio bug in VibeRooms, powered by Daily.co, was addressed by implementing token-based authentication and then completely replacing Daily.co with Agora.io, including installing SDKs, updating backend logic, and fixing a UID generation error. Subsequently, the VibeZone was transformed into an Instagram Reels clone, incorporating sharing, comments, music, and robust video error handling. A universal sharing system (both link-based and in-app friend sharing) was then implemented across all content types (posts, reels, rooms, events), requiring frontend integration and a new backend notification endpoint. A comprehensive friend request and acceptance system was built. Authentication was streamlined by removing email verification and introducing instant login after signup, with thorough backend testing. Vibe Rooms were removed from the Messenger section, which was then redeveloped to feature Trust Circles, including fixing a build-breaking syntax error. The latest work involves initiating the Parallels AI Engine feature (starting with Find Your Parallel UI placeholder) and updating venue seed data to be Hyderabad-specific.
 </analysis>
 
 <product_requirements>
-Loopync is envisioned as India’s Free-Speech Social × Vibe Video × Venues × Fintech Superapp with a neon glass/cyber-aurora theme. It aims to integrate social networking, e-commerce, communication, and fintech functionalities. Key features include a dynamic Timeline, VibeZone (short videos), Tribes, a LoopPay Wallet with QR codes and end-to-end payments, real-time Messenger (WebSockets), Notifications (including friend and room requests), and comprehensive Search. User authentication transitioned from Google Sheets to a robust email/username + password system with JWT. Event ticketing, post deletion, friend requests, and an enhanced onboarding flow are present. Unique social elements like Vibe Score, Streak Counter, Mood Selector, Live Activity Feed, and enhanced PostCard reactions are integrated.
-
-Recently implemented features expanded significantly:
-- **VibeRooms:** Transformed into a full Clubhouse-style experience with real-time audio (Daily.co), live chat, moderation controls, host/speaker/listener roles, stage management (raise hand, pull to stage), friend invitations, and sharing.
-- **Profile Page:** Enhanced with wallet balance display, an Open Wallet link, content categorization (Posts, VibeZone, Text, Products), editable profile settings, followers/following counts, and a dedicated Tickets tab for purchased event tickets with QR codes.
-- **User Settings:** Developed as a comprehensive Instagram-style page including Edit Profile (name, bio, avatar), Account Settings (privacy, notifications), Security (password, 2FA placeholder), Privacy (public/private), Notifications (push, email), Blocked Users, and About/Help/Terms.
-- **Sharing:** Implemented a generic  for posts and reels, with robust link copying.
-- **Comments:** Integrated full comments functionality into posts.
-- **Authentication:** Instagram-style authentication system with email verification, password reset, and secure user management.
-- **Theming:** Introduction of a dark/light mode system.
+Loopync is a Superapp envisioned with a neon theme, integrating social networking, e-commerce, communication, and fintech. Key features include a dynamic Timeline, VibeZone (short videos), Tribes, LoopPay Wallet (QR, payments), real-time Messenger, Notifications, and Search, all underpinned by robust email/password authentication. Recently implemented: a Clubhouse-style VibeRooms (now powered by Agora.io, with stage management and invites); enhanced Profile pages (wallet, settings, tickets, followers); Instagram-style User Settings; generic Sharing (external links & in-app friend sharing); Comments on posts/reels; and dark/light theming. Vibe Rooms in Messenger were replaced by a fully functional Trust Circles feature. The user explicitly requested an Find Your Parallel AI feature in Discover for personalized feeds and recommendations, and to update venues with Hyderabad-specific data (temples, pubs, events).
 </product_requirements>
 
 <key_technical_concepts>
 - **Full-Stack:** FastAPI (Python), React (JavaScript).
-- **Database:** MongoDB (NoSQL), Google Sheets (initial auth).
-- **UI/Styling:** Shadcn UI, Tailwind CSS.
+- **Database:** MongoDB, Google Sheets (initial auth).
+- **UI/Styling:** Tailwind CSS.
 - **Package Managers:** Yarn (frontend), Pip (backend).
-- **Integrations:** Cloudinary (media), Razorpay (payments), Emergent LLM (AI), Daily.co (real-time audio), , .
+- **Integrations:** Cloudinary, Razorpay, Agora.io (real-time audio), .
 - **Data Handling:** Pydantic, JWT, UUIDs.
+- **AI (Planned):** Pinecone/Milvus (vector DB), PostgreSQL, Redis, BERT (embeddings).
 </key_technical_concepts>
 
 <code_architecture>
 
--   **/app/backend/server.py**: Main FastAPI backend application.
-    -   **Summary**: Houses all API routes, database interactions, and business logic.
-    -   **Changes**: Extensively modified.
-        -   **Auth**: Updated  model with verification fields, added , , ,  endpoints.  updated for email verification.
-        -   **User Profiles**: Added  endpoint for followers/following counts. Added settings endpoints ().
-        -   **Wallet/Events**: Added  for event tickets and  to retrieve them.
-        -   **VibeRooms**: Updated  model (role, onStage). Added stage management endpoints (raise hand, pull/remove from stage, mute/unmute).  and  updated for role assignment.
-        -   **Social**: Added endpoints for comments (GET), marketplace, video/voice calls, notifications, and supported  in  model.
--   **/app/backend/sheets_db.py**: Handles Google Sheets database interactions.
-    -   **Summary**: Manages user data in Google Sheets (used for initial auth/demo).
-    -   **Changes**: Added  method for password management.
--   **/app/frontend/src/App.js**: Central React router and .
-    -   **Summary**: Manages navigation, authentication state, and overall app structure.
-    -   **Changes**: Added routes for . Renamed  to  and updated corresponding component imports. Now uses  for the  route. Integrated .
--   **/app/frontend/src/components/BottomNav.js**: Bottom navigation bar component.
-    -   **Summary**: Provides primary navigation links.
-    -   **Changes**: Renamed Rooms link to VibeRooms.
--   **/app/frontend/src/components/PostCard.js**: Component to display individual posts.
-    -   **Summary**: Renders post content, reactions, and interaction options.
-    -   **Changes**: Username/avatar made clickable to navigate to user profiles. Integrated  and . Updated clipboard logic with a fallback.
--   **/app/frontend/src/components/InviteFriendsModal.js**: Modal for inviting friends to Vibe Rooms.
-    -   **Summary**: Provides UI for sending room invitations.
-    -   **Changes**: Updated clipboard logic with a fallback.
--   **/app/frontend/src/components/ShareModal.js** (new file):
-    -   **Summary**: A generic modal component for sharing posts/reels.
-    -   **Changes**: Created with robust link copying, including a fallback for  restrictions.
--   **/app/frontend/src/components/CommentsSection.js** (new file):
-    -   **Summary**: Component for displaying and adding comments to posts.
-    -   **Changes**: Created to manage comments functionality.
--   **/app/frontend/src/context/ThemeContext.js** (new file):
-    -   **Summary**: Provides a context for managing dark/light mode themes.
-    -   **Changes**: Created to encapsulate theme-related state and logic.
--   **/app/frontend/src/pages/AuthComplete.js** (new file):
-    -   **Summary**: Implements a full Instagram-style authentication UI.
-    -   **Changes**: Created to handle signup, login, email verification, and password reset flows.
--   **/app/frontend/src/pages/EventDetail.js**: Displays details of an individual event.
-    -   **Summary**: Shows event information and allows ticket booking.
-    -   **Changes**: Updated  to use the new backend  endpoint.
--   **/app/frontend/src/pages/Profile.js**: User's personal profile page.
-    -   **Summary**: Displays user information, posts, and activities.
-    -   **Changes**: Integrated wallet balance and Open Wallet link. Added a Settings button. The Tickets tab was enhanced to display purchased tickets with QR codes using a new  component.
--   **/app/frontend/src/pages/Rooms.js** (renamed to ): Main page for listing/creating Vibe Rooms.
-    -   **Summary**: Entry point for the VibeRooms feature.
-    -   **Changes**: Renamed  to , updated titles and navigation to reflect the new name.
--   **/app/frontend/src/pages/RoomDetail.js**: Displays individual VibeRoom details.
-    -   **Summary**: Shows live chat, participant list, and audio.
-    -   **Changes**: Fixed syntax errors, integrated  for real-time audio, and added an invite button. The Clubhouse-style UI implicitly replaces or heavily modifies this for stage features.
--   **/app/frontend/src/pages/RoomDetailClubhouse.js** (new file):
-    -   **Summary**: A dedicated component implementing the full Clubhouse-style VibeRoom UI with stage/audience model.
-    -   **Changes**: Created to offer a richer audio room experience.
--   **/app/frontend/src/pages/Settings.js** (new file):
-    -   **Summary**: A dedicated page for Instagram-style user settings.
-    -   **Changes**: Created to manage various user preferences and account settings.
--   **/app/frontend/src/pages/UserProfile.js**: Page for viewing other users' profiles.
-    -   **Summary**: Displays other user's information, posts, followers, and following.
-    -   **Changes**: Updated to display followers/following counts and interact with the new extended user profile API.
--   **/app/frontend/src/pages/Wallet.js**: LoopPay wallet UI.
-    -   **Summary**: Displays user balance and payment options.
-    -   **Changes**: Confirmed existing top-up and payment functionality to be largely complete.
+-   **/app/backend/.env**: Environment variables.
+    -   **Changes**:  was replaced by  and .
+-   **/app/backend/requirements.txt**: Python dependencies.
+    -   **Changes**:  was added.
+-   **/app/backend/server.py**: Main FastAPI backend logic.
+    -   **Summary**: Houses API routes, DB interactions, and business logic.
+    -   **Changes**:
+        -   **VibeRooms**: Daily.co integration removed, replaced with Agora.io token generation () and room creation logic. Token expiration extended.
+        -   **User Management**:  model updated for  lists. New endpoints for friend requests, acceptance, rejection, and removal.
+        -   **Sharing**: New  endpoint added;  model updated to support share types.
+        -   **Authentication**: Fixed login function's duplicate returns;  endpoint refined; email verification removed for instant login post-signup.
+        -   **Venues**: Seed data for venues, temples, pubs, and events updated to be Hyderabad-specific.
+-   **/app/frontend/.env**: Frontend environment variables.
+    -   **Changes**:  was added.
+-   **/app/frontend/package.json**: Frontend dependencies.
+    -   **Changes**:  added;  removed.
+-   **/app/frontend/src/components/PostCard.js**: Displays posts.
+    -   **Changes**: Integrated  for sharing (link and friends).
+-   **/app/frontend/src/components/ReelComposerModal.js**: Reel creation UI.
+    -   **Changes**: Enhanced for custom audio and music integration.
+-   **/app/frontend/src/components/ReelViewer.js**: Displays reels.
+    -   **Changes**: Integrated , ,  (for friend sharing), and added robust video error handling.
+-   **/app/frontend/src/components/ReelCommentsModal.js** (new): For comments on reels.
+-   **/app/frontend/src/components/ReelShareModal.js** (new): For sharing reels.
+-   **/app/frontend/src/components/UniversalShareModal.js** (new): Generic modal for link and in-app friend sharing.
+    -   **Changes**: Updated to include Share to Friends option and correctly pass .
+-   **/app/frontend/src/components/ShareButton.js** (new): Reusable share button.
+-   **/app/frontend/src/components/ShareToFriendsModal.js** (new): Modal for sharing with in-app friends, showing actual friends.
+-   **/app/frontend/src/components/FriendButton.js** (new): Manages friend requests on user profiles.
+-   **/app/frontend/src/components/FindYourParallel.js** (new): Frontend component for the Find Your Parallel AI feature.
+-   **/app/frontend/src/pages/AuthComplete.js**: Instagram-style authentication.
+    -   **Changes**: Improved error handling, added a Demo Login button, removed email verification UI, and enabled instant login after signup.
+-   **/app/frontend/src/pages/Discover.js**: Discovery section.
+    -   **Changes**: Integrated the Find Your Parallel button and modal component.
+-   **/app/frontend/src/pages/EventDetail.js**: Event details page.
+    -   **Changes**: Integrated  and a share button.
+-   **/app/frontend/src/pages/Messenger.js**: Messaging interface.
+    -   **Changes**: Vibe Rooms sections and UI were completely removed, replaced by a fully developed Trust Circles feature, including creation/joining/management. Fixed a syntax error.
+-   **/app/frontend/src/pages/RoomDetail.js**: Basic VibeRoom display.
+    -   **Changes**: Updated for Agora.io integration.
+-   **/app/frontend/src/pages/RoomDetailClubhouse.js**: Clubhouse-style VibeRoom.
+    -   **Changes**: Reworked from Daily.co to Agora.io, fixed Agora UID generation. Integrated .
 </code_architecture>
 
 <pending_tasks>
-- Implement full AI wiring beyond current minimal hooks (e.g., specific /ai/rank, /ai/safety endpoints, translate AI, insight AI).
-- Build the Analytics panel UI for displaying actual data, not just placeholder.
-- Configure the two guided demo tours for new and power users.
-- Implement more marketplace features (shopping cart, reviews, seller dashboard, categories, order tracking, wishlist).
-- Integrate advanced AI features (Content Moderation AI, Smart Feed Ranking, Image Recognition, Sentiment Analysis, AI Chatbot Assistant).
+- Full implementation of the Parallels AI Engine (backend microservices, database, AI logic for personalized feeds, tribe/venue/marketplace recommendations, taste DNA modeling, and admin dashboard).
+- Build the Analytics panel UI.
+- Configure guided demo tours.
+- Implement advanced marketplace features (e.g., shopping cart, reviews).
+- Integrate remaining advanced AI features (e.g., Content Moderation AI, Sentiment Analysis beyond Parallels AI scope).
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was addressing a critical issue reported by the user: Failed to connect to audio within the VibeRooms feature, accompanied by a screenshot. This indicates a persistent problem with the Daily.co audio integration, despite previous attempts to make VibeRooms fully functional and Clubhouse-style. The previous engineer had already confirmed that the Daily.co API key was valid and backend tests for Daily.co integration had passed, suggesting the issue might be on the frontend or a more subtle configuration problem. The current task is to specifically fix this audio connection failure and ensure the VibeRooms work full fledged as a Clubhouse clone. This involves deep debugging of the Daily.co client-side integration within the  (or ) component and potentially re-evaluating the backend's room creation and token generation logic to ensure a stable audio connection.
+Immediately prior to this summary, the AI engineer was addressing the user's request to populate venues, temples, pubs, and events with **Hyderabad-specific data**. This involved modifying the backend  file to replace existing seed data with the new location-specific information. The last action performed was initiating a backend service restart to apply these changes. This task is part of a broader user request that also includes implementing a new Find Your Parallel AI feature, for which a frontend component () has been created and integrated into the  page as a placeholder. The current work specifically ensures the application's venue data reflects its Hyderabad roots.
 </current_work>
 
 <optional_next_step>
-Fix the Failed to connect to audio error in VibeRooms Daily.co integration.
+Verify that the Hyderabad-specific venue, temple, pub, and event data is correctly loaded and displayed in the application.
 </optional_next_step>
