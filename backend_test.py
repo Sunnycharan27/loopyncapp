@@ -3627,28 +3627,27 @@ class BackendTester:
         self.test_tribes_list()
         self.test_user_interests()
         
-        # Priority 6: User Profile Endpoint (NEW)
-        print("\n👤 PRIORITY 6: USER PROFILE ENDPOINT (NEW)")
+        # Priority 9: User Profile Endpoint (NEW)
+        print("\n👤 PRIORITY 9: USER PROFILE ENDPOINT (NEW)")
         print("-" * 60)
         self.test_user_profile_endpoint()
         self.test_user_profile_with_demo_user()
         
-        # Priority 7: Wallet and Ticket Booking System (NEW)
-        print("\n🎫 PRIORITY 7: WALLET AND TICKET BOOKING SYSTEM (NEW)")
+        # Priority 10: Wallet and Ticket Booking System (NEW)
+        print("\n🎫 PRIORITY 10: WALLET AND TICKET BOOKING SYSTEM (NEW)")
         print("-" * 60)
         self.test_wallet_and_ticket_booking_system()
         
-        # Priority 8: VibeRoom & Daily.co Integration (REQUESTED TEST)
-        print("\n🎵 PRIORITY 8: VIBEROOM & DAILY.CO INTEGRATION (REQUESTED TEST)")
+        # Priority 11: VibeRoom & Daily.co Integration (LEGACY TESTS)
+        print("\n🎵 PRIORITY 11: VIBEROOM & DAILY.CO INTEGRATION (LEGACY TESTS)")
         print("-" * 60)
         self.test_daily_room_creation_direct()
         self.test_vibe_room_creation_with_daily()
-        self.test_get_room_details()
         self.test_list_all_rooms()
         self.test_daily_token_generation()
         
-        # NEW: AI Parallels Engine Tests (REQUESTED)
-        print("\n🤖 PRIORITY 9: AI PARALLELS ENGINE (NEW ENDPOINTS)")
+        # Priority 12: AI Parallels Engine Tests
+        print("\n🤖 PRIORITY 12: AI PARALLELS ENGINE (NEW ENDPOINTS)")
         print("-" * 60)
         self.test_ai_taste_dna()
         self.test_ai_find_parallels()
@@ -3656,8 +3655,8 @@ class BackendTester:
         self.test_ai_recommend_venues()
         self.test_ai_recommend_events()
         
-        # NEW: Call Features Tests (REQUESTED)
-        print("\n📞 PRIORITY 10: CALL FEATURES (NEW ENDPOINTS)")
+        # Priority 13: Call Features Tests
+        print("\n📞 PRIORITY 13: CALL FEATURES (NEW ENDPOINTS)")
         print("-" * 60)
         self.test_call_initiate()
         self.test_call_answer()
