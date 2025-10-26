@@ -31,6 +31,12 @@ const Discover = () => {
     fetchDiscoverData();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'people') {
+      fetchPeople();
+    }
+  }, [activeTab]);
+
   const fetchDiscoverData = async () => {
     try {
       const [venuesRes, eventsRes, creatorsRes, tribesRes] = await Promise.all([
@@ -47,6 +53,68 @@ const Discover = () => {
       toast.error("Failed to load discover data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPeople = async () => {
+    try {
+      setLoading(true);
+      // Get all users and filter out current user and friends
+      const usersRes = await axios.get(`${API}/users`);
+      const requestsRes = await axios.get(`${API}/users/${currentUser.id}/friend-requests`);
+      
+      const currentFriends = currentUser.friends || [];
+      const pendingSent = requestsRes.data.sent?.map(r => r.id) || [];
+      const pendingReceived = requestsRes.data.received?.map(r => r.id) || [];
+      
+      const suggested = usersRes.data.filter(u => 
+        u.id !== currentUser.id && 
+        !currentFriends.includes(u.id) &&
+        !pendingSent.includes(u.id) &&
+        !pendingReceived.includes(u.id)
+      );
+      
+      setPeople(suggested);
+      setFriendRequests(requestsRes.data.received || []);
+    } catch (error) {
+      console.error('Failed to fetch people:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAcceptRequest = async (userId) => {
+    try {
+      await axios.post(`${API}/friends/accept?userId=${currentUser.id}&friendId=${userId}`);
+      toast.success('Friend request accepted!');
+      fetchPeople();
+      // Update currentUser friends list
+      currentUser.friends = [...(currentUser.friends || []), userId];
+    } catch (error) {
+      toast.error('Failed to accept request');
+    }
+  };
+
+  const handleRejectRequest = async (userId) => {
+    try {
+      await axios.post(`${API}/friends/reject?userId=${currentUser.id}&friendId=${userId}`);
+      toast.success('Friend request rejected');
+      fetchPeople();
+    } catch (error) {
+      toast.error('Failed to reject request');
+    }
+  };
+
+  const handleMessageClick = async (user) => {
+    try {
+      // Create or get DM thread
+      const res = await axios.post(`${API}/dm/threads`, {
+        user1Id: currentUser.id,
+        user2Id: user.id
+      });
+      navigate(`/messenger/${res.data.id}`);
+    } catch (error) {
+      toast.error('Failed to start conversation');
     }
   };
 
