@@ -77,6 +77,7 @@ const ProfileVibe = () => {
       setUserReels(myReels);
       setUserTribes(myTribes);
       setLoopCredits(creditsRes.data?.credits || 0);
+      setUserTickets(ticketsRes.data || []);
 
       // Calculate Vibe Matrix
       setVibeMatrix({
