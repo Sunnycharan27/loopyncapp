@@ -777,8 +777,15 @@ async def login(req: LoginRequest):
             isVerified=True  # Existing users are verified
         )
         doc = new_mongo_user.model_dump()
-        await db.users.insert_one(doc)
-        mongo_user = doc
+        try:
+            await db.users.insert_one(doc)
+            mongo_user = doc
+        except Exception as e:
+            # If user already exists (race condition or duplicate email), fetch existing user
+            mongo_user = await db.users.find_one({"id": user['user_id']}, {"_id": 0})
+            if not mongo_user:
+                # If still not found, try by email
+                mongo_user = await db.users.find_one({"email": user['email']}, {"_id": 0})
     
     # Generate JWT token
     token = create_access_token(user['user_id'])
