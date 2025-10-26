@@ -445,6 +445,7 @@ const RoomDetailClubhouse = () => {
         <UniversalShareModal
           item={room}
           type="room"
+          currentUser={currentUser}
           onClose={() => setShowShareModal(false)}
         />
       )}
