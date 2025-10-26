@@ -90,11 +90,36 @@ const LoopPay = () => {
     }
   };
 
+  const handleAddMoney = async () => {
+    if (!addMoneyAmount || parseFloat(addMoneyAmount) <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    try {
+      toast.loading(`Processing via ${paymentMethod.toUpperCase()}...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      await axios.post(`${API}/wallet/topup?userId=${currentUser.id}`, {
+        amount: parseFloat(addMoneyAmount)
+      });
+      
+      toast.dismiss();
+      toast.success(`₹${addMoneyAmount} added to wallet!`);
+      setShowAddMoneyModal(false);
+      setAddMoneyAmount("");
+      fetchWalletData();
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Payment failed");
+    }
+  };
+
   const handleAddCredits = () => {
-    // Mock adding credits
+    // Mock adding credits (normally earned through activities)
     setLoopCredits(loopCredits + 100);
     toast.success("100 credits added!");
-    setShowAddModal(false);
+    setShowAddCreditsModal(false);
     fetchWalletData();
   };
 
