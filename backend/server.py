@@ -766,26 +766,64 @@ async def login(req: LoginRequest):
     mongo_user = await db.users.find_one({"id": user['user_id']}, {"_id": 0})
     
     if not mongo_user:
-        # Create user in MongoDB if doesn't exist
-        handle = user['email'].split('@')[0]
-        new_mongo_user = User(
-            id=user['user_id'],
-            handle=handle,
-            name=user['name'],
-            email=user['email'],
-            avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}",
-            isVerified=True  # Existing users are verified
-        )
-        doc = new_mongo_user.model_dump()
-        try:
-            await db.users.insert_one(doc)
-            mongo_user = doc
-        except Exception as e:
-            # If user already exists (race condition or duplicate email), fetch existing user
-            mongo_user = await db.users.find_one({"id": user['user_id']}, {"_id": 0})
-            if not mongo_user:
-                # If still not found, try by email
-                mongo_user = await db.users.find_one({"email": user['email']}, {"_id": 0})
+        # Try to find by email first (might exist with different ID)
+        mongo_user = await db.users.find_one({"email": user['email']}, {"_id": 0})
+        
+        if mongo_user:
+            # User exists with same email but different ID, update the ID
+            logger.info(f"Updating user ID from {mongo_user.get('id')} to {user['user_id']}")
+            await db.users.update_one(
+                {"email": user['email']},
+                {"$set": {"id": user['user_id']}}
+            )
+            mongo_user['id'] = user['user_id']
+        else:
+            # Create new user in MongoDB
+            base_handle = user['email'].split('@')[0]
+            handle = base_handle
+            
+            # Ensure unique handle
+            counter = 1
+            while await db.users.find_one({"handle": handle}, {"_id": 0}):
+                handle = f"{base_handle}{counter}"
+                counter += 1
+            
+            new_mongo_user = User(
+                id=user['user_id'],
+                handle=handle,
+                name=user['name'],
+                email=user['email'],
+                avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}",
+                isVerified=True  # Existing users are verified
+            )
+            doc = new_mongo_user.model_dump()
+            try:
+                await db.users.insert_one(doc)
+                mongo_user = doc
+                logger.info(f"Created new MongoDB user: {user['user_id']} ({user['email']})")
+            except Exception as e:
+                logger.error(f"Failed to create user in MongoDB: {str(e)}")
+                # Try one more time to fetch the user
+                mongo_user = await db.users.find_one({"id": user['user_id']}, {"_id": 0})
+                if not mongo_user:
+                    mongo_user = await db.users.find_one({"email": user['email']}, {"_id": 0})
+                
+                if not mongo_user:
+                    # Return basic user data even if MongoDB creation failed
+                    logger.warning(f"Using fallback user data for {user['email']}")
+                    mongo_user = {
+                        "id": user['user_id'],
+                        "handle": handle,
+                        "name": user['name'],
+                        "email": user['email'],
+                        "avatar": f"https://api.dicebear.com/7.x/avataaars/svg?seed={handle}",
+                        "isVerified": True,
+                        "bio": "",
+                        "walletBalance": 0.0,
+                        "friends": [],
+                        "friendRequestsSent": [],
+                        "friendRequestsReceived": []
+                    }
     
     # Generate JWT token
     token = create_access_token(user['user_id'])
