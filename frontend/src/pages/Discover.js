@@ -21,12 +21,6 @@ const Discover = () => {
   const [loading, setLoading] = useState(true);
   const [showParallels, setShowParallels] = useState(false);
   
-  // Wallet states
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [loopCredits, setLoopCredits] = useState(0);
-  const [showTopUpModal, setShowTopUpModal] = useState(false);
-  const [topUpAmount, setTopUpAmount] = useState("");
-  
   // Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState(null);
