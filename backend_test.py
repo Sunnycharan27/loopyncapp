@@ -2943,6 +2943,7 @@ class BackendTester:
         social_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Posts', 'Reel', 'Search', 'Seed'])]
         friend_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Friend', 'DM', 'Message'])]
         venue_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Event', 'Venue'])]
+        ai_tests = [r for r in self.test_results if any(x in r['test'] for x in ['AI', 'TasteDNA', 'Parallels', 'Recommend'])]
         other_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Wallet', 'Music', 'Tribe', 'Interest', 'Upload'])]
         
         print(f"\n📊 RESULTS BY PRIORITY:")
@@ -2950,6 +2951,7 @@ class BackendTester:
         print(f"  📱 Social Features: {sum(1 for r in social_tests if r['success'])}/{len(social_tests)} passed")
         print(f"  👥 Friend/Messaging: {sum(1 for r in friend_tests if r['success'])}/{len(friend_tests)} passed")
         print(f"  🎪 Events/Venues: {sum(1 for r in venue_tests if r['success'])}/{len(venue_tests)} passed")
+        print(f"  🤖 AI Parallels Engine: {sum(1 for r in ai_tests if r['success'])}/{len(ai_tests)} passed")
         print(f"  💰 Other Features: {sum(1 for r in other_tests if r['success'])}/{len(other_tests)} passed")
         
         if total - passed > 0:
