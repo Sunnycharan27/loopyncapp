@@ -456,69 +456,117 @@ const Messenger = () => {
             </div>
           )}
 
-          {/* Vibe Rooms View */}
-          {activeView === "rooms" && (
-            <div className="p-4 space-y-3">
-              <div className="glass-card p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles size={20} className="text-yellow-400" />
-                  <h3 className="font-bold text-white">Vibe Rooms</h3>
+          {/* Trust Circles View - Fully Developed */}
+          {activeView === "circles" && (
+            <div className="p-4 space-y-4">
+              {/* Header Card */}
+              <div className="glass-card p-6 border border-blue-500/30">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                    <Shield size={24} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-white text-lg">Trust Circles</h3>
+                    <p className="text-sm text-gray-400">Organize friends into private groups</p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-400">Join group spaces based on your interests</p>
+                
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="glass-card p-3 text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{trustCircles.length}</p>
+                    <p className="text-xs text-gray-400">Circles</p>
+                  </div>
+                  <div className="glass-card p-3 text-center">
+                    <p className="text-2xl font-bold text-purple-400">
+                      {trustCircles.reduce((acc, c) => acc + (c.memberCount || c.members?.length || 0), 0)}
+                    </p>
+                    <p className="text-xs text-gray-400">Total Members</p>
+                  </div>
+                </div>
               </div>
 
-              {vibeRooms.map(room => (
-                <div
-                  key={room.id}
-                  className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform"
-                  onClick={() => toast.info("Vibe Rooms coming soon!")}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400/20 to-pink-500/20 flex items-center justify-center text-4xl">
-                      {room.emoji}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-white mb-1">{room.name}</h3>
-                      <div className="flex items-center gap-3 text-xs text-gray-400">
-                        <span>{room.members} members</span>
-                        <span className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                          {room.activeNow} active
-                        </span>
+              {/* Create Circle Button */}
+              <button
+                onClick={() => setShowCreateCircle(true)}
+                className="w-full py-4 rounded-2xl border-2 border-dashed border-cyan-400/50 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-400/10 transition-all font-semibold flex items-center justify-center gap-2"
+              >
+                <Shield size={20} />
+                Create New Trust Circle
+              </button>
+
+              {/* Circles List */}
+              {trustCircles.length === 0 ? (
+                <div className="glass-card p-12 text-center">
+                  <Shield size={48} className="mx-auto text-gray-600 mb-4" />
+                  <p className="text-gray-400 mb-2">No Trust Circles yet</p>
+                  <p className="text-sm text-gray-500">Create your first circle to organize your close connections</p>
+                </div>
+              ) : (
+                trustCircles.map(circle => (
+                  <div
+                    key={circle.id}
+                    className="glass-card p-5 hover:scale-[1.02] transition-transform cursor-pointer group"
+                    onClick={() => setSelectedCircle(circle)}
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Circle Icon */}
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${circle.color} flex items-center justify-center text-3xl flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                        {circle.icon}
                       </div>
-                      <div className="mt-2">
-                        <span className="inline-block px-2 py-1 rounded-full bg-cyan-400/10 text-cyan-400 text-xs font-semibold">
-                          {room.category}
-                        </span>
+                      
+                      {/* Circle Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-bold text-white text-lg">{circle.name}</h3>
+                          {circle.createdBy === currentUser.id && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteCircle(circle.id);
+                              }}
+                              className="text-gray-400 hover:text-red-400 transition"
+                            >
+                              <X size={18} />
+                            </button>
+                          )}
+                        </div>
+                        
+                        <p className="text-sm text-gray-400 mb-3 line-clamp-2">
+                          {circle.description || "Private group for close connections"}
+                        </p>
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Users size={14} />
+                            {circle.memberCount || circle.members?.length || 0} members
+                          </span>
+                          {circle.createdBy === currentUser.id && (
+                            <span className="px-2 py-1 rounded-full bg-cyan-400/10 text-cyan-400">
+                              Owner
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
+                ))
+              )}
+
+              {/* Info Card */}
+              <div className="glass-card p-4 border border-purple-500/20">
+                <div className="flex items-start gap-3">
+                  <Shield size={20} className="text-purple-400 flex-shrink-0 mt-1" />
+                  <div>
+                    <h4 className="font-semibold text-white mb-1">What are Trust Circles?</h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Trust Circles let you organize friends into private groups. Share content exclusively with specific circles, 
+                      create group chats, and manage your close connections easily.
+                    </p>
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
           )}
-
-          {/* Trust Circles View */}
-          {activeView === "circles" && (
-            <div className="p-4 space-y-3">
-              <div className="glass-card p-4 mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Shield size={20} className="text-blue-400" />
-                  <h3 className="font-bold text-white">Trust Circles</h3>
-                </div>
-                <p className="text-sm text-gray-400">Organize your connections into private groups</p>
-              </div>
-
-              <button
-                onClick={() => toast.info("Create Circle feature coming soon!")}
-                className="w-full py-3 rounded-full border-2 border-dashed border-gray-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400 transition-all"
-              >
-                + Create New Circle
-              </button>
-
-              {trustCircles.map(circle => (
-                <div
-                  key={circle.id}
                   className="glass-card p-4 cursor-pointer hover:scale-[1.01] transition-transform"
                   onClick={() => toast.info("Circle details coming soon!")}
                 >
