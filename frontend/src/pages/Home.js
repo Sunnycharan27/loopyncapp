@@ -99,12 +99,15 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
+    <div className="min-h-screen bg-gray-900 pb-24">
       <div className="max-w-2xl mx-auto">
         <TopHeader title="Timeline" subtitle="What's happening now" />
 
+        {/* Vibe Capsules (Stories) */}
+        <VibeCapsules currentUser={currentUser} />
+
         {/* User Status Bar */}
-        <div className="px-4 py-3 flex items-center justify-between gap-3">
+        <div className="px-4 py-3 flex items-center justify-between gap-3 border-b border-gray-800">
           <MoodSelector currentMood={userMood} onMoodChange={setUserMood} />
           <StreakCounter />
         </div>
