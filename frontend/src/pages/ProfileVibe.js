@@ -223,6 +223,38 @@ const ProfileVibe = () => {
               )}
             </div>
           )}
+
+          {activeTab === "marketplace" && (
+            <div className="grid grid-cols-2 gap-3">
+              {marketplaceItems.length > 0 ? marketplaceItems.map(item => (
+                <div key={item.id} className="rounded-xl overflow-hidden bg-gray-900/30 border border-gray-800 hover:border-cyan-400/30 transition-all cursor-pointer" onClick={() => navigate(`/marketplace/${item.id}`)}>
+                  <div className="aspect-square bg-gray-800">
+                    {item.images && item.images[0] ? (
+                      <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag size={48} className="text-gray-700" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-semibold text-white text-sm mb-1 truncate">{item.name || 'Product'}</h3>
+                    <div className="flex items-center justify-between">
+                      <p className="text-cyan-400 font-bold text-lg">₹{item.price || 0}</p>
+                      {item.sold && <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-xs font-semibold">Sold</span>}
+                      {!item.sold && item.stock > 0 && <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-semibold">{item.stock} left</span>}
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div className="col-span-2 py-16 text-center">
+                  <ShoppingBag size={48} className="mx-auto mb-4 text-gray-700" />
+                  <p className="text-gray-500 mb-4">No items listed yet</p>
+                  <button onClick={() => navigate('/marketplace')} className="px-6 py-2.5 bg-cyan-400 hover:bg-cyan-500 text-black rounded-xl font-semibold transition-all">Browse Marketplace</button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
