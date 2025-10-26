@@ -470,6 +470,14 @@ const Discover = () => {
       </div>
 
       <BottomNav active="discover" />
+      
+      {/* Find Your Parallel Modal */}
+      {showParallels && (
+        <FindYourParallel
+          currentUser={currentUser}
+          onClose={() => setShowParallels(false)}
+        />
+      )}
     </div>
   );
 };
