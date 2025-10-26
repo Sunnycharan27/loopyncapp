@@ -272,7 +272,9 @@ const RoomDetailClubhouse = () => {
             <ArrowLeft size={24} />
           </button>
           <div className="flex items-center gap-2">
-            <Share2 size={20} className="text-gray-400" />
+            <button onClick={() => setShowShareModal(true)} className="text-gray-400 hover:text-cyan-400 transition">
+              <Share2 size={20} />
+            </button>
             <MoreVertical size={20} className="text-gray-400" />
           </div>
         </div>
