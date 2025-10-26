@@ -405,10 +405,8 @@ const Discover = () => {
                 People
               </button>
               <button
-                onClick={() => setActiveTab("wallet")}
-                className={`px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all ${
-                  activeTab === "wallet" ? 'bg-cyan-400 text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                }`}
+                onClick={() => navigate('/looppay')}
+                className="px-4 py-3 rounded-full font-semibold whitespace-nowrap transition-all bg-gray-800 text-gray-400 hover:bg-gray-700"
                 data-testid="discover-wallet-tab"
               >
                 <DollarSign size={18} className="inline mr-1" />
