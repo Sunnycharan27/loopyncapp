@@ -3196,6 +3196,7 @@ class BackendTester:
         friend_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Friend', 'DM', 'Message'])]
         venue_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Event', 'Venue'])]
         ai_tests = [r for r in self.test_results if any(x in r['test'] for x in ['AI', 'TasteDNA', 'Parallels', 'Recommend'])]
+        call_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Call'])]
         other_tests = [r for r in self.test_results if any(x in r['test'] for x in ['Wallet', 'Music', 'Tribe', 'Interest', 'Upload'])]
         
         print(f"\n📊 RESULTS BY PRIORITY:")
