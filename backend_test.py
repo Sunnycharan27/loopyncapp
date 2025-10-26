@@ -2834,7 +2834,10 @@ class BackendTester:
     def test_call_initiate(self):
         """Test Call Initiate: POST /api/calls/initiate"""
         try:
-            # Test with demo_user calling u1 (they should be friends)
+            # First ensure demo_user and u1 are friends
+            self.ensure_friendship_for_call_test()
+            
+            # Test with demo_user calling u1 (they should be friends now)
             params = {
                 "callerId": "demo_user",
                 "recipientId": "u1", 
@@ -2864,19 +2867,6 @@ class BackendTester:
                         f"Missing required fields in response: {missing_fields}",
                         f"Response: {data}"
                     )
-            elif response.status_code == 403:
-                # Test friend validation - try with non-friends
-                self.log_result(
-                    "Call Initiate", 
-                    True, 
-                    "Friend validation working correctly (403 error for non-friends)",
-                    f"Response: {response.text}"
-                )
-                
-                # Now test with actual friends (demo_user and u1 should be friends)
-                # If they're not friends, we need to make them friends first
-                self.ensure_friendship_for_call_test()
-                
             else:
                 self.log_result(
                     "Call Initiate", 
