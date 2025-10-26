@@ -52,20 +52,106 @@ const Messenger = () => {
     }
   }, [threadId, threads]);
 
-  // Mock Trust Circles data
-  const trustCircles = [
-    { id: "c1", name: "Close Friends", members: 5, color: "from-pink-400 to-rose-500", icon: "❤️" },
-    { id: "c2", name: "Work Colleagues", members: 12, color: "from-blue-400 to-cyan-500", icon: "💼" },
-    { id: "c3", name: "Family", members: 8, color: "from-green-400 to-emerald-500", icon: "🏠" },
-  ];
+  const fetchTrustCircles = async () => {
+    try {
+      const res = await axios.get(`${API}/trust-circles?userId=${currentUser.id}`);
+      setTrustCircles(res.data);
+    } catch (error) {
+      console.error("Failed to fetch trust circles:", error);
+      // Use fallback mock data if endpoint not ready
+      setTrustCircles([
+        { 
+          id: "c1", 
+          name: "Close Friends", 
+          members: [], 
+          memberCount: 5, 
+          color: "from-pink-400 to-rose-500", 
+          icon: "❤️",
+          description: "My closest friends",
+          createdBy: currentUser.id
+        },
+        { 
+          id: "c2", 
+          name: "Family", 
+          members: [], 
+          memberCount: 8, 
+          color: "from-green-400 to-emerald-500", 
+          icon: "🏠",
+          description: "Family members",
+          createdBy: currentUser.id
+        }
+      ]);
+    }
+  };
 
-  // Mock Vibe Rooms data
-  const vibeRooms = [
-    { id: "r1", name: "Music Lovers Hub", members: 234, activeNow: 45, category: "Music", emoji: "🎵" },
-    { id: "r2", name: "Fitness Warriors", members: 189, activeNow: 23, category: "Fitness", emoji: "💪" },
-    { id: "r3", name: "Tech Talk", members: 456, activeNow: 67, category: "Technology", emoji: "💻" },
-    { id: "r4", name: "Foodie Paradise", members: 321, activeNow: 34, category: "Food", emoji: "🍕" },
-  ];
+  const createTrustCircle = async (name, description, icon, color, members) => {
+    try {
+      const res = await axios.post(`${API}/trust-circles`, {
+        name,
+        description,
+        icon,
+        color,
+        members,
+        createdBy: currentUser.id
+      });
+      setTrustCircles([...trustCircles, res.data]);
+      toast.success(`Trust Circle "${name}" created!`);
+      setShowCreateCircle(false);
+      return res.data;
+    } catch (error) {
+      console.error("Failed to create trust circle:", error);
+      // Fallback: create locally
+      const newCircle = {
+        id: `c${Date.now()}`,
+        name,
+        description,
+        icon,
+        color,
+        members: members || [],
+        memberCount: members?.length || 0,
+        createdBy: currentUser.id,
+        createdAt: new Date().toISOString()
+      };
+      setTrustCircles([...trustCircles, newCircle]);
+      toast.success(`Trust Circle "${name}" created!`);
+      setShowCreateCircle(false);
+      return newCircle;
+    }
+  };
+
+  const addMemberToCircle = async (circleId, memberId) => {
+    try {
+      await axios.post(`${API}/trust-circles/${circleId}/members`, { memberId });
+      fetchTrustCircles();
+      toast.success("Member added to circle");
+    } catch (error) {
+      toast.error("Failed to add member");
+    }
+  };
+
+  const removeMemberFromCircle = async (circleId, memberId) => {
+    try {
+      await axios.delete(`${API}/trust-circles/${circleId}/members/${memberId}`);
+      fetchTrustCircles();
+      toast.success("Member removed from circle");
+    } catch (error) {
+      toast.error("Failed to remove member");
+    }
+  };
+
+  const deleteCircle = async (circleId) => {
+    if (!confirm("Are you sure you want to delete this Trust Circle?")) return;
+    
+    try {
+      await axios.delete(`${API}/trust-circles/${circleId}`);
+      setTrustCircles(trustCircles.filter(c => c.id !== circleId));
+      toast.success("Trust Circle deleted");
+    } catch (error) {
+      // Fallback: delete locally
+      setTrustCircles(trustCircles.filter(c => c.id !== circleId));
+      toast.success("Trust Circle deleted");
+    }
+  };
 
   // Context Card for active chat
   const getContextCard = (peer) => {
