@@ -375,24 +375,26 @@ const ProfileVibe = () => {
         {mutualFriends.length > 0 && (
           <div className="px-4 py-6">
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Heart className="text-pink-400" />
-              Vibe Circle
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-pink-400 to-rose-500 flex items-center justify-center">
+                <Heart size={18} className="text-white" />
+              </div>
+              Close Friends
             </h2>
-            <div className="flex gap-3 overflow-x-auto hide-scrollbar">
+            <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
               {mutualFriends.map(friend => (
                 <div
                   key={friend.id}
-                  className="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform"
+                  className="flex flex-col items-center gap-2 cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
                   onClick={() => navigate(`/profile/${friend.id}`)}
                 >
-                  <div className="w-16 h-16 rounded-full border-2 border-cyan-400 overflow-hidden">
+                  <div className="w-16 h-16 rounded-full border-2 border-cyan-400 overflow-hidden bg-gray-800">
                     <img
                       src={friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.name}`}
                       alt={friend.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className="text-xs text-white/80">{friend.name.split(' ')[0]}</span>
+                  <span className="text-xs text-gray-400">{friend.name.split(' ')[0]}</span>
                 </div>
               ))}
             </div>
@@ -402,21 +404,26 @@ const ProfileVibe = () => {
         {/* 5. Achievements & Gamification */}
         <div className="px-4 py-6">
           <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Trophy className="text-yellow-400" />
-            Loop Badges
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 flex items-center justify-center">
+              <Trophy size={18} className="text-white" />
+            </div>
+            Achievements
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {achievements.map(achievement => (
               <div
                 key={achievement.id}
-                className={`glass-card p-4 rounded-2xl text-center ${
+                className={`p-4 rounded-xl text-center transition-all ${
                   achievement.unlocked
-                    ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50'
-                    : 'bg-white/5 border-white/10 opacity-50'
-                } border backdrop-blur-xl`}
+                    ? 'bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-400/30'
+                    : 'bg-gray-800 border border-gray-700 opacity-50'
+                }`}
               >
                 <div className="text-4xl mb-2">{achievement.icon}</div>
-                <p className="text-sm font-semibold">{achievement.name}</p>
+                <p className="text-sm font-semibold text-white">{achievement.name}</p>
+                {achievement.unlocked && (
+                  <p className="text-xs text-yellow-400 mt-1">Unlocked</p>
+                )}
               </div>
             ))}
           </div>
@@ -424,22 +431,23 @@ const ProfileVibe = () => {
       </div>
 
       {/* 7. Floating Action Bar */}
-      <div className="fixed bottom-20 right-4 flex flex-col gap-3 z-50">
+      <div className="fixed bottom-24 right-4 flex flex-col gap-2 z-40">
         {[
-          { icon: Camera, color: "from-pink-400 to-rose-500", label: "Capsule" },
-          { icon: Plus, color: "from-cyan-400 to-blue-500", label: "Post" },
-          { icon: MessageCircle, color: "from-purple-400 to-pink-500", label: "Message" },
-          { icon: MapPin, color: "from-green-400 to-emerald-500", label: "Check-in" },
-          { icon: Gift, color: "from-yellow-400 to-orange-500", label: "Redeem" }
+          { icon: Camera, color: "from-pink-400 to-rose-500", label: "Story", action: () => toast.info("Vibe Capsules coming soon!") },
+          { icon: Plus, color: "from-cyan-400 to-blue-500", label: "Post", action: () => toast.info("Create post coming soon!") },
+          { icon: MessageCircle, color: "from-purple-400 to-pink-500", label: "Chat", action: () => navigate("/messenger") },
+          { icon: MapPin, color: "from-green-400 to-emerald-500", label: "Check-in", action: () => navigate("/venues") }
         ].map((action, idx) => (
           <button
             key={idx}
-            className={`w-14 h-14 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center shadow-2xl hover:scale-110 transition-all active:scale-95`}
-            onClick={() => toast.info(`${action.label} coming soon!`)}
+            onClick={action.action}
+            className={`w-12 h-12 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center shadow-lg hover:scale-110 transition-all active:scale-95`}
+            title={action.label}
           >
-            <action.icon size={24} className="text-white" />
+            <action.icon size={20} className="text-white" />
           </button>
         ))}
+      </div>
       </div>
 
       <BottomNav active="profile" />
