@@ -581,9 +581,11 @@ def get_canonical_friend_order(user_a: str, user_b: str) -> tuple:
 
 async def are_friends(user_a: str, user_b: str) -> bool:
     """Check if two users are friends"""
-    u1, u2 = get_canonical_friend_order(user_a, user_b)
-    friendship = await db.friendships.find_one({"userId1": u1, "userId2": u2}, {"_id": 0})
-    return friendship is not None
+    # Check if user_a has user_b in their friends list
+    user_a_doc = await db.users.find_one({"id": user_a}, {"_id": 0, "friends": 1})
+    if user_a_doc and user_b in user_a_doc.get("friends", []):
+        return True
+    return False
 
 async def is_blocked(blocker: str, blocked: str) -> bool:
     """Check if blocker has blocked blocked"""
