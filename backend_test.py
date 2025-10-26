@@ -2940,8 +2940,8 @@ class BackendTester:
                 return
             
             # Answer call as u1 (recipient)
-            payload = {"userId": "u1"}
-            response = self.session.post(f"{BACKEND_URL}/calls/{self.call_id}/answer", json=payload)
+            params = {"userId": "u1"}
+            response = self.session.post(f"{BACKEND_URL}/calls/{self.call_id}/answer", params=params)
             
             if response.status_code == 200:
                 data = response.json()
