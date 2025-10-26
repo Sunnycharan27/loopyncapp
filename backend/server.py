@@ -1782,98 +1782,51 @@ async def get_tribe_posts(tribeId: str, limit: int = 50):
         post["author"] = author
     return posts
 
-# ===== DAILY.CO INTEGRATION ROUTES =====
+# ===== AGORA.IO INTEGRATION (CLUBHOUSE-STYLE AUDIO) =====
 
-@api_router.post("/daily/rooms")
-async def create_daily_room(userId: str, roomName: str):
-    """Create a Daily.co room for real-time audio"""
-    import httpx
+@api_router.post("/agora/token")
+async def generate_agora_token(channelName: str, uid: int, role: str = "publisher"):
+    """
+    Generate Agora RTC token for audio room access
+    Role: 'publisher' (can speak) or 'subscriber' (listen only)
+    """
+    from agora_token_builder import RtcTokenBuilder, Role_Publisher, Role_Subscriber
     
-    daily_api_key = os.environ.get('DAILY_API_KEY')
-    if not daily_api_key:
-        raise HTTPException(status_code=500, detail="Daily API key not configured")
+    app_id = os.environ.get('AGORA_APP_ID')
+    app_certificate = os.environ.get('AGORA_APP_CERTIFICATE')
+    
+    if not app_id or not app_certificate:
+        raise HTTPException(status_code=500, detail="Agora credentials not configured")
     
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.daily.co/v1/rooms",
-                json={
-                    "properties": {
-                        "enable_chat": False,
-                        "enable_screenshare": False,
-                        "start_video_off": True,
-                        "start_audio_off": False,
-                        "owner_only_broadcast": False,
-                        "exp": int(datetime.now(timezone.utc).timestamp()) + 86400  # 24 hours
-                    }
-                },
-                headers={
-                    "Authorization": f"Bearer {daily_api_key}",
-                    "Content-Type": "application/json"
-                },
-                timeout=30.0
-            )
-            
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to create Daily room: {response.text}"
-                )
-            
-            daily_room = response.json()
-            return {
-                "dailyRoomUrl": daily_room.get("url"),
-                "dailyRoomName": daily_room.get("name"),
-                "success": True
-            }
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating Daily room: {str(e)}")
-
-@api_router.post("/daily/token")
-async def create_daily_token(roomName: str, userName: str, isOwner: bool = False):
-    """Create a Daily.co meeting token for controlled access"""
-    import httpx
-    
-    daily_api_key = os.environ.get('DAILY_API_KEY')
-    if not daily_api_key:
-        raise HTTPException(status_code=500, detail="Daily API key not configured")
-    
-    try:
-        token_properties = {
-            "room_name": roomName,
-            "user_name": userName,
-            "is_owner": isOwner,
-            "start_audio_off": False,
-            "start_video_off": True,
-            "exp": int(datetime.now(timezone.utc).timestamp()) + 86400  # 24 hours
-        }
+        # Token expires in 24 hours
+        expiration_time_in_seconds = 86400
+        current_timestamp = int(datetime.now(timezone.utc).timestamp())
+        privilege_expired_ts = current_timestamp + expiration_time_in_seconds
         
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.daily.co/v1/meeting-tokens",
-                json={"properties": token_properties},
-                headers={
-                    "Authorization": f"Bearer {daily_api_key}",
-                    "Content-Type": "application/json"
-                },
-                timeout=30.0
-            )
-            
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to create token: {response.text}"
-                )
-            
-            token_data = response.json()
-            return {
-                "token": token_data.get("token"),
-                "success": True
-            }
+        # Determine role
+        agora_role = Role_Publisher if role == "publisher" else Role_Subscriber
+        
+        # Build token
+        token = RtcTokenBuilder.buildTokenWithUid(
+            app_id, 
+            app_certificate, 
+            channelName, 
+            uid, 
+            agora_role, 
+            privilege_expired_ts
+        )
+        
+        return {
+            "token": token,
+            "appId": app_id,
+            "channelName": channelName,
+            "uid": uid,
+            "success": True
+        }
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating token: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating Agora token: {str(e)}")
 
 # ===== VIBE ROOMS (VOICE ROOMS) ROUTES =====
 
