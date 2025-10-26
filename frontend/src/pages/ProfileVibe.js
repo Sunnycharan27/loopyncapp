@@ -5,7 +5,7 @@ import BottomNav from "../components/BottomNav";
 import { 
   Settings, Grid, Film, Users, MapPin, ShoppingBag, Award, TrendingUp,
   MessageCircle, Video, Plus, DollarSign, Star, Zap, Target, Trophy,
-  Calendar, Heart, Share2, Edit3, Camera, Map, Store, Gift
+  Calendar, Heart, Share2, Edit3, Camera, Map, Store, Gift, ArrowRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
