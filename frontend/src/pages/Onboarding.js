@@ -59,21 +59,7 @@ const Onboarding = () => {
     }));
   };
 
-  const handleVerifyAadhaar = async () => {
-    if (aadhaarNumber.length !== 12 || !/^\d+$/.test(aadhaarNumber)) {
-      toast.error("Please enter a valid 12-digit Aadhaar number");
-      return;
-    }
-
-    setVerifyingKyc(true);
-    
-    // Mock verification - simulate API call
-    setTimeout(() => {
-      setKycVerified(true);
-      setVerifyingKyc(false);
-      toast.success("eKYC verification successful! ✅");
-    }, 2000);
-  };
+  const handleFinish = async () => {
 
   const handleSkipKYC = () => {
     toast.info("You can complete eKYC later from Settings");
