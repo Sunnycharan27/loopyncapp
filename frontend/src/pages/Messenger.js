@@ -416,13 +416,6 @@ const Messenger = () => {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => setActiveView("rooms")}
-                className="p-2 rounded-full hover:bg-cyan-400/10 text-cyan-400"
-                title="Browse rooms"
-              >
-                <Users size={20} />
-              </button>
             </div>
           </div>
 
