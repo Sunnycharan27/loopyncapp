@@ -79,17 +79,13 @@ const AuthComplete = () => {
         password
       });
       
-      if (res.data.needsVerification) {
-        setServerCode(res.data.verificationCode); // Store for testing
-        toast.success("Account created! Check your email for verification code");
-        toast.info(`Code: ${res.data.verificationCode}`, { duration: 10000 });
-        setMode("verify");
-      } else {
-        login(res.data.token, res.data.user);
-        navigate("/");
-      }
+      // Login immediately with returned token
+      login(res.data.token, res.data.user);
+      toast.success(`Welcome to Loopync, ${res.data.user.name}! 🎉`);
+      navigate("/");
+      
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Failed to create account");
+      toast.error(error.response?.data?.detail || "Signup failed");
     } finally {
       setLoading(false);
     }
