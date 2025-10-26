@@ -17,19 +17,12 @@ const ShareToFriendsModal = ({ currentUser, item, type, onClose }) => {
 
   const fetchFriends = async () => {
     try {
-      // Try to get friends/following list
-      const res = await axios.get(`${API}/users/${currentUser.id}/following`);
+      // Get actual friends list
+      const res = await axios.get(`${API}/users/${currentUser.id}/friends`);
       setFriends(res.data || []);
     } catch (error) {
       console.error("Failed to fetch friends:", error);
-      // Fallback: get all users if following endpoint fails
-      try {
-        const usersRes = await axios.get(`${API}/users`);
-        const otherUsers = usersRes.data.filter(u => u.id !== currentUser.id);
-        setFriends(otherUsers.slice(0, 20)); // Limit to 20 users
-      } catch (err) {
-        toast.error("Failed to load friends");
-      }
+      toast.error("Failed to load friends");
     } finally {
       setLoading(false);
     }
