@@ -117,13 +117,13 @@ const Onboarding = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-400 text-sm">Step {step} of 4</span>
-            <span className="text-gray-400 text-sm">{Math.round((step / 4) * 100)}%</span>
+            <span className="text-gray-400 text-sm">Step {step > 3 ? 3 : step} of 3</span>
+            <span className="text-gray-400 text-sm">{Math.round(((step > 3 ? 3 : step) / 3) * 100)}%</span>
           </div>
           <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-300"
-              style={{ width: `${(step / 4) * 100}%` }}
+              style={{ width: `${((step > 3 ? 3 : step) / 3) * 100}%` }}
             ></div>
           </div>
         </div>
