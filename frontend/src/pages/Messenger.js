@@ -622,14 +622,32 @@ const Messenger = () => {
               </div>
             </div>
             
-            {/* Context Card Toggle */}
-            <button
-              onClick={() => setShowCircles(!showCircles)}
-              className="p-2 rounded-full hover:bg-cyan-400/10 text-cyan-400"
-              title="View context"
-            >
-              <FileText size={20} />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Call Buttons */}
+              <button
+                onClick={() => initiateCall('voice')}
+                className="p-2 rounded-full hover:bg-green-400/10 text-green-400 transition-colors"
+                title="Voice call"
+              >
+                <Phone size={20} />
+              </button>
+              <button
+                onClick={() => initiateCall('video')}
+                className="p-2 rounded-full hover:bg-blue-400/10 text-blue-400 transition-colors"
+                title="Video call"
+              >
+                <Video size={20} />
+              </button>
+              
+              {/* Context Card Toggle */}
+              <button
+                onClick={() => setShowCircles(!showCircles)}
+                className="p-2 rounded-full hover:bg-cyan-400/10 text-cyan-400"
+                title="View context"
+              >
+                <FileText size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Context Card */}
