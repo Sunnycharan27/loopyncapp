@@ -261,12 +261,13 @@ const PostCard = ({ post, currentUser, onLike, onRepost, onDelete }) => {
       )}
 
       {/* Share Modal */}
-      <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        item={post}
-        type="post"
-      />
+      {showShareModal && (
+        <UniversalShareModal
+          item={post}
+          type="post"
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </div>
   );
 };
