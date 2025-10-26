@@ -89,6 +89,7 @@ class User(BaseModel):
     name: str
     email: str = ""
     avatar: str = "https://api.dicebear.com/7.x/avataaars/svg?seed=default"
+    coverPhoto: str = ""
     bio: str = ""
     kycTier: int = 1
     walletBalance: float = 0.0
