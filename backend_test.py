@@ -3049,6 +3049,51 @@ class BackendTester:
         except Exception as e:
             self.log_result("Call History", False, f"Exception occurred: {str(e)}")
 
+    def test_call_initiate_video(self):
+        """Test Call Initiate with Video: POST /api/calls/initiate"""
+        try:
+            # Test video call type
+            params = {
+                "callerId": "demo_user",
+                "recipientId": "u1", 
+                "callType": "video"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("callType") == "video":
+                    # End the call immediately to clean up
+                    call_id = data.get("callId")
+                    if call_id:
+                        params = {"userId": "demo_user"}
+                        self.session.post(f"{BACKEND_URL}/calls/{call_id}/end", params=params)
+                    
+                    self.log_result(
+                        "Call Initiate Video", 
+                        True, 
+                        f"Video call initiated successfully",
+                        f"Call ID: {data.get('callId')}, Type: {data.get('callType')}"
+                    )
+                else:
+                    self.log_result(
+                        "Call Initiate Video", 
+                        False, 
+                        f"Call type mismatch: expected 'video', got '{data.get('callType')}'",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Call Initiate Video", 
+                    False, 
+                    f"Video call initiate failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call Initiate Video", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
