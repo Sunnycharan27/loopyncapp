@@ -402,6 +402,7 @@ const EventDetail = () => {
         <UniversalShareModal
           item={event}
           type="event"
+          currentUser={currentUser}
           onClose={() => setShowShareModal(false)}
         />
       )}
