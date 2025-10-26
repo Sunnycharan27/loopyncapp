@@ -93,24 +93,6 @@ const Auth = () => {
     }
   };
 
-  // Quick demo login
-  const demoLogin = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.post(`${API}/auth/login`, { 
-        email: "demo@loopync.com", 
-        password: "password123" 
-      });
-      login(res.data.token, res.data.user);
-      toast.success("Logged in as Demo User!");
-      navigate("/");
-    } catch (error) {
-      toast.error("Demo login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(180deg, #0f021e 0%, #1a0b2e 100%)' }}>
       <div className="glass-card p-8 w-full max-w-md">
