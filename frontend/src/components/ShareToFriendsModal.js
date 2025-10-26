@@ -168,10 +168,10 @@ const ShareToFriendsModal = ({ currentUser, item, type, onClose }) => {
           ) : filteredFriends.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-400">
-                {searchQuery ? "No friends found" : "No friends to share with"}
+                {searchQuery ? "No friends found" : "No friends yet"}
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                {!searchQuery && "Follow people to see them here"}
+                {!searchQuery && "Add friends to share content with them!"}
               </p>
             </div>
           ) : (
