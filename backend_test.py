@@ -3805,13 +3805,13 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                # Check if call status changed to "ended"
-                if ('status' in data and data['status'] == 'ended') or 'success' in data:
+                # Check if call was ended successfully
+                if ('message' in data and 'ended' in data['message'].lower()) or 'duration' in data:
                     self.log_result(
                         "Call End (Agora)", 
                         True, 
                         f"Successfully ended call: {call_id}",
-                        f"Response: {data}"
+                        f"Duration: {data.get('duration', 0)} seconds"
                     )
                 else:
                     self.log_result(
