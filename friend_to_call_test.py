@@ -379,7 +379,7 @@ class FriendToCallTester:
         try:
             # Create another user who is NOT friends with demo
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            non_friend_email = f"nonfriend_{timestamp}@friendcall.test"
+            non_friend_email = f"nonfriend_{timestamp}@example.com"
             
             payload = {
                 "email": non_friend_email,
