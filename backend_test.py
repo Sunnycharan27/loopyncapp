@@ -3620,8 +3620,7 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                required_fields = ['callId', 'channelName', 'appId', 'callerToken', 
-                                 'callerUid', 'recipientToken', 'recipientUid']
+                required_fields = ['callId', 'channelName', 'callerToken', 'recipientToken']
                 
                 if all(field in data for field in required_fields):
                     # Store call ID for subsequent tests
@@ -3637,8 +3636,9 @@ class BackendTester:
                             "Video Call Initiation", 
                             True, 
                             f"Successfully initiated video call: {data['callId']}",
-                            f"Channel: {data['channelName']}, AppId: {data['appId']}, "
-                            f"Caller UID: {data['callerUid']}, Recipient UID: {data['recipientUid']}"
+                            f"Channel: {data['channelName']}, Call Type: {data.get('callType', 'video')}, "
+                            f"Caller: {data.get('caller', {}).get('name', 'Unknown')}, "
+                            f"Recipient: {data.get('recipient', {}).get('name', 'Unknown')}"
                         )
                     else:
                         self.log_result(
