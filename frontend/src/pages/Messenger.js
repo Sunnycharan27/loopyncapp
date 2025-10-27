@@ -364,10 +364,6 @@ const Messenger = () => {
       }
     }
   };
-        toast.error("Failed to start call");
-      }
-    }
-  };
 
   if (loading) {
     return (
