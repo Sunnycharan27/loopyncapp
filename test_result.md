@@ -5892,6 +5892,42 @@ agent_communication:
       **NO ISSUES FOUND - FRIEND REQUEST SYSTEM IS PRODUCTION-READY**
       All endpoints tested with real data flow and verified working correctly.
 
+  - agent: "testing"
+    message: |
+      DEMO USER AUTO-FRIENDING FEATURE TESTING COMPLETED - ALL SUCCESS CRITERIA MET (8/8 TESTS PASSED - 100% SUCCESS RATE)
+      
+      🎯 **CRITICAL FEATURE VERIFICATION COMPLETED**:
+      **ISSUE TESTED**: Demo user auto-friending logic during login
+      **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
+      **DEMO USER**: demo@loopync.com / password123
+      
+      ✅ **ALL REQUESTED TEST SCENARIOS COMPLETED SUCCESSFULLY**:
+      1. ✅ Seed Database First - Successfully seeded with 6 users including u1, u2, u3
+      2. ✅ Verify Seeded Users - All 3 seeded users (u1, u2, u3) verified and accessible
+      3. ✅ Demo User Login - Successfully logged in and captured demo user ID
+      4. ✅ **CRITICAL**: Check Demo User's Friends Array - Demo user has 3 friends including all seeded users ["u1", "u2", "u3"]
+      5. ✅ **CRITICAL**: Verify Bidirectional Friendship - All seeded users have demo user in their friends arrays
+      6. ✅ Friend Status API - All 3 users return {"status": "friends"} correctly
+      7. ✅ DM Thread Creation - Successfully created thread between demo user and u1 (no "friends only" error)
+      8. ✅ Call Initiation - Successfully initiated voice call between demo user and u1 (no "friends only" error)
+      
+      🔧 **AUTO-FRIENDING LOGIC VERIFICATION**:
+      - Auto-friending triggers during demo@loopync.com login (lines 1178-1210 in server.py)
+      - Logic checks if demo user has no friends, then adds seeded users u1, u2, u3
+      - Bidirectional friendship established (demo user added to seeded users' friends lists)
+      - Security maintained (only works for demo@loopync.com email address)
+      
+      💥 **CRITICAL SUCCESS CONFIRMATION**:
+      ✅ **AUTO-FRIENDING LOGIC IS FULLY FUNCTIONAL**
+      ✅ Demo user automatically gets friends when logging in with no existing friends
+      ✅ Bidirectional friendships properly established with all seeded users
+      ✅ No "You can only call friends" errors in DM or calling functionality
+      ✅ Friend status API returns correct "friends" status for all auto-friended users
+      ✅ All backend API endpoints working correctly for the auto-friending feature
+      
+      **DEMO USER AUTO-FRIENDING FEATURE IS PRODUCTION-READY AND WORKING AS EXPECTED**
+      **ALL REQUESTED TEST SCENARIOS COMPLETED WITH 100% SUCCESS RATE**
+
 backend:
   - task: "Vibe Rooms Daily.co Audio Integration"
     implemented: true
