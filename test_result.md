@@ -821,6 +821,30 @@ frontend:
 
   - agent: "testing"
     message: |
+      QUICK TEST: VIDEO/AUDIO CALL INITIATION AFTER DUPLICATE ENDPOINT REMOVAL - VERIFICATION COMPLETE (5/5 TESTS PASSED)
+      
+      🎯 **REVIEW REQUEST COMPLETED**: Verified video/audio call initiation after duplicate endpoint removal
+      **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
+      **TEST DATE**: December 13, 2024
+      
+      ✅ **ALL SUCCESS CRITERIA MET**:
+      1. ✅ Login Demo User (demo@loopync.com / password123) - WORKING
+      2. ✅ Verify Demo User Has Friends (u1, u2, u3 as friends) - WORKING  
+      3. ✅ Test Video Call Initiation (returns callId, channelName, appId, tokens, UIDs) - WORKING
+      4. ✅ Test Audio Call Initiation (same structure as video call) - WORKING
+      5. ✅ Verify Agora App ID (9d727260580f40d2ae8c131dbfd8ba08) - WORKING
+      
+      🔧 **CRITICAL VERIFICATION**:
+      - ✅ Call initiation succeeds without errors
+      - ✅ Response includes all required Agora data
+      - ✅ Both video and audio calls work
+      - ✅ No "generate_agora_token_internal" function errors (old endpoint issue resolved)
+      - ✅ Correct Agora-integrated endpoint is now active
+      
+      **CONCLUSION**: The duplicate endpoint removal was successful. The working /api/calls/initiate endpoint is now being used correctly and all call initiation functionality is working as expected.
+
+  - agent: "testing"
+    message: |
       COMPLETE USER ONBOARDING AND LOGIN FLOW TESTING COMPLETED - ALL CORE FLOWS WORKING (6/7 TESTS PASSED)
       
       🎯 **TESTING SCOPE**: Complete user authentication and onboarding flow as requested
