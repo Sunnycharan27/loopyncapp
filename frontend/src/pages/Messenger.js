@@ -23,6 +23,7 @@ const Messenger = () => {
   const [friendResults, setFriendResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [showCreateCircle, setShowCreateCircle] = useState(false);
+  const [showCircles, setShowCircles] = useState(false);
   const [trustCircles, setTrustCircles] = useState([]);
   const [selectedCircle, setSelectedCircle] = useState(null);
   const [showCall, setShowCall] = useState(false);
