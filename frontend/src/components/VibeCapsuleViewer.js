@@ -107,7 +107,7 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
       </div>
 
       {/* Header */}
-      <div className="absolute top-8 left-4 right-4 flex items-center justify-between z-10">
+      <div className="absolute top-8 left-4 right-4 flex items-center justify-between" style={{ zIndex: 10001 }}>
         <div className="flex items-center gap-3">
           <img
             src={currentStory.author.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentStory.author.name}`}
