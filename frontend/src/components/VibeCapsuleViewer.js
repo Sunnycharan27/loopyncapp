@@ -171,7 +171,7 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
       </div>
 
       {/* Reactions Bar */}
-      <div className="absolute bottom-8 left-4 right-4 z-10">
+      <div className="absolute bottom-8 left-4 right-4" style={{ zIndex: 10001 }}>
         <div className="flex items-center justify-center gap-4 bg-black/50 backdrop-blur-sm rounded-full p-3">
           {["❤️", "🔥", "😂", "😮", "👏"].map((emoji) => (
             <button
