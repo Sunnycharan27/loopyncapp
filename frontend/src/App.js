@@ -76,6 +76,23 @@ function App() {
     checkOnboardingStatus(user.id);
   };
 
+  const refreshUserData = async () => {
+    try {
+      const token = localStorage.getItem("loopync_token");
+      if (!token) return;
+      
+      const res = await axios.get(`${API}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const updatedUser = res.data;
+      localStorage.setItem("loopync_user", JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
+    } catch (error) {
+      console.error("Failed to refresh user data:", error);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("loopync_token");
     localStorage.removeItem("loopync_user");
