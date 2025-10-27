@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom";
 import { Plus, X, Upload, Image as ImageIcon, Video } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
