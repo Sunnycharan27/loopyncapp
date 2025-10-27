@@ -128,7 +128,7 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
       </div>
 
       {/* Navigation Areas */}
-      <div className="absolute inset-0 flex">
+      <div className="absolute inset-0 flex" style={{ zIndex: 10000 }}>
         <button
           onClick={goToPrevious}
           className="flex-1 cursor-pointer"
