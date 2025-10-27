@@ -342,12 +342,12 @@ class DemoAutoFriendTester:
             
         try:
             # Try to create DM thread with u1
-            payload = {
+            params = {
                 'userId': self.demo_user_id,
                 'peerUserId': 'u1'
             }
             
-            response = self.session.post(f"{BACKEND_URL}/dm/thread", json=payload)
+            response = self.session.post(f"{BACKEND_URL}/dm/thread", params=params)
             
             if response.status_code == 200:
                 data = response.json()
