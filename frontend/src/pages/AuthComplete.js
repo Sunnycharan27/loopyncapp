@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, User, Eye, EyeOff, CheckCircle, ArrowLeft } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, CheckCircle, ArrowLeft, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 const AuthComplete = () => {
