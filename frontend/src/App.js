@@ -106,6 +106,9 @@ function App() {
     <AuthContext.Provider value={{ currentUser, isAuthenticated, needsOnboarding, setNeedsOnboarding, login, logout, refreshUserData }}>
       <WebSocketProvider>
         <div className="App">
+          {/* Global Call Manager - handles incoming calls */}
+          {isAuthenticated && currentUser && <CallManager currentUser={currentUser} />}
+          
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthComplete />} />
