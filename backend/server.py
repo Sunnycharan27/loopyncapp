@@ -1167,6 +1167,7 @@ async def login(req: LoginRequest):
             "handle": mongo_user.get('handle', user['email'].split('@')[0]),
             "name": user['name'],
             "email": user['email'],
+            "phone": mongo_user.get('phone', ''),  # Add phone field to login response
             "avatar": mongo_user.get('avatar', f"https://api.dicebear.com/7.x/avataaars/svg?seed={user['email']}"),
             "isVerified": mongo_user.get('isVerified', True),
             "bio": mongo_user.get('bio', ''),
