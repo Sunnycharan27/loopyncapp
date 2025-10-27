@@ -6008,7 +6008,8 @@ async def initiate_call(callerId: str, recipientId: str, callType: str = "video"
                 "token": recipient_token,
                 "uid": recipient_uid,
                 "appId": agora_app_id,
-                "callerName": caller.get("name", "Unknown")
+                "callerName": caller_info.get("name", "Unknown") if caller_info else "Unknown",
+                "callerAvatar": caller_info.get("avatar", "") if caller_info else ""
             })
         except Exception as ws_error:
             logger.warning(f"Failed to send WebSocket notification: {str(ws_error)}")
