@@ -512,7 +512,7 @@ class FriendsCallingTester:
                         "Calling API Endpoint", 
                         True, 
                         f"Successfully initiated call between friends",
-                        f"Call ID: {call_id}, Call Type: {payload['callType']}"
+                        f"Call ID: {call_id}, Call Type: {params['callType']}"
                     )
                 else:
                     self.log_result(
