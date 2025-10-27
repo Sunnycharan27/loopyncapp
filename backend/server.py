@@ -111,7 +111,7 @@ class UserCreate(BaseModel):
     handle: str
     name: str
     email: EmailStr
-    phone: str
+    phone: str = ""  # Make phone optional with default empty string
     password: str
     
     @field_validator('password', 'handle')
