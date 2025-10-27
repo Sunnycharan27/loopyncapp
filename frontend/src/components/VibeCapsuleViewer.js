@@ -86,8 +86,9 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
 
   if (!currentStory || !currentCapsule) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+  // Render using portal to ensure it's on top of everything
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black flex items-center justify-center" style={{ zIndex: 9999 }}>
       {/* Progress Bars */}
       <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
         {currentStory.capsules.map((_, idx) => (
