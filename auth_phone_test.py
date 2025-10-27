@@ -210,7 +210,7 @@ class AuthPhoneTester:
                 "name": "Another Test User",
                 "handle": f"anotheruser_{timestamp}",
                 "email": f"anotheruser_{timestamp}@example.com",
-                "phone": "9876543210",  # Same phone as first user
+                "phone": f"987654{timestamp[-4:]}",  # Use same pattern but different timestamp
                 "password": "AnotherTest@1234"
             }
             
