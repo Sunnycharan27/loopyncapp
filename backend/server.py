@@ -5975,6 +5975,9 @@ async def initiate_call(callerId: str, recipientId: str, callType: str = "video"
         await db.calls.insert_one(call)
         call.pop("_id", None)
         
+        # Get caller info for notification
+        caller_info = await db.users.find_one({"id": callerId}, {"_id": 0, "name": 1, "avatar": 1})
+        
         # Send notification to recipient
         notification = {
             "id": str(uuid.uuid4()),
