@@ -272,7 +272,7 @@ class DemoAutoFriendTester:
                     "5. Verify Bidirectional Friendship", 
                     True, 
                     f"Bidirectional friendship established with {len(mutual_friends)} seeded users",
-                    f"Mutual friends: {[f\"{f['name']} ({f['id']})\" for f in mutual_friends]}"
+                    f"Mutual friends: {[f'{f[\"name\"]} ({f[\"id\"]})' for f in mutual_friends]}"
                 )
             else:
                 self.log_result(
