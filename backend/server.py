@@ -5950,70 +5950,103 @@ async def add_product_review(productId: str, userId: str, rating: int, comment: 
 # ===== VIDEO/VOICE CALLS (1-on-1) =====
 
 @api_router.post("/calls/initiate")
-async def initiate_call(callerId: str, receiverId: str, type: str = "video"):
-    """Initiate 1-on-1 call"""
-    # Create Daily.co room for call
-    daily_api_key = os.environ.get("DAILY_API_KEY")
-    if not daily_api_key:
-        raise HTTPException(status_code=500, detail="Daily.co API key not configured")
+async def initiate_call(callerId: str, recipientId: str, callType: str = "video"):
+    """Initiate 1-on-1 call with Agora"""
+    from agora_token_builder import RtcTokenBuilder
     
-    room_name = f"call-{str(uuid.uuid4())[:8]}"
+    # Get Agora credentials
+    agora_app_id = os.environ.get("AGORA_APP_ID")
+    agora_app_certificate = os.environ.get("AGORA_APP_CERTIFICATE")
+    
+    if not agora_app_id or not agora_app_certificate:
+        raise HTTPException(status_code=500, detail="Agora credentials not configured")
+    
+    # Generate unique channel name for this call
+    channel_name = f"call-{str(uuid.uuid4())[:12]}"
+    
+    # Token expiration (1 hour)
+    current_timestamp = int(datetime.now(timezone.utc).timestamp())
+    expiration_timestamp = current_timestamp + 3600
     
     try:
-        response = requests.post(
-            "https://api.daily.co/v1/rooms",
-            headers={
-                "Authorization": f"Bearer {daily_api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "name": room_name,
-                "properties": {
-                    "max_participants": 2,
-                    "enable_chat": True,
-                    "enable_screenshare": True,
-                    "start_video_off": type == "audio",
-                    "start_audio_off": False
-                }
-            },
-            timeout=10
+        # Generate tokens for both caller and recipient
+        # Use user IDs as UIDs (convert string to int hash)
+        caller_uid = abs(hash(callerId)) % (10 ** 9)
+        recipient_uid = abs(hash(recipientId)) % (10 ** 9)
+        
+        # Generate token for caller
+        caller_token = RtcTokenBuilder.buildTokenWithUid(
+            appId=agora_app_id,
+            appCertificate=agora_app_certificate,
+            channelName=channel_name,
+            uid=caller_uid,
+            role=1,  # Role 1 = Publisher/Host
+            privilegeExpiredTs=expiration_timestamp
         )
         
-        if response.status_code == 200:
-            daily_data = response.json()
-            
-            # Create call record
-            call = {
-                "id": str(uuid.uuid4()),
+        # Generate token for recipient
+        recipient_token = RtcTokenBuilder.buildTokenWithUid(
+            appId=agora_app_id,
+            appCertificate=agora_app_certificate,
+            channelName=channel_name,
+            uid=recipient_uid,
+            role=1,
+            privilegeExpiredTs=expiration_timestamp
+        )
+        
+        # Create call record in database
+        call = {
+            "id": str(uuid.uuid4()),
+            "callerId": callerId,
+            "recipientId": recipientId,
+            "callType": callType,
+            "status": "ringing",
+            "channelName": channel_name,
+            "agoraAppId": agora_app_id,
+            "callerToken": caller_token,
+            "recipientToken": recipient_token,
+            "callerUid": caller_uid,
+            "recipientUid": recipient_uid,
+            "startedAt": datetime.now(timezone.utc).isoformat(),
+            "endedAt": None
+        }
+        
+        await db.calls.insert_one(call)
+        call.pop("_id", None)
+        
+        # Send notification to recipient
+        notification = {
+            "id": str(uuid.uuid4()),
+            "userId": recipientId,
+            "type": "call",
+            "title": f"Incoming {callType} call",
+            "message": f"Call from user",
+            "data": {
+                "callId": call["id"],
                 "callerId": callerId,
-                "receiverId": receiverId,
-                "type": type,
-                "status": "ringing",
-                "dailyRoomUrl": daily_data["url"],
-                "dailyRoomName": daily_data["name"],
-                "startedAt": datetime.now(timezone.utc).isoformat(),
-                "endedAt": None
-            }
-            await db.calls.insert_one(call)
-            call.pop("_id", None)
-            
-            # Send notification to receiver
-            notification = {
-                "id": str(uuid.uuid4()),
-                "userId": receiverId,
-                "type": "call",
-                "title": f"Incoming {type} call",
-                "message": f"Call from user",
-                "data": {"callId": call["id"], "callerId": callerId},
-                "read": False,
-                "createdAt": datetime.now(timezone.utc).isoformat()
-            }
-            await db.notifications.insert_one(notification)
-            
-            return call
-        else:
-            raise HTTPException(status_code=500, detail=f"Failed to create call room: {response.text}")
+                "channelName": channel_name,
+                "token": recipient_token,
+                "uid": recipient_uid,
+                "appId": agora_app_id
+            },
+            "read": False,
+            "createdAt": datetime.now(timezone.utc).isoformat()
+        }
+        await db.notifications.insert_one(notification)
+        
+        return {
+            "callId": call["id"],
+            "channelName": channel_name,
+            "appId": agora_app_id,
+            "callerToken": caller_token,
+            "callerUid": caller_uid,
+            "recipientToken": recipient_token,
+            "recipientUid": recipient_uid,
+            "expiresIn": 3600
+        }
+        
     except Exception as e:
+        logger.error(f"Call initiation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Call initiation failed: {str(e)}")
 
 @api_router.post("/calls/{callId}/answer")
