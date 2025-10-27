@@ -1253,6 +1253,79 @@ backend:
       **AUTHENTICATION SYSTEM WITH PHONE NUMBER FIELD IS PRODUCTION-READY**
       All requested test scenarios completed successfully. No issues found.
 
+  - task: "Complete Forgot Password Flow End-to-End"
+    implemented: true
+    working: true
+    file: "/app/password_reset_test.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          COMPLETE FORGOT PASSWORD FLOW END-TO-END TESTING COMPLETED - ALL TESTS PASSED (9/9)
+          
+          🎯 COMPREHENSIVE PASSWORD RESET FLOW TESTING RESULTS:
+          
+          ✅ TEST 1: CREATE TEST USER FIRST
+          - Successfully created test user: "Password Reset Test User" (resettest123@example.com)
+          - User data includes: name, handle, email, phone, password (hashed)
+          - User stored in both Google Sheets and MongoDB correctly
+          
+          ✅ TEST 2: LOGIN WITH ORIGINAL PASSWORD
+          - Successfully logged in with original password "OldPassword123"
+          - JWT token generated and user data returned correctly
+          - Baseline authentication working before password reset
+          
+          ✅ TEST 3: REQUEST PASSWORD RESET
+          - Successfully requested password reset for resettest123@example.com
+          - Reset code generated and returned (6-digit code)
+          - Password reset token stored with expiration time
+          
+          ✅ TEST 4: VERIFY RESET CODE
+          - Successfully verified reset code with correct 6-digit code
+          - Code validation working correctly
+          - Reset token validation and expiration check working
+          
+          ✅ TEST 5: RESET PASSWORD TO NEW PASSWORD
+          - Successfully reset password from "OldPassword123" to "NewPassword456"
+          - Password updated in Google Sheets database correctly
+          - Reset token cleared after successful password reset
+          
+          ✅ TEST 6: LOGIN WITH OLD PASSWORD (SHOULD FAIL)
+          - Correctly rejected old password "OldPassword123" with 401 status
+          - Old password no longer valid after reset - SECURITY VERIFIED
+          - Password reset properly invalidated old password
+          
+          ✅ TEST 7: LOGIN WITH NEW PASSWORD (SHOULD WORK)
+          - Successfully logged in with new password "NewPassword456"
+          - Password reset updated password in Google Sheets correctly
+          - JWT token generated and user data returned - PASSWORD RESET WORKING!
+          
+          ✅ TEST 8: CHANGE PASSWORD AGAIN
+          - Successfully changed password from "NewPassword456" to "FinalPassword789"
+          - Change password endpoint working correctly
+          - Current password validation working properly
+          
+          ✅ TEST 9: LOGIN WITH FINAL PASSWORD
+          - Successfully logged in with final password "FinalPassword789"
+          - Change password updated password in Google Sheets correctly
+          - Complete password management flow verified - CHANGE PASSWORD WORKING!
+          
+          🔐 SUCCESS CRITERIA VERIFICATION:
+          ✅ User can request password reset and receive code
+          ✅ Code verification works correctly  
+          ✅ Password reset updates password in Google Sheets
+          ✅ Old password stops working after reset
+          ✅ New password works for login
+          ✅ User data remains intact after password change
+          ✅ Change password endpoint also works
+          
+          **COMPLETE FORGOT PASSWORD FLOW IS FULLY FUNCTIONAL AND PRODUCTION-READY**
+          All password reset and change operations working correctly with Google Sheets integration.
+
+agent_communication:
   - agent: "testing"
     message: |
       VIBEROOM CREATION ISSUE TESTING COMPLETED - ISSUE NOT REPRODUCIBLE IN BACKEND (12/15 TESTS PASSED)
