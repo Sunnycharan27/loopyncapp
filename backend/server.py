@@ -111,6 +111,7 @@ class UserCreate(BaseModel):
     handle: str
     name: str
     email: EmailStr
+    phone: str
     password: str
     
     @field_validator('password', 'handle')
