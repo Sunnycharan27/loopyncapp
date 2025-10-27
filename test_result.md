@@ -4641,6 +4641,99 @@ backend:
           
           DM THREADS & MESSAGES API IS NOW FULLY FUNCTIONAL AND PRODUCTION-READY.
 
+  - task: "Demo User Auto-Friending Feature"
+    implemented: true
+    working: true
+    file: "/app/demo_auto_friend_test.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          DEMO USER AUTO-FRIENDING FEATURE TESTING COMPLETED - ALL SUCCESS CRITERIA MET (8/8 TESTS PASSED - 100% SUCCESS RATE)
+          
+          🎯 **COMPREHENSIVE AUTO-FRIENDING LOGIC VERIFICATION**:
+          **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
+          **DEMO USER**: demo@loopync.com / password123
+          **TEST FOCUS**: Auto-friending logic during demo user login
+          
+          ✅ **TEST 1: Seed Database First**:
+          - Successfully seeded database with 6 users including u1, u2, u3
+          - All seeded users (u1, u2, u3) verified and accessible
+          - Database preparation completed successfully
+          
+          ✅ **TEST 2: Verify Seeded Users Created**:
+          - All 3 seeded users (u1, u2, u3) verified successfully
+          - User data complete with names, handles, and IDs
+          - Seeded users ready for auto-friending test
+          
+          ✅ **TEST 3: Demo User Login and ID Capture**:
+          - Successfully logged in as Demo User (demo@loopync.com)
+          - Demo user ID captured from login response
+          - JWT token generated and authentication working
+          
+          ✅ **TEST 4: CRITICAL - Check Demo User's Friends Array**:
+          - ✅ **AUTO-FRIENDING LOGIC WORKING**: Demo user has 3 friends including all 3 seeded users
+          - Friends array populated with: ["u1", "u2", "u3"] as expected
+          - Auto-friending triggered successfully during login process
+          
+          ✅ **TEST 5: CRITICAL - Verify Bidirectional Friendship**:
+          - ✅ **u1 has demo user in friends array**: VERIFIED
+          - ✅ **u2 has demo user in friends array**: VERIFIED  
+          - ✅ **u3 has demo user in friends array**: VERIFIED
+          - Bidirectional friendship establishment working correctly
+          
+          ✅ **TEST 6: Friend Status API Verification**:
+          - GET /api/users/{demoUserId}/friend-status/u1: Returns {"status": "friends"}
+          - GET /api/users/{demoUserId}/friend-status/u2: Returns {"status": "friends"}
+          - GET /api/users/{demoUserId}/friend-status/u3: Returns {"status": "friends"}
+          - Friend status API working correctly for all auto-friended users
+          
+          ✅ **TEST 7: DM Thread Creation Test**:
+          - POST /api/dm/thread successfully created thread between demo user and u1
+          - No "Must be friends" error - friendship validation working
+          - DM functionality accessible due to established friendships
+          
+          ✅ **TEST 8: Call Initiation Test**:
+          - POST /api/calls/initiate successfully initiated voice call between demo user and u1
+          - No "You can only call friends" error - calling restrictions working correctly
+          - Call functionality accessible due to established friendships
+          
+          🔧 **AUTO-FRIENDING LOGIC VERIFICATION**:
+          - Auto-friending triggers during demo@loopync.com login (lines 1178-1210 in server.py)
+          - Logic checks if demo user has no friends, then adds seeded users
+          - Bidirectional friendship established (demo user added to seeded users' friends lists)
+          - Only runs for demo@loopync.com email address (security maintained)
+          - Seeded users u1, u2, u3 automatically become friends with demo user
+          
+          📋 **ALL SUCCESS CRITERIA VERIFIED**:
+          ✅ Demo user auto-friended with seeded users (u1, u2, u3): **YES**
+          ✅ Bidirectional friendships established: **YES**
+          ✅ Friend status returns "friends" for all seeded users: **YES**
+          ✅ DM thread creation works without "friends only" error: **YES**
+          ✅ Call initiation succeeds without "friends only" error: **YES**
+          ✅ Auto-friending logic runs during login: **YES**
+          
+          🚀 **BACKEND API ENDPOINTS TESTED AND VERIFIED**:
+          1. ✅ POST /api/seed (database seeding)
+          2. ✅ GET /api/users/{userId} (user verification and friends array check)
+          3. ✅ POST /api/auth/login (demo user login with auto-friending)
+          4. ✅ GET /api/users/{userId}/friend-status/{targetUserId} (friend status check)
+          5. ✅ POST /api/dm/thread (DM thread creation between friends)
+          6. ✅ POST /api/calls/initiate (call initiation between friends)
+          
+          💥 **CRITICAL FEATURE VERIFICATION**:
+          - **Auto-friending logic is FULLY FUNCTIONAL**
+          - Demo user automatically gets friends when logging in with no existing friends
+          - Bidirectional friendships properly established
+          - No "friends only" errors in DM or calling functionality
+          - Security maintained (only works for demo@loopync.com)
+          
+          **DEMO USER AUTO-FRIENDING FEATURE IS FULLY FUNCTIONAL AND PRODUCTION-READY**
+          **ALL REQUESTED TEST SCENARIOS COMPLETED SUCCESSFULLY WITH 100% PASS RATE**
+
 frontend:
   - task: "Post media rendering fix (relative uploads)"
     implemented: true
