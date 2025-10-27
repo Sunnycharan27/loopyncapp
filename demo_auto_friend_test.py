@@ -406,13 +406,13 @@ class DemoAutoFriendTester:
             
         try:
             # Try to initiate a voice call with u1
-            payload = {
+            params = {
                 'callerId': self.demo_user_id,
                 'recipientId': 'u1',
                 'callType': 'voice'
             }
             
-            response = self.session.post(f"{BACKEND_URL}/calls/initiate", json=payload)
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
             
             if response.status_code == 200:
                 data = response.json()
