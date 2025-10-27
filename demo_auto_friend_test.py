@@ -279,7 +279,7 @@ class DemoAutoFriendTester:
                     "5. Verify Bidirectional Friendship", 
                     False, 
                     "No bidirectional friendships found - demo user not in seeded users' friends lists",
-                    f"Checked users: {[f\"{f['name']} ({f['id']})\" for f in bidirectional_friends]}"
+                    f"Checked users: {[f'{f[\"name\"]} ({f[\"id\"]})' for f in bidirectional_friends]}"
                 )
                 
         except Exception as e:
