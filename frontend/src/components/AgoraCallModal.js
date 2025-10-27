@@ -350,5 +350,6 @@ const AgoraCallModal = ({
     </div>,
     document.body
   );
+};
 
 export default AgoraCallModal;
