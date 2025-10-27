@@ -334,10 +334,16 @@ const Messenger = () => {
     try {
       if (!selectedThread) return;
       
-      // Check if peer is a friend
-      const isFriend = currentUser.friends && currentUser.friends.includes(selectedThread.peer.id);
-      if (!isFriend) {
-        toast.error("You can only call friends");
+      // Check if peer is a friend using backend API for most up-to-date status
+      try {
+        const statusRes = await axios.get(`${API}/users/${currentUser.id}/friend-status/${selectedThread.peer.id}`);
+        if (statusRes.data.status !== "friends") {
+          toast.error("You can only call friends");
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking friend status:", error);
+        toast.error("Unable to verify friend status");
         return;
       }
 
