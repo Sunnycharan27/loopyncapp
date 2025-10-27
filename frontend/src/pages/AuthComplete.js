@@ -56,7 +56,7 @@ const AuthComplete = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     
-    if (!name || !handle || !email || !password) {
+    if (!name || !handle || !email || !phone || !password) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -71,12 +71,18 @@ const AuthComplete = () => {
       return;
     }
 
+    if (phone.length < 10) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await axios.post(`${API}/auth/signup`, {
         name,
         handle,
         email,
+        phone,
         password
       });
       
