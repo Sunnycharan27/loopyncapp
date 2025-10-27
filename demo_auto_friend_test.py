@@ -107,7 +107,7 @@ class DemoAutoFriendTester:
                     "2. Verify Seeded Users", 
                     True, 
                     f"All {len(verified_users)} seeded users verified successfully",
-                    f"Users: {[f'{u[\"name\"]} ({u[\"id\"]})' for u in verified_users]}"
+                    f"Users: {[u['name'] + ' (' + u['id'] + ')' for u in verified_users]}"
                 )
             else:
                 self.log_result(
