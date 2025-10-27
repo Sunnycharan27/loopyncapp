@@ -5094,6 +5094,21 @@ async def accept_friend_request(requestId: str):
     friendship = Friendship(userId1=u1, userId2=u2)
     await db.friendships.insert_one(friendship.model_dump())
     
+    # **CRITICAL FIX: Add to each user's friends array for persistence**
+    # Add toUserId to fromUser's friends list
+    await db.users.update_one(
+        {"id": request["fromUserId"]},
+        {"$addToSet": {"friends": request["toUserId"]}}
+    )
+    
+    # Add fromUserId to toUser's friends list
+    await db.users.update_one(
+        {"id": request["toUserId"]},
+        {"$addToSet": {"friends": request["fromUserId"]}}
+    )
+    
+    logger.info(f"Added bidirectional friendship: {request['fromUserId']} <-> {request['toUserId']}")
+    
     # Auto-create DM thread if doesn't exist
     existing_thread = await db.dm_threads.find_one({
         "$or": [
