@@ -316,6 +316,25 @@ const AuthComplete = () => {
 
               <div>
                 <div className="relative">
+                  <Phone size={20} className="absolute left-3 top-3 text-gray-400" />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number (10 digits)"
+                    value={phone}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      if (value.length <= 10) {
+                        setPhone(value);
+                      }
+                    }}
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-cyan-400"
+                    maxLength={10}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
                   <Lock size={20} className="absolute left-3 top-3 text-gray-400" />
                   <input
                     type={showPassword ? "text" : "password"}
