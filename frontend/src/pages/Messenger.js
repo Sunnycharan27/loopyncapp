@@ -5,7 +5,7 @@ import { ArrowLeft, Send, Image as ImageIcon, Users, Shield, Search, X, Sparkles
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWebSocket } from "../context/WebSocketContext";
-import CallModal from "../components/CallModal";
+import AgoraCallModal from "../components/AgoraCallModal";
 
 const Messenger = () => {
   const { threadId } = useParams();
