@@ -6092,6 +6092,44 @@ async def get_call_history(userId: str, limit: int = 50):
     
     return calls
 
+# ===== AGORA TOKEN GENERATION =====
+
+@api_router.get("/agora/token")
+async def generate_agora_token(channelName: str, uid: int, role: int = 1):
+    """Generate Agora RTC token for joining a channel"""
+    from agora_token_builder import RtcTokenBuilder
+    
+    agora_app_id = os.environ.get("AGORA_APP_ID")
+    agora_app_certificate = os.environ.get("AGORA_APP_CERTIFICATE")
+    
+    if not agora_app_id or not agora_app_certificate:
+        raise HTTPException(status_code=500, detail="Agora credentials not configured")
+    
+    # Token expires in 1 hour
+    current_timestamp = int(datetime.now(timezone.utc).timestamp())
+    expiration_timestamp = current_timestamp + 3600
+    
+    try:
+        token = RtcTokenBuilder.buildTokenWithUid(
+            appId=agora_app_id,
+            appCertificate=agora_app_certificate,
+            channelName=channelName,
+            uid=uid,
+            role=role,  # 1 = Publisher, 2 = Subscriber
+            privilegeExpiredTs=expiration_timestamp
+        )
+        
+        return {
+            "token": token,
+            "appId": agora_app_id,
+            "channelName": channelName,
+            "uid": uid,
+            "expiresIn": 3600
+        }
+    except Exception as e:
+        logger.error(f"Token generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Token generation failed: {str(e)}")
+
 # ===== PUSH NOTIFICATIONS =====
 
 @api_router.post("/notifications/send")
