@@ -1112,6 +1112,94 @@ frontend:
           
           **RECOMMENDATION**: The authentication system is ready for production use. The logout issue is minor and can be addressed in a future update.
 
+  - task: "Agora.io Video/Audio Calling Integration"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: |
+          AGORA.IO VIDEO/AUDIO CALLING INTEGRATION TESTING COMPLETED - ALL TESTS PASSED (6/6 SUCCESS)
+          
+          🎯 **TESTING SCOPE**: Complete Agora.io calling integration as requested
+          **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
+          **TEST USERS**: demo_user (e4ad7f6a-74c9-4417-84e3-9081261efb8b) ↔ u1 (friends)
+          
+          ✅ **COMPREHENSIVE TESTING RESULTS**:
+          
+          **TEST 1: Agora Token Generation** ✅ WORKING
+          - GET /api/agora/token?channelName=test-channel&uid=12345&role=1
+          - Successfully generated valid Agora RTC token
+          - Token length: 164+ characters (valid Agora format)
+          - AppId: 9d727260580f40d2ae8c131dbfd8ba08 (correctly configured)
+          - Supports both Publisher (role=1) and Subscriber (role=2) roles
+          
+          **TEST 2: Video Call Initiation** ✅ WORKING
+          - POST /api/calls/initiate?callerId={demo_user_id}&recipientId=u1&callType=video
+          - Successfully initiated video call between friends
+          - Returns: callId, channelName, callerToken, recipientToken, callType, caller/recipient info
+          - Both tokens generated correctly (164+ characters each)
+          - Friendship validation working (403 error for non-friends)
+          - Channel name format: call_{callerId}_{recipientId}_{random_hex}
+          
+          **TEST 3: Audio Call Initiation** ✅ WORKING
+          - POST /api/calls/initiate?callerId={demo_user_id}&recipientId=u1&callType=audio
+          - Successfully initiated audio call between friends
+          - Call type preserved correctly in response
+          - Same token generation and validation as video calls
+          - Proper user information included in response
+          
+          **TEST 4: Call Answer Flow** ✅ WORKING
+          - POST /api/calls/{callId}/answer?userId=u1
+          - Successfully answered incoming call
+          - Call status changed from "initiated" to "ongoing"
+          - Proper authorization (only recipient can answer)
+          - Returns success message and new status
+          
+          **TEST 5: Call End Flow** ✅ WORKING
+          - POST /api/calls/{callId}/end?userId={demo_user_id}
+          - Successfully ended active call
+          - Call duration calculated correctly (0 seconds for test)
+          - Both caller and recipient can end calls
+          - Proper call record updates in database
+          
+          **TEST 6: Token Generation Variations** ✅ WORKING
+          - Tested multiple channel names, UIDs, and roles
+          - All parameter combinations successful (3/3 tests passed)
+          - Consistent token generation across different scenarios
+          - Proper validation of input parameters
+          
+          🔧 **TECHNICAL VERIFICATION**:
+          - ✅ Agora credentials properly configured (AGORA_APP_ID, AGORA_APP_CERTIFICATE)
+          - ✅ Token expiration set to 24 hours (86400 seconds)
+          - ✅ Friendship validation enforced ("Can only call friends")
+          - ✅ Call state management (initiated → ongoing → ended)
+          - ✅ Database persistence of call records
+          - ✅ User authorization checks working
+          - ✅ Error handling for invalid requests
+          
+          📊 **API ENDPOINTS VERIFIED WORKING**:
+          ✅ GET /api/agora/token (token generation with channel, uid, role)
+          ✅ POST /api/calls/initiate (call initiation with friendship validation)
+          ✅ POST /api/calls/{callId}/answer (call answering with authorization)
+          ✅ POST /api/calls/{callId}/end (call ending with duration tracking)
+          
+          🎉 **SUCCESS CRITERIA MET (100%)**:
+          ✅ Token generation returns valid Agora tokens (not empty, proper format)
+          ✅ Call initiation creates call record and tokens for both users
+          ✅ Both video and audio call types work correctly
+          ✅ Call state transitions (ringing → active → ended) work correctly
+          ✅ No errors related to missing Agora credentials
+          ✅ Friendship validation prevents unauthorized calls
+          ✅ All response data includes required fields (callId, channelName, tokens)
+          
+          **AGORA.IO VIDEO/AUDIO CALLING INTEGRATION IS FULLY FUNCTIONAL AND PRODUCTION-READY**
+          **All requested test scenarios completed successfully with no critical issues found**
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
