@@ -3787,7 +3787,21 @@ class BackendTester:
             return
             
         try:
-            response = self.session.post(f"{BACKEND_URL}/calls/{call_id}/end")
+            # Get the actual demo user ID from login
+            demo_user_id = None
+            if hasattr(self, 'demo_token'):
+                # Try to get user ID from /auth/me endpoint
+                headers = {"Authorization": f"Bearer {self.demo_token}"}
+                me_response = self.session.get(f"{BACKEND_URL}/auth/me", headers=headers)
+                if me_response.status_code == 200:
+                    demo_user_id = me_response.json().get('id')
+            
+            if not demo_user_id:
+                demo_user_id = 'demo_user'  # Fallback
+            
+            # The caller (demo user) ends the call
+            params = {'userId': demo_user_id}
+            response = self.session.post(f"{BACKEND_URL}/calls/{call_id}/end", params=params)
             
             if response.status_code == 200:
                 data = response.json()
