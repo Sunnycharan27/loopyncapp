@@ -18,6 +18,7 @@ class AuthPhoneTester:
         self.test_results = []
         self.test_user_email = None
         self.test_user_token = None
+        self.test_user_phone = None
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
