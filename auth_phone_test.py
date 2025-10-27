@@ -333,8 +333,10 @@ class AuthPhoneTester:
             
             if response.status_code == 200:
                 data = response.json()
+                # Get expected phone from test user email
+                expected_phone = f"987654{self.test_user_email.split('_')[1][-4:]}" if '_' in self.test_user_email else "9876543210"
                 if ('id' in data and 'name' in data and 'email' in data and 
-                    data.get('phone') == "9876543210"):
+                    data.get('phone') == expected_phone):
                     self.log_result(
                         "User Data Persistence", 
                         True, 
