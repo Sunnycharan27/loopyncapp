@@ -454,12 +454,12 @@ class FriendsCallingTester:
             return
             
         try:
-            payload = {
-                'user1Id': self.user1_id,
-                'user2Id': self.user2_id
+            params = {
+                'userId': self.user1_id,
+                'peerUserId': self.user2_id
             }
             
-            response = self.session.post(f"{BACKEND_URL}/dm/thread", json=payload)
+            response = self.session.post(f"{BACKEND_URL}/dm/thread", params=params)
             
             if response.status_code == 200:
                 data = response.json()
