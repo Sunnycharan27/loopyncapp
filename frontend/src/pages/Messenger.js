@@ -333,19 +333,6 @@ const Messenger = () => {
   const initiateCall = async (callType) => {
     try {
       if (!selectedThread) return;
-      
-      // Check if peer is a friend using backend API for most up-to-date status
-      try {
-        const statusRes = await axios.get(`${API}/api/users/${currentUser.id}/friend-status/${selectedThread.peer.id}`);
-        if (statusRes.data.status !== "friends") {
-          toast.error("You can only call friends");
-          return;
-        }
-      } catch (error) {
-        console.error("Error checking friend status:", error);
-        toast.error("Unable to verify friend status");
-        return;
-      }
 
       const res = await axios.post(`${API}/api/calls/initiate`, null, {
         params: {
@@ -373,6 +360,10 @@ const Messenger = () => {
       if (error.response?.status === 403) {
         toast.error("You can only call friends");
       } else {
+        toast.error("Failed to start call");
+      }
+    }
+  };
         toast.error("Failed to start call");
       }
     }
