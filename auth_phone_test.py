@@ -45,7 +45,7 @@ class AuthPhoneTester:
                 "name": "Test User",
                 "handle": f"testuser123_{timestamp}",
                 "email": self.test_user_email,
-                "phone": "9876543210",
+                "phone": f"987654{timestamp[-4:]}",  # Use timestamp for unique phone
                 "password": "Test@1234"
             }
             
