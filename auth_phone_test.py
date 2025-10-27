@@ -41,12 +41,13 @@ class AuthPhoneTester:
             # Generate unique test user data
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             self.test_user_email = f"testuser123_{timestamp}@example.com"
+            self.test_user_phone = f"987654{timestamp[-4:]}"  # Store expected phone
             
             payload = {
                 "name": "Test User",
                 "handle": f"testuser123_{timestamp}",
                 "email": self.test_user_email,
-                "phone": f"987654{timestamp[-4:]}",  # Use timestamp for unique phone
+                "phone": self.test_user_phone,
                 "password": "Test@1234"
             }
             
