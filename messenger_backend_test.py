@@ -381,8 +381,8 @@ class MessengerBackendTester:
                 )
             
             # Test invalid DM thread creation
-            invalid_dm_payload = {"invalid": "data"}
-            dm_response = self.session.post(f"{BACKEND_URL}/dm/create-thread", json=invalid_dm_payload)
+            invalid_params = {"invalid": "data"}
+            dm_response = self.session.post(f"{BACKEND_URL}/dm/thread", params=invalid_params)
             
             if dm_response.status_code in [400, 422, 404]:
                 self.log_result(
