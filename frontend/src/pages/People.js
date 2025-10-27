@@ -132,12 +132,10 @@ const People = () => {
   const handleMessageClick = async (user) => {
     try {
       // Create or get DM thread
-      const res = await axios.post(`${API}/dm/threads`, {
-        user1Id: currentUser.id,
-        user2Id: user.id
-      });
+      const res = await axios.post(`${API}/dm/thread?userId=${currentUser.id}&peerUserId=${user.id}`);
       navigate(`/messenger/${res.data.id}`);
     } catch (error) {
+      console.error('Failed to start conversation:', error);
       toast.error('Failed to start conversation');
     }
   };
