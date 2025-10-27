@@ -845,6 +845,77 @@ frontend:
 
   - agent: "testing"
     message: |
+      DM THREADS FOR DEMO USER TO TEST CALLING - COMPREHENSIVE TESTING COMPLETED (7/7 TESTS PASSED - 100% SUCCESS)
+      
+      🎯 **REVIEW REQUEST**: Create DM Threads for Demo User to Test Calling
+      **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
+      **TEST DATE**: December 13, 2024
+      **TESTING SCOPE**: Complete end-to-end DM thread creation and calling functionality verification
+      
+      ✅ **ALL TEST SEQUENCE COMPLETED SUCCESSFULLY**:
+      
+      **TEST 1: Login Demo User** ✅ WORKING
+      - POST /api/auth/login with demo@loopync.com / password123
+      - Successfully authenticated and obtained JWT token
+      - Demo user ID captured: c8e55c2a-5b80-4269-ac41-364d5df4a04b
+      
+      **TEST 2: Check Demo User's Friends** ✅ WORKING
+      - GET /api/users/{demo_id} to verify friends array
+      - Demo user has 5 friends including expected u1, u2, u3
+      - Friends array contains: ['u1', 'u2', 'u3', 'u4', 'u5']
+      - All required friends available for DM thread creation
+      
+      **TEST 3: Create DM Thread with u1** ✅ WORKING
+      - POST /api/dm/thread with userId={demo_id} and peerUserId=u1
+      - Thread created successfully: d866e0ae-b2b7-442c-b446-bc6b23a3982a
+      - Test message sent successfully: "Hello u1! This is a test message for calling functionality."
+      
+      **TEST 4: Create DM Thread with u2** ✅ WORKING
+      - POST /api/dm/thread with userId={demo_id} and peerUserId=u2
+      - Thread created successfully: f098cd7f-73f8-478c-9511-b1882b908abf
+      - Test message sent successfully: "Hello u2! This is a test message for calling functionality."
+      
+      **TEST 5: Create DM Thread with u3** ✅ WORKING
+      - POST /api/dm/thread with userId={demo_id} and peerUserId=u3
+      - Thread created successfully: 6fe88bdd-05bd-40cb-9cad-9a970e9fb0f2
+      - Test message sent successfully: "Hello u3! This is a test message for calling functionality."
+      
+      **TEST 6: Verify Threads Exist** ✅ WORKING
+      - GET /api/dm/threads?userId={demo_id}
+      - Found 3 DM threads including all expected peers: ['u1', 'u2', 'u3']
+      - All threads properly created and accessible via API
+      - Threads will be visible in messenger UI
+      
+      **TEST 7: Test Call Initiation from One Thread** ✅ WORKING
+      - POST /api/calls/initiate?callerId={demo_id}&recipientId=u1&callType=video
+      - Call initiated successfully without "Can only call friends" error
+      - Response includes all required Agora fields: callId, channelName, callerToken, recipientToken
+      - Calling functionality fully operational between friends
+      
+      🎉 **ALL EXPECTED RESULTS ACHIEVED**:
+      ✅ DM threads created successfully (3 threads with u1, u2, u3)
+      ✅ Threads visible in messenger (confirmed via API)
+      ✅ Can initiate calls from the threads (video call test passed)
+      ✅ User can now test calling functionality in the UI
+      
+      📋 **CREATED THREADS FOR TESTING**:
+      - Thread d866e0ae-b2b7-442c-b446-bc6b23a3982a with u1 (includes test message)
+      - Thread f098cd7f-73f8-478c-9511-b1882b908abf with u2 (includes test message)  
+      - Thread 6fe88bdd-05bd-40cb-9cad-9a970e9fb0f2 with u3 (includes test message)
+      
+      🔧 **TECHNICAL VERIFICATION**:
+      - ✅ Demo user authentication working correctly
+      - ✅ Friend relationships properly established (demo user has u1, u2, u3 as friends)
+      - ✅ DM thread creation API working correctly
+      - ✅ Message sending in DM threads working correctly
+      - ✅ DM threads retrieval API working correctly
+      - ✅ Call initiation API working correctly with friendship validation
+      - ✅ All backend APIs functioning as expected
+      
+      **CONCLUSION**: The messenger now has DM threads between demo user and their friends (u1, u2, u3) with test messages. The demo user can successfully test calling functionality from these threads. The "No messages yet" issue has been resolved - the messenger will now show the created threads with messages.
+
+  - agent: "testing"
+    message: |
       COMPLETE USER ONBOARDING AND LOGIN FLOW TESTING COMPLETED - ALL CORE FLOWS WORKING (6/7 TESTS PASSED)
       
       🎯 **TESTING SCOPE**: Complete user authentication and onboarding flow as requested
