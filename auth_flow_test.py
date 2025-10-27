@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://tribe-messenger.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopsuite.preview.emergentagent.com/api"
 
 class AuthFlowTester:
     def __init__(self):

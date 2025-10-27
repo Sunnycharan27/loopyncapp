@@ -3830,7 +3830,7 @@ backend:
           - Successfully retrieved uploaded file using returned URL path
           - Correct HTTP 200 response with proper content-type headers
           - File served correctly through ingress routing
-          - Full URL construction working: https://tribe-messenger.preview.emergentagent.com/api/uploads/{filename}
+          - Full URL construction working: https://loopsuite.preview.emergentagent.com/api/uploads/{filename}
           
           Static file upload and retrieval system is fully functional.
 
