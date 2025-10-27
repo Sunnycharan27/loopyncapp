@@ -17,6 +17,7 @@ const AuthComplete = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [handle, setHandle] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   
   // Verification
