@@ -112,9 +112,9 @@ const VibeCapsuleUpload = ({ currentUser, onUploadComplete }) => {
       </button>
 
       {/* Upload Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-2xl max-w-lg w-full border border-gray-700">
+      {showModal && ReactDOM.createPortal(
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
+          <div className="bg-gray-800 rounded-2xl max-w-lg w-full border border-gray-700" style={{ zIndex: 10000 }}>
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <h2 className="text-xl font-bold text-white">Create Vibe Capsule</h2>
