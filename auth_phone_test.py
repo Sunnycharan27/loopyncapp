@@ -58,9 +58,10 @@ class AuthPhoneTester:
                     user = data['user']
                     
                     # Validate user data includes phone number
+                    expected_phone = f"987654{timestamp[-4:]}"
                     if (user.get('email') == self.test_user_email and 
                         user.get('name') == "Test User" and 
-                        user.get('phone') == "9876543210" and
+                        user.get('phone') == expected_phone and
                         user.get('id')):
                         self.log_result(
                             "New User Signup with Phone Number", 
