@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Friend Request System Testing Suite
-Tests the complete friend request flow as requested in the review.
+Friend Request System with Permanent Friendships Test
+Tests the complete friend request flow as specified in the review request.
 """
 
 import requests
@@ -18,10 +18,12 @@ class FriendRequestTester:
     def __init__(self):
         self.session = requests.Session()
         self.test_results = []
+        self.demo_user_id = None
         self.demo_token = None
-        self.demo_user_id = "demo_user"  # Use seeded demo_user instead of Google Sheets user
-        self.u1_user_id = "u1"
-        self.u2_user_id = "u2"
+        self.test_user_id = None
+        self.test_user_token = None
+        self.test_user_email = None
+        self.friend_request_id = None
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
