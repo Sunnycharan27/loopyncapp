@@ -1017,6 +1017,12 @@ async def signup(req: UserCreate):
         if existing_email:
             raise HTTPException(status_code=400, detail=f"Email '{req.email}' is already registered. Please login instead.")
         
+        # Check if phone already exists
+        if req.phone:
+            existing_phone = await db.users.find_one({"phone": req.phone}, {"_id": 0})
+            if existing_phone:
+                raise HTTPException(status_code=400, detail=f"Phone number '{req.phone}' is already registered.")
+        
         # Create user in Google Sheets
         user = sheets_db.create_user(
             name=req.name,
@@ -1030,6 +1036,7 @@ async def signup(req: UserCreate):
             handle=req.handle,
             name=req.name,
             email=req.email,
+            phone=req.phone if req.phone else "",
             avatar=f"https://api.dicebear.com/7.x/avataaars/svg?seed={req.handle}",
             isVerified=True,  # Auto-verified
             bio="",
