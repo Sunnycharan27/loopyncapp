@@ -29,6 +29,7 @@ import Auth from "./pages/Auth";
 import AuthComplete from "./pages/AuthComplete";
 import { Toaster } from "sonner";
 import { WebSocketProvider } from "./context/WebSocketContext";
+import CallManager from "./components/CallManager";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
