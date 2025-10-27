@@ -3655,8 +3655,18 @@ class BackendTester:
         self.test_ai_recommend_venues()
         self.test_ai_recommend_events()
         
-        # Priority 13: Call Features Tests
-        print("\n📞 PRIORITY 13: CALL FEATURES (NEW ENDPOINTS)")
+        # Priority 13: Agora.io Video/Audio Calling Integration Tests
+        print("\n🎥 PRIORITY 13: AGORA.IO VIDEO/AUDIO CALLING INTEGRATION")
+        print("-" * 60)
+        self.test_agora_token_generation()
+        self.test_call_initiation_video()
+        self.test_call_initiation_audio()
+        self.test_call_answer_agora()
+        self.test_call_end_agora()
+        self.test_agora_token_variations()
+        
+        # Priority 14: Call Features Tests (Legacy)
+        print("\n📞 PRIORITY 14: CALL FEATURES (LEGACY ENDPOINTS)")
         print("-" * 60)
         self.test_call_initiate()
         self.test_call_answer()
