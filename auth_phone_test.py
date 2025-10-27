@@ -115,8 +115,10 @@ class AuthPhoneTester:
                     user = data['user']
                     
                     # Validate user data includes phone number
+                    # Get the expected phone from the signup test
+                    expected_phone = f"987654{self.test_user_email.split('_')[1][-4:]}" if '_' in self.test_user_email else "9876543210"
                     if (user.get('email') == self.test_user_email and 
-                        user.get('phone') == "9876543210" and
+                        user.get('phone') == expected_phone and
                         user.get('name') and 
                         user.get('id')):
                         self.log_result(
