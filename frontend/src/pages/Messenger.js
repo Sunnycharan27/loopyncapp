@@ -336,7 +336,7 @@ const Messenger = () => {
       
       // Check if peer is a friend using backend API for most up-to-date status
       try {
-        const statusRes = await axios.get(`${API}/users/${currentUser.id}/friend-status/${selectedThread.peer.id}`);
+        const statusRes = await axios.get(`${API}/api/users/${currentUser.id}/friend-status/${selectedThread.peer.id}`);
         if (statusRes.data.status !== "friends") {
           toast.error("You can only call friends");
           return;
@@ -347,17 +347,23 @@ const Messenger = () => {
         return;
       }
 
-      const res = await axios.post(`${API}/calls/initiate`, {
-        callerId: currentUser.id,
-        recipientId: selectedThread.peer.id,
-        callType // "voice" or "video"
+      const res = await axios.post(`${API}/api/calls/initiate`, null, {
+        params: {
+          callerId: currentUser.id,
+          recipientId: selectedThread.peer.id,
+          callType // "voice" or "video"
+        }
       });
 
       setCallData({
-        ...res.data,
+        callId: res.data.callId,
+        channelName: res.data.channelName,
+        appId: res.data.appId,
+        callerToken: res.data.callerToken,
+        callerUid: res.data.callerUid,
         callType,
-        recipientUser: selectedThread.peer,
-        myToken: res.data.callerToken
+        peerName: selectedThread.peer.name || selectedThread.peer.handle,
+        isInitiator: true
       });
       setShowCall(true);
       
