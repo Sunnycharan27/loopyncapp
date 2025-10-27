@@ -211,7 +211,8 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
           </button>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
