@@ -42,9 +42,10 @@ created_count = 0
 for capsule_data in capsules_to_create:
     try:
         print(f"\n📤 Creating capsule for user {capsule_data['userId']}...")
+        user_id = capsule_data.pop('userId')
         response = requests.post(
             f"{BACKEND_URL}/capsules",
-            params={"userId": capsule_data["userId"]},
+            params={"authorId": user_id},
             json=capsule_data
         )
         
