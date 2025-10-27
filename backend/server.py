@@ -1055,6 +1055,7 @@ async def signup(req: UserCreate):
                 "handle": req.handle,
                 "name": user['name'],
                 "email": user['email'],
+                "phone": req.phone if req.phone else "",
                 "avatar": mongo_user.avatar,
                 "isVerified": True,
                 "bio": "",
