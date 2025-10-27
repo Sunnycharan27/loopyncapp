@@ -5672,6 +5672,14 @@ async def create_trust_circle(data: TrustCircleCreate, createdBy: str):
     doc = circle.model_dump()
     await db.trust_circles.insert_one(doc)
     
+    # Return without MongoDB _id
+    result = await db.trust_circles.find_one({"id": circle.id}, {"_id": 0})
+    if result:
+        result["memberCount"] = len(data.members)
+        return result
+    
+    # Fallback if find fails
+    doc.pop("_id", None)
     doc["memberCount"] = len(data.members)
     return doc
 
