@@ -3546,6 +3546,290 @@ class BackendTester:
         except Exception as e:
             self.log_result("Speaker Token Generation", False, f"Exception occurred: {str(e)}")
 
+    def test_agora_token_generation(self):
+        """Test Agora Token Generation Endpoint"""
+        try:
+            params = {
+                'channelName': 'test-channel',
+                'uid': 12345,
+                'role': 1  # Publisher role
+            }
+            
+            response = self.session.get(f"{BACKEND_URL}/agora/token", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if ('token' in data and 'appId' in data and 
+                    'channelName' in data and 'uid' in data):
+                    # Validate token is not empty and follows expected format
+                    token = data['token']
+                    if token and len(token) > 50:  # Agora tokens are typically long
+                        self.log_result(
+                            "Agora Token Generation", 
+                            True, 
+                            f"Successfully generated Agora token for channel '{data['channelName']}'",
+                            f"AppId: {data['appId']}, UID: {data['uid']}, Token length: {len(token)}"
+                        )
+                    else:
+                        self.log_result(
+                            "Agora Token Generation", 
+                            False, 
+                            "Token generated but appears invalid (too short)",
+                            f"Token: {token[:20]}..."
+                        )
+                else:
+                    self.log_result(
+                        "Agora Token Generation", 
+                        False, 
+                        "Token response missing required fields",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Agora Token Generation", 
+                    False, 
+                    f"Token generation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Agora Token Generation", False, f"Exception occurred: {str(e)}")
+    
+    def test_call_initiation_video(self):
+        """Test Video Call Initiation between demo_user and u1"""
+        try:
+            params = {
+                'callerId': 'demo_user',
+                'recipientId': 'u1',
+                'callType': 'video'
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['callId', 'channelName', 'appId', 'callerToken', 
+                                 'callerUid', 'recipientToken', 'recipientUid']
+                
+                if all(field in data for field in required_fields):
+                    # Store call ID for subsequent tests
+                    self.video_call_id = data['callId']
+                    
+                    # Validate tokens are not empty
+                    caller_token = data['callerToken']
+                    recipient_token = data['recipientToken']
+                    
+                    if (caller_token and len(caller_token) > 50 and 
+                        recipient_token and len(recipient_token) > 50):
+                        self.log_result(
+                            "Video Call Initiation", 
+                            True, 
+                            f"Successfully initiated video call: {data['callId']}",
+                            f"Channel: {data['channelName']}, AppId: {data['appId']}, "
+                            f"Caller UID: {data['callerUid']}, Recipient UID: {data['recipientUid']}"
+                        )
+                    else:
+                        self.log_result(
+                            "Video Call Initiation", 
+                            False, 
+                            "Call initiated but tokens appear invalid",
+                            f"Caller token length: {len(caller_token)}, Recipient token length: {len(recipient_token)}"
+                        )
+                else:
+                    missing_fields = [field for field in required_fields if field not in data]
+                    self.log_result(
+                        "Video Call Initiation", 
+                        False, 
+                        f"Call initiation response missing fields: {missing_fields}",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Video Call Initiation", 
+                    False, 
+                    f"Video call initiation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Video Call Initiation", False, f"Exception occurred: {str(e)}")
+    
+    def test_call_initiation_audio(self):
+        """Test Audio Call Initiation between demo_user and u2"""
+        try:
+            params = {
+                'callerId': 'demo_user',
+                'recipientId': 'u2',
+                'callType': 'audio'
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
+            
+            if response.status_code == 200:
+                data = response.json()
+                required_fields = ['callId', 'channelName', 'appId', 'callerToken', 
+                                 'callerUid', 'recipientToken', 'recipientUid']
+                
+                if all(field in data for field in required_fields):
+                    # Store call ID for subsequent tests
+                    self.audio_call_id = data['callId']
+                    
+                    # Validate tokens are not empty
+                    caller_token = data['callerToken']
+                    recipient_token = data['recipientToken']
+                    
+                    if (caller_token and len(caller_token) > 50 and 
+                        recipient_token and len(recipient_token) > 50):
+                        self.log_result(
+                            "Audio Call Initiation", 
+                            True, 
+                            f"Successfully initiated audio call: {data['callId']}",
+                            f"Channel: {data['channelName']}, Call Type: audio"
+                        )
+                    else:
+                        self.log_result(
+                            "Audio Call Initiation", 
+                            False, 
+                            "Call initiated but tokens appear invalid",
+                            f"Caller token length: {len(caller_token)}, Recipient token length: {len(recipient_token)}"
+                        )
+                else:
+                    missing_fields = [field for field in required_fields if field not in data]
+                    self.log_result(
+                        "Audio Call Initiation", 
+                        False, 
+                        f"Call initiation response missing fields: {missing_fields}",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Audio Call Initiation", 
+                    False, 
+                    f"Audio call initiation failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Audio Call Initiation", False, f"Exception occurred: {str(e)}")
+    
+    def test_call_answer_agora(self):
+        """Test Call Answer Endpoint (Agora Integration)"""
+        # Use video call ID if available, otherwise skip
+        call_id = getattr(self, 'video_call_id', None)
+        if not call_id:
+            self.log_result("Call Answer (Agora)", False, "Skipped - no call ID available from initiation test")
+            return
+            
+        try:
+            response = self.session.post(f"{BACKEND_URL}/calls/{call_id}/answer")
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check if call status changed to "active" or similar
+                if ('status' in data and data['status'] in ['active', 'ongoing']) or 'success' in data:
+                    self.log_result(
+                        "Call Answer (Agora)", 
+                        True, 
+                        f"Successfully answered call: {call_id}",
+                        f"New status: {data.get('status', 'success')}"
+                    )
+                else:
+                    self.log_result(
+                        "Call Answer (Agora)", 
+                        False, 
+                        "Call answer response unexpected format",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Call Answer (Agora)", 
+                    False, 
+                    f"Call answer failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call Answer (Agora)", False, f"Exception occurred: {str(e)}")
+    
+    def test_call_end_agora(self):
+        """Test Call End Endpoint (Agora Integration)"""
+        # Use audio call ID if available, otherwise skip
+        call_id = getattr(self, 'audio_call_id', None)
+        if not call_id:
+            self.log_result("Call End (Agora)", False, "Skipped - no call ID available from initiation test")
+            return
+            
+        try:
+            response = self.session.post(f"{BACKEND_URL}/calls/{call_id}/end")
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Check if call status changed to "ended"
+                if ('status' in data and data['status'] == 'ended') or 'success' in data:
+                    self.log_result(
+                        "Call End (Agora)", 
+                        True, 
+                        f"Successfully ended call: {call_id}",
+                        f"Response: {data}"
+                    )
+                else:
+                    self.log_result(
+                        "Call End (Agora)", 
+                        False, 
+                        "Call end response unexpected format",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "Call End (Agora)", 
+                    False, 
+                    f"Call end failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("Call End (Agora)", False, f"Exception occurred: {str(e)}")
+    
+    def test_agora_token_variations(self):
+        """Test Agora Token Generation with Various Parameters"""
+        try:
+            test_cases = [
+                {'channelName': 'test-channel-1', 'uid': 11111, 'role': 1},
+                {'channelName': 'test-channel-2', 'uid': 22222, 'role': 2},  # Subscriber role
+                {'channelName': 'call-demo-test', 'uid': 99999, 'role': 1}
+            ]
+            
+            successful_tests = 0
+            total_tests = len(test_cases)
+            
+            for i, params in enumerate(test_cases):
+                response = self.session.get(f"{BACKEND_URL}/agora/token", params=params)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if ('token' in data and 'appId' in data and 
+                        data['channelName'] == params['channelName'] and
+                        data['uid'] == params['uid']):
+                        successful_tests += 1
+                
+            if successful_tests == total_tests:
+                self.log_result(
+                    "Agora Token Variations", 
+                    True, 
+                    f"All {total_tests} token generation variations successful",
+                    f"Tested different channels, UIDs, and roles"
+                )
+            else:
+                self.log_result(
+                    "Agora Token Variations", 
+                    False, 
+                    f"Only {successful_tests}/{total_tests} token variations successful",
+                    f"Some parameter combinations failed"
+                )
+                
+        except Exception as e:
+            self.log_result("Agora Token Variations", False, f"Exception occurred: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 80)
