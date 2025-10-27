@@ -597,7 +597,7 @@ frontend:
       COMPLETE MESSENGER BACKEND API TESTING COMPLETED - COMPREHENSIVE ANALYSIS (7/8 TESTS PASSED)
       
       🎯 **TESTING SCOPE**: Complete Messenger Backend Functionality as requested
-      **BACKEND URL**: https://loopsuite.preview.emergentagent.com/api
+      **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
       **TEST USER**: demo_user
       
       ✅ **SUCCESSFUL API ENDPOINTS**:
@@ -655,7 +655,7 @@ frontend:
       COMPLETE MESSENGER WITH VIDEO/AUDIO CALLING E2E TESTING COMPLETED - COMPREHENSIVE ANALYSIS
       
       🎯 **TESTING SCOPE**: Complete Messenger with Video/Audio Calling E2E as requested
-      **FRONTEND URL**: https://loopsuite.preview.emergentagent.com
+      **FRONTEND URL**: https://chatvibes-7.preview.emergentagent.com
       **TEST USER**: demo@loopync.com / password123
       **TESTING DATE**: October 27, 2025
       
@@ -1498,7 +1498,7 @@ backend:
           FRIENDS SYSTEM AND CALLING BACKEND INTEGRATION TESTING COMPLETED - ALL SUCCESS CRITERIA MET (13/13 TESTS PASSED - 100% SUCCESS RATE)
           
           🎯 **COMPREHENSIVE TESTING RESULTS**:
-          **BACKEND URL**: https://loopsuite.preview.emergentagent.com/api
+          **BACKEND URL**: https://chatvibes-7.preview.emergentagent.com/api
           **TEST USERS**: Created testuser1_caller and testuser2_receiver with unique IDs
           
           ✅ **TEST 1: Create Two Test Users**:
@@ -4499,7 +4499,7 @@ backend:
           - Successfully retrieved uploaded file using returned URL path
           - Correct HTTP 200 response with proper content-type headers
           - File served correctly through ingress routing
-          - Full URL construction working: https://loopsuite.preview.emergentagent.com/api/uploads/{filename}
+          - Full URL construction working: https://chatvibes-7.preview.emergentagent.com/api/uploads/{filename}
           
           Static file upload and retrieval system is fully functional.
 
@@ -5327,7 +5327,7 @@ agent_communication:
       
       🎯 COMPREHENSIVE AUTHENTICATION UI TESTING RESULTS:
       **TASK**: Verify authentication UI changes on auth page
-      **FRONTEND URL**: https://loopsuite.preview.emergentagent.com/auth
+      **FRONTEND URL**: https://chatvibes-7.preview.emergentagent.com/auth
       
       ✅ **TEST 1: LOGIN PAGE VERIFICATION (DEFAULT VIEW)** - 100% PASSED
       - ✅ "Loopync" logo visible and properly displayed
