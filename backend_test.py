@@ -3746,7 +3746,9 @@ class BackendTester:
             return
             
         try:
-            response = self.session.post(f"{BACKEND_URL}/calls/{call_id}/answer")
+            # The recipient (u1) answers the call
+            params = {'userId': 'u1'}
+            response = self.session.post(f"{BACKEND_URL}/calls/{call_id}/answer", params=params)
             
             if response.status_code == 200:
                 data = response.json()
