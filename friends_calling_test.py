@@ -496,13 +496,13 @@ class FriendsCallingTester:
             return
             
         try:
-            payload = {
+            params = {
                 'callerId': self.user1_id,
                 'recipientId': self.user2_id,
                 'callType': 'video'
             }
             
-            response = self.session.post(f"{BACKEND_URL}/calls/initiate", json=payload)
+            response = self.session.post(f"{BACKEND_URL}/calls/initiate", params=params)
             
             if response.status_code == 200:
                 data = response.json()
