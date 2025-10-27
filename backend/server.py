@@ -1175,6 +1175,39 @@ async def login(req: LoginRequest):
                         "friendRequestsReceived": []
                     }
     
+    # Special handling for demo user - ensure they have friends for testing
+    if user['email'] == 'demo@loopync.com':
+        current_friends = mongo_user.get('friends', [])
+        # If demo user has no friends, add some seeded users as friends
+        if len(current_friends) == 0:
+            seeded_user_ids = ['u1', 'u2', 'u3']
+            updated_friends = []
+            
+            # Check which seeded users exist and add them as friends
+            for seeded_id in seeded_user_ids:
+                seeded_user = await db.users.find_one({"id": seeded_id}, {"_id": 0})
+                if seeded_user:
+                    # Add to demo user's friends
+                    updated_friends.append(seeded_id)
+                    
+                    # Also add demo user to seeded user's friends list (bidirectional)
+                    seeded_friends = seeded_user.get('friends', [])
+                    if user['user_id'] not in seeded_friends:
+                        seeded_friends.append(user['user_id'])
+                        await db.users.update_one(
+                            {"id": seeded_id},
+                            {"$set": {"friends": seeded_friends}}
+                        )
+            
+            # Update demo user's friends list
+            if updated_friends:
+                await db.users.update_one(
+                    {"id": user['user_id']},
+                    {"$set": {"friends": updated_friends}}
+                )
+                mongo_user['friends'] = updated_friends
+                logger.info(f"Demo user auto-friended with {len(updated_friends)} seeded users")
+    
     # Generate JWT token
     token = create_access_token(user['user_id'])
     
