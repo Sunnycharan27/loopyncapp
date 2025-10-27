@@ -5995,6 +5995,21 @@ async def initiate_call(callerId: str, recipientId: str, callType: str = "video"
         }
         await db.notifications.insert_one(notification)
         
+        # Emit WebSocket event to recipient for real-time call notification
+        try:
+            await emit_to_user(recipientId, 'incoming_call', {
+                "callId": call["id"],
+                "callerId": callerId,
+                "callType": callType,
+                "channelName": channel_name,
+                "token": recipient_token,
+                "uid": recipient_uid,
+                "appId": agora_app_id,
+                "callerName": caller.get("name", "Unknown")
+            })
+        except Exception as ws_error:
+            logger.warning(f"Failed to send WebSocket notification: {str(ws_error)}")
+        
         return {
             "callId": call["id"],
             "channelName": channel_name,
