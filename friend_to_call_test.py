@@ -96,7 +96,7 @@ class FriendToCallTester:
         try:
             # Generate unique test user data
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.test_user_email = f"testuser_{timestamp}@friendcall.test"
+            self.test_user_email = f"testuser_{timestamp}@example.com"
             
             payload = {
                 "email": self.test_user_email,
