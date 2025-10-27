@@ -207,7 +207,8 @@ const VibeCapsuleUpload = ({ currentUser, onUploadComplete }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
