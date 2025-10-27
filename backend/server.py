@@ -2915,68 +2915,6 @@ async def raise_hand(roomId: str, userId: str):
 # ===== CALL FEATURES (Voice & Video) =====
 # One-on-one calls between friends using Agora
 
-@api_router.post("/calls/initiate")
-async def initiate_call(callerId: str, recipientId: str, callType: str):
-    """Initiate a voice or video call between friends"""
-    try:
-        # Check if users are friends
-        caller = await db.users.find_one({"id": callerId}, {"_id": 0})
-        recipient = await db.users.find_one({"id": recipientId}, {"_id": 0})
-        
-        if not caller or not recipient:
-            raise HTTPException(status_code=404, detail="User not found")
-        
-        # Verify friendship
-        caller_friends = caller.get("friends", [])
-        if recipientId not in caller_friends:
-            raise HTTPException(status_code=403, detail="Can only call friends")
-        
-        # Generate unique channel name for this call
-        channel_name = f"call_{callerId}_{recipientId}_{uuid.uuid4().hex[:8]}"
-        
-        # Generate Agora tokens for both users
-        caller_token = generate_agora_token_internal(channel_name, callerId)
-        recipient_token = generate_agora_token_internal(channel_name, recipientId)
-        
-        # Create call record
-        call = {
-            "id": str(uuid.uuid4()),
-            "callerId": callerId,
-            "recipientId": recipientId,
-            "channelName": channel_name,
-            "callType": callType,  # "voice" or "video"
-            "status": "initiated",  # initiated, ongoing, ended, missed
-            "startedAt": datetime.now(timezone.utc).isoformat(),
-            "endedAt": None,
-            "duration": 0
-        }
-        
-        await db.calls.insert_one(call)
-        
-        return {
-            "callId": call["id"],
-            "channelName": channel_name,
-            "callerToken": caller_token,
-            "recipientToken": recipient_token,
-            "callType": callType,
-            "caller": {
-                "id": caller["id"],
-                "name": caller["name"],
-                "avatar": caller.get("avatar")
-            },
-            "recipient": {
-                "id": recipient["id"],
-                "name": recipient["name"],
-                "avatar": recipient.get("avatar")
-            }
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error initiating call: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 @api_router.post("/calls/{callId}/answer")
 async def answer_call(callId: str, userId: str):
     """Answer an incoming call"""
