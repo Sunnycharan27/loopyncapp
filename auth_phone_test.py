@@ -209,7 +209,7 @@ class AuthPhoneTester:
                 "name": "Another Test User",
                 "handle": f"anotheruser_{timestamp}",
                 "email": f"anotheruser_{timestamp}@example.com",
-                "phone": f"987654{timestamp[-4:]}",  # Use same pattern but different timestamp
+                "phone": self.test_user_phone,  # Use same phone as first user to test duplication
                 "password": "AnotherTest@1234"
             }
             
