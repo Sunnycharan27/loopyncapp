@@ -807,8 +807,9 @@ const Messenger = () => {
       
       {/* Call Modal */}
       {showCall && callData && (
-        <CallModal
+        <AgoraCallModal
           callData={callData}
+          currentUserId={currentUser.id}
           onClose={() => {
             setShowCall(false);
             setCallData(null);
