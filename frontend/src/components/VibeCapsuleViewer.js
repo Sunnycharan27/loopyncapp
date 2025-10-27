@@ -144,7 +144,7 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
       </div>
 
       {/* Content */}
-      <div className="relative w-full max-w-lg h-full flex items-center justify-center">
+      <div className="relative w-full max-w-lg h-full flex items-center justify-center" style={{ zIndex: 10000 }}>
         {currentCapsule.mediaType === "image" ? (
           <img
             src={currentCapsule.mediaUrl}
