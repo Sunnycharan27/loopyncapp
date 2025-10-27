@@ -92,6 +92,7 @@ class User(BaseModel):
     handle: str
     name: str
     email: str = ""
+    phone: str = ""
     avatar: str = "https://api.dicebear.com/7.x/avataaars/svg?seed=default"
     coverPhoto: str = ""
     bio: str = ""
