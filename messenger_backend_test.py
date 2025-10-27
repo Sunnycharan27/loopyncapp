@@ -177,7 +177,7 @@ class MessengerBackendTester:
             self.log_result("DM Threads GET", False, f"Exception occurred: {str(e)}")
     
     def test_dm_thread_create(self):
-        """Test 4: POST /api/dm/create-thread"""
+        """Test 4: POST /api/dm/thread"""
         try:
             # First, create a test user to DM with
             test_user_email = f"testuser_{datetime.now().strftime('%Y%m%d_%H%M%S')}@example.com"
@@ -194,23 +194,32 @@ class MessengerBackendTester:
                 signup_data = signup_response.json()
                 self.test_user_id = signup_data['user']['id']
                 
-                # Now try to create DM thread
-                dm_payload = {
-                    "user1Id": DEMO_USER_ID,
-                    "user2Id": self.test_user_id
+                # Make them friends first (required for DM)
+                friend_response = self.session.post(f"{BACKEND_URL}/friends/request", 
+                                                  params={'fromUserId': DEMO_USER_ID, 'toUserId': self.test_user_id})
+                
+                if friend_response.status_code == 200:
+                    # Accept the friend request
+                    accept_response = self.session.post(f"{BACKEND_URL}/friends/accept", 
+                                                      params={'userId': self.test_user_id, 'friendId': DEMO_USER_ID})
+                
+                # Now try to create DM thread using correct endpoint
+                params = {
+                    "userId": DEMO_USER_ID,
+                    "peerUserId": self.test_user_id
                 }
                 
-                response = self.session.post(f"{BACKEND_URL}/dm/create-thread", json=dm_payload)
+                response = self.session.post(f"{BACKEND_URL}/dm/thread", params=params)
                 
                 if response.status_code == 200:
                     data = response.json()
-                    if 'threadId' in data or 'id' in data:
-                        self.dm_thread_id = data.get('threadId') or data.get('id')
+                    if 'threadId' in data:
+                        self.dm_thread_id = data['threadId']
                         self.log_result(
                             "DM Thread CREATE", 
                             True, 
                             f"Successfully created DM thread between demo_user and test user",
-                            f"Thread ID: {self.dm_thread_id}"
+                            f"Thread ID: {self.dm_thread_id}, Existing: {data.get('existing', False)}"
                         )
                     else:
                         self.log_result(
@@ -219,11 +228,11 @@ class MessengerBackendTester:
                             "DM thread creation response missing thread ID",
                             f"Response: {data}"
                         )
-                elif response.status_code == 404:
+                elif response.status_code == 403:
                     self.log_result(
                         "DM Thread CREATE", 
                         False, 
-                        "DM thread create endpoint not found (404)",
+                        "DM thread creation failed - users must be friends first",
                         f"Response: {response.text}"
                     )
                 else:
