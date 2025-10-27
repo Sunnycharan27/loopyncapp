@@ -377,7 +377,7 @@ frontend:
     implemented: true
     working: true
     file: "/app/frontend/src/components/FriendButton.js, /app/frontend/src/pages/People.js, /app/frontend/src/pages/Notifications.js, /app/frontend/src/pages/UserProfile.js"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
