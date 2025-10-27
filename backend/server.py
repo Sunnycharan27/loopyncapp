@@ -559,6 +559,24 @@ class MessageRead(BaseModel):
     lastReadMessageId: Optional[str] = None
     readAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+class TrustCircle(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str = ""
+    icon: str = "👥"
+    color: str = "from-blue-400 to-purple-500"
+    createdBy: str
+    members: List[str] = Field(default_factory=list)  # List of user IDs
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class TrustCircleCreate(BaseModel):
+    name: str
+    description: str = ""
+    icon: str = "👥"
+    color: str = "from-blue-400 to-purple-500"
+    members: List[str] = []
+
 razorpay_client = razorpay.Client(auth=(razorpay_key, razorpay_secret))
 
 # ===== JWT TOKEN UTILITIES =====
