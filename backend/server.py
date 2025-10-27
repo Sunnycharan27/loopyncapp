@@ -5639,6 +5639,103 @@ async def check_friendship(userId: str, friendId: str):
     
     return {"areFriends": False, "hasPendingRequest": False}
 
+# ===== TRUST CIRCLES =====
+
+@api_router.get("/trust-circles")
+async def get_trust_circles(userId: str):
+    """Get user's trust circles"""
+    circles = await db.trust_circles.find({
+        "$or": [
+            {"createdBy": userId},
+            {"members": userId}
+        ]
+    }, {"_id": 0}).to_list(1000)
+    
+    # Enrich with member count
+    for circle in circles:
+        circle["memberCount"] = len(circle.get("members", []))
+    
+    return circles
+
+@api_router.post("/trust-circles")
+async def create_trust_circle(data: TrustCircleCreate, createdBy: str):
+    """Create a new trust circle"""
+    circle = TrustCircle(
+        name=data.name,
+        description=data.description,
+        icon=data.icon,
+        color=data.color,
+        createdBy=createdBy,
+        members=data.members
+    )
+    
+    doc = circle.model_dump()
+    await db.trust_circles.insert_one(doc)
+    
+    doc["memberCount"] = len(data.members)
+    return doc
+
+@api_router.get("/trust-circles/{circleId}")
+async def get_trust_circle(circleId: str, userId: str):
+    """Get trust circle details"""
+    circle = await db.trust_circles.find_one({"id": circleId}, {"_id": 0})
+    if not circle:
+        raise HTTPException(status_code=404, detail="Trust circle not found")
+    
+    # Check if user has access
+    if userId != circle["createdBy"] and userId not in circle.get("members", []):
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Enrich with member details
+    members = []
+    for member_id in circle.get("members", []):
+        member = await db.users.find_one({"id": member_id}, {"_id": 0, "id": 1, "name": 1, "handle": 1, "avatar": 1})
+        if member:
+            members.append(member)
+    
+    circle["memberDetails"] = members
+    circle["memberCount"] = len(members)
+    
+    return circle
+
+@api_router.put("/trust-circles/{circleId}")
+async def update_trust_circle(circleId: str, userId: str, data: dict):
+    """Update trust circle"""
+    circle = await db.trust_circles.find_one({"id": circleId}, {"_id": 0})
+    if not circle:
+        raise HTTPException(status_code=404, detail="Trust circle not found")
+    
+    if userId != circle["createdBy"]:
+        raise HTTPException(status_code=403, detail="Only creator can update circle")
+    
+    allowed_fields = ["name", "description", "icon", "color", "members"]
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+    
+    if update_data:
+        await db.trust_circles.update_one(
+            {"id": circleId},
+            {"$set": update_data}
+        )
+    
+    updated_circle = await db.trust_circles.find_one({"id": circleId}, {"_id": 0})
+    updated_circle["memberCount"] = len(updated_circle.get("members", []))
+    
+    return updated_circle
+
+@api_router.delete("/trust-circles/{circleId}")
+async def delete_trust_circle(circleId: str, userId: str):
+    """Delete trust circle"""
+    circle = await db.trust_circles.find_one({"id": circleId}, {"_id": 0})
+    if not circle:
+        raise HTTPException(status_code=404, detail="Trust circle not found")
+    
+    if userId != circle["createdBy"]:
+        raise HTTPException(status_code=403, detail="Only creator can delete circle")
+    
+    await db.trust_circles.delete_one({"id": circleId})
+    
+    return {"success": True, "message": "Trust circle deleted"}
+
 # ===== MARKETPLACE - FULL SYSTEM =====
 
 @api_router.get("/marketplace/products")
