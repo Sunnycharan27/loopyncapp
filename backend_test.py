@@ -3598,8 +3598,20 @@ class BackendTester:
     def test_call_initiation_video(self):
         """Test Video Call Initiation between demo_user and u1"""
         try:
+            # Get the actual demo user ID from login
+            demo_user_id = None
+            if hasattr(self, 'demo_token'):
+                # Try to get user ID from /auth/me endpoint
+                headers = {"Authorization": f"Bearer {self.demo_token}"}
+                me_response = self.session.get(f"{BACKEND_URL}/auth/me", headers=headers)
+                if me_response.status_code == 200:
+                    demo_user_id = me_response.json().get('id')
+            
+            if not demo_user_id:
+                demo_user_id = 'demo_user'  # Fallback
+            
             params = {
-                'callerId': 'demo_user',
+                'callerId': demo_user_id,
                 'recipientId': 'u1',
                 'callType': 'video'
             }
