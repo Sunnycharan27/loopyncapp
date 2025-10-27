@@ -192,7 +192,7 @@ const VibeCapsuleViewer = ({ stories, currentUserId, onClose }) => {
       </div>
 
       {/* Navigation Arrows (Desktop) */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" style={{ zIndex: 10001 }}>
         {currentCapsuleIndex > 0 || currentStoryIndex > 0 ? (
           <button
             onClick={goToPrevious}
