@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Backend API Testing Suite
-Tests authentication, uploads, friend requests, DM threads, and search functionality for the Loopync app.
+Comprehensive Backend API Testing Suite
+Tests all backend features for the Loopync app as requested in the comprehensive application check.
+Covers: Authentication, User Management, Friend System, Messaging, Social Feed, Venues, Tribes, Events, Notifications, Calling
 """
 
 import requests
