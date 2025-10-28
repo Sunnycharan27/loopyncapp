@@ -2203,7 +2203,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete Friend-to-Call Flow"
+    - "Instagram-Style Features (Save Posts, Follow/Unfollow)"
+    - "Twitter-Style Features (Quotes, Replies, Hashtags, Trending)"
   stuck_tasks:
     - "BookMyShow-style Ticket Booking Flow"
     - "Standalone Venues Page"
