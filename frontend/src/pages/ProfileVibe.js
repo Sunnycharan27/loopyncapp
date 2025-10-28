@@ -285,4 +285,55 @@ const ProfileVibe = () => {
   );
 };
 
+// Friend List Item Component
+const FriendListItem = ({ friendId, navigate }) => {
+  const [friend, setFriend] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFriend = async () => {
+      try {
+        const res = await axios.get(`${API}/users/${friendId}`);
+        setFriend(res.data);
+      } catch (error) {
+        console.error("Failed to fetch friend:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFriend();
+  }, [friendId]);
+
+  if (loading) return <div className="p-4 rounded-xl bg-gray-900/30 border border-gray-800 animate-pulse"><div className="h-12 bg-gray-800 rounded"></div></div>;
+  if (!friend) return null;
+
+  return (
+    <div 
+      className="p-4 rounded-xl bg-gray-900/30 border border-gray-800 hover:border-cyan-400/30 transition-all cursor-pointer flex items-center justify-between"
+      onClick={() => navigate(`/profile/${friendId}`)}
+    >
+      <div className="flex items-center gap-3">
+        <img 
+          src={friend.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.name}`} 
+          alt={friend.name}
+          className="w-12 h-12 rounded-full border-2 border-cyan-400/30"
+        />
+        <div>
+          <h3 className="font-semibold text-white">{friend.name}</h3>
+          <p className="text-sm text-cyan-400">@{friend.handle}</p>
+        </div>
+      </div>
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/messenger?userId=${friendId}`);
+        }}
+        className="px-4 py-2 rounded-lg bg-cyan-400/10 border border-cyan-400/30 text-cyan-400 text-sm font-semibold hover:bg-cyan-400/20 transition-all"
+      >
+        Message
+      </button>
+    </div>
+  );
+};
+
 export default ProfileVibe;
