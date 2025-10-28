@@ -380,6 +380,14 @@ frontend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+
+  - task: "Frontend Authentication State Management & Onboarding Flow"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/App.js, /app/frontend/src/pages/Auth.js, /app/frontend/src/pages/Onboarding.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
