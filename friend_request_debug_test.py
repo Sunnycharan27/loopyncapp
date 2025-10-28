@@ -1,22 +1,40 @@
 #!/usr/bin/env python3
 """
-Debug Friend Request Issues - Test with seeded users
+Friend Request Acceptance Debug Test
+Debug and Fix Friend Request Acceptance for Real Users
+
+This test follows the exact investigation sequence requested:
+1. Login Real Users
+2. Check Current Friend Status  
+3. Send Friend Request (User 1 → User 2)
+4. Check Pending Requests
+5. Accept Friend Request (User 2 Accepts)
+6. Debug Accept Endpoint
+7. Verify Friendship After Accept
+8. Test Alternative Accept Method
 """
 
 import requests
 import json
+import uuid
 from datetime import datetime
 
 # Configuration
 BACKEND_URL = "https://chatvibes-7.preview.emergentagent.com/api"
-DEMO_EMAIL = "demo@loopync.com"
-DEMO_PASSWORD = "password123"
+USER1_EMAIL = "demo@loopync.com"
+USER1_PASSWORD = "password123"
 
 class FriendRequestDebugTester:
     def __init__(self):
         self.session = requests.Session()
         self.test_results = []
-        self.demo_token = None
+        self.user1_token = None
+        self.user1_id = None
+        self.user1_data = None
+        self.user2_token = None
+        self.user2_id = None
+        self.user2_data = None
+        self.user2_email = None
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
@@ -29,16 +47,18 @@ class FriendRequestDebugTester:
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name} - {message}")
-        if details and not success:
+        print(f"{status}: {test_name}")
+        print(f"   {message}")
+        if details:
             print(f"   Details: {details}")
+        print()
     
-    def setup_authentication(self):
-        """Setup authentication for demo user"""
+    def step_1_login_user1(self):
+        """STEP 1: Login User 1 (demo@loopync.com / password123)"""
         try:
             payload = {
-                "email": DEMO_EMAIL,
-                "password": DEMO_PASSWORD
+                "email": USER1_EMAIL,
+                "password": USER1_PASSWORD
             }
             
             response = self.session.post(f"{BACKEND_URL}/auth/login", json=payload)
@@ -46,8 +66,80 @@ class FriendRequestDebugTester:
             if response.status_code == 200:
                 data = response.json()
                 if 'token' in data and 'user' in data:
-                    self.demo_token = data['token']
-                    self.demo_user_id = data['user']['id']
+                    self.user1_token = data['token']
+                    self.user1_data = data['user']
+                    self.user1_id = data['user']['id']
+                    
+                    self.log_result(
+                        "STEP 1: Login User 1", 
+                        True, 
+                        f"Successfully logged in User 1: {self.user1_data['name']} ({self.user1_data['email']})",
+                        f"User ID: {self.user1_id}, Friends: {len(self.user1_data.get('friends', []))}"
+                    )
+                else:
+                    self.log_result(
+                        "STEP 1: Login User 1", 
+                        False, 
+                        "Login response missing token or user data",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "STEP 1: Login User 1", 
+                    False, 
+                    f"Login failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("STEP 1: Login User 1", False, f"Exception occurred: {str(e)}")
+    
+    def step_2_create_user2(self):
+        """STEP 2: Create/Login User 2 with different credentials"""
+        try:
+            # Generate unique test user data
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.user2_email = f"testuser2_{timestamp}@example.com"
+            
+            payload = {
+                "email": self.user2_email,
+                "handle": f"testuser2_{timestamp}",
+                "name": f"Test User 2 {timestamp}",
+                "password": "testpassword123"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/signup", json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if 'token' in data and 'user' in data:
+                    self.user2_token = data['token']
+                    self.user2_data = data['user']
+                    self.user2_id = data['user']['id']
+                    
+                    self.log_result(
+                        "STEP 2: Create User 2", 
+                        True, 
+                        f"Successfully created User 2: {self.user2_data['name']} ({self.user2_data['email']})",
+                        f"User ID: {self.user2_id}, Friends: {len(self.user2_data.get('friends', []))}"
+                    )
+                else:
+                    self.log_result(
+                        "STEP 2: Create User 2", 
+                        False, 
+                        "Signup response missing token or user data",
+                        f"Response: {data}"
+                    )
+            else:
+                self.log_result(
+                    "STEP 2: Create User 2", 
+                    False, 
+                    f"Signup failed with status {response.status_code}",
+                    f"Response: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_result("STEP 2: Create User 2", False, f"Exception occurred: {str(e)}")
                     self.log_result(
                         "Demo User Authentication", 
                         True, 
