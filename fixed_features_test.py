@@ -121,15 +121,15 @@ class FixedFeaturesTester:
                     if thread_id:
                         self.dm_thread_id = thread_id
                         
-                        # Test message sending
-                        message_payload = {
+                        # Test message sending using simplified endpoint
+                        message_params = {
                             "senderId": self.demo_user_id,
                             "text": "Test message from fixed features testing"
                         }
                         
                         send_response = self.session.post(
                             f"{BACKEND_URL}/dm/{thread_id}/messages", 
-                            json=message_payload,
+                            params=message_params,
                             headers=headers
                         )
                         
