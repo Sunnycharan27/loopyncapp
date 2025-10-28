@@ -2240,7 +2240,7 @@ async def create_reply(postId: str, authorId: str, text: str, mediaUrl: str = No
     reply = Post(
         authorId=authorId,
         text=text,
-        mediaUrl=mediaUrl,
+        media=mediaUrl,  # Fixed: Use 'media' to match Post model field
         replyToPostId=postId
     )
     
