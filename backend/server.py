@@ -4803,6 +4803,8 @@ async def claim_event_ticket(eventId: str, userId: str, tier: str = "General"):
     ticket_dict['qrCodeImage'] = generate_qr_code_base64(qr_data)
     
     await db.event_tickets.insert_one(ticket_dict)
+    # Remove MongoDB ObjectId to avoid serialization issues
+    ticket_dict.pop('_id', None)
     
     return {"success": True, "ticket": ticket_dict}
 
