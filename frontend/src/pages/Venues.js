@@ -139,14 +139,35 @@ const Venues = () => {
                   </p>
                 )}
 
-                {/* Quick Actions */}
+                {/* Opening Hours for Spiritual Places */}
+                {isSpiritualPlace(venue) && venue.timings && (
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
+                    <Clock size={14} />
+                    <span>{venue.timings || 'Open 6:00 AM - 9:00 PM'}</span>
+                  </div>
+                )}
+
+                {/* Quick Actions - Different for Spiritual vs F&B */}
                 <div className="flex gap-2">
-                  <button className="flex-1 py-2 px-3 rounded-full bg-cyan-400/10 text-cyan-400 text-sm font-medium hover:bg-cyan-400/20">
-                    View Menu
-                  </button>
-                  <button className="flex-1 py-2 px-3 rounded-full bg-purple-400/10 text-purple-400 text-sm font-medium hover:bg-purple-400/20">
-                    Book Table
-                  </button>
+                  {isSpiritualPlace(venue) ? (
+                    <>
+                      <button className="flex-1 py-2 px-3 rounded-full bg-cyan-400/10 text-cyan-400 text-sm font-medium hover:bg-cyan-400/20">
+                        More Information
+                      </button>
+                      <button className="flex-1 py-2 px-3 rounded-full bg-purple-400/10 text-purple-400 text-sm font-medium hover:bg-purple-400/20">
+                        Get Directions
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="flex-1 py-2 px-3 rounded-full bg-cyan-400/10 text-cyan-400 text-sm font-medium hover:bg-cyan-400/20">
+                        View Menu
+                      </button>
+                      <button className="flex-1 py-2 px-3 rounded-full bg-purple-400/10 text-purple-400 text-sm font-medium hover:bg-purple-400/20">
+                        Book Table
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
