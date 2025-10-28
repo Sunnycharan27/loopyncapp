@@ -2001,6 +2001,13 @@ async def create_post_comment(postId: str, comment: CommentCreate, authorId: str
     doc["author"] = author
     return doc
 
+
+# Alias for singular form
+@api_router.post("/posts/{postId}/comment")
+async def create_post_comment_alias(postId: str, comment: CommentCreate, authorId: str):
+    """Alias for creating comments (singular form)"""
+    return await create_post_comment(postId, comment, authorId)
+
 @api_router.delete("/comments/{commentId}")
 async def delete_comment(commentId: str, userId: str):
     """Delete a comment"""
