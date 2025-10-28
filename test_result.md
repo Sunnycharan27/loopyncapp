@@ -112,6 +112,80 @@ user_problem_statement: |
   - User data should create unique IDs for each user
 
 backend:
+  - task: "Instagram-Style Features (Save Posts, Follow/Unfollow)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEWLY IMPLEMENTED: Instagram-style social media features added to backend
+          
+          NEW ENDPOINTS ADDED:
+          ✅ POST /api/posts/{postId}/save - Save/unsave posts (bookmark feature)
+          ✅ GET /api/users/{userId}/saved-posts - Get user's saved posts collection
+          ✅ POST /api/users/{userId}/follow - Follow/unfollow users with notifications
+          ✅ GET /api/users/{userId}/followers - Get user's followers list
+          ✅ GET /api/users/{userId}/following - Get users that user is following
+          
+          FEATURES:
+          - Post bookmarking/saving (Instagram-style saved collection)
+          - Follow/unfollow system (distinct from friend requests)
+          - Follower/following counts and lists
+          - Notifications for new followers
+          - Bidirectional follow relationships
+          
+          NEEDS COMPREHENSIVE TESTING:
+          - Test save/unsave post toggle functionality
+          - Test saved posts retrieval and enrichment
+          - Test follow/unfollow user functionality
+          - Test followers/following lists
+          - Test notification generation on follow
+          - Test edge cases (self-follow prevention, user not found)
+
+  - task: "Twitter-Style Features (Quotes, Replies, Hashtags, Trending)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          NEWLY IMPLEMENTED: Twitter-style social media features added to backend
+          
+          NEW ENDPOINTS ADDED:
+          ✅ POST /api/posts/{postId}/quote - Create quote posts (retweet with comment)
+          ✅ GET /api/hashtags/{hashtag}/posts - Get posts by hashtag
+          ✅ GET /api/trending/hashtags - Get trending hashtags (last 24h)
+          ✅ GET /api/trending/posts - Get viral/trending posts (TikTok For You style)
+          ✅ POST /api/posts/{postId}/reply - Create reply to post (Twitter threads)
+          ✅ GET /api/posts/{postId}/replies - Get all replies to a post
+          
+          FEATURES:
+          - Quote posts with original post embedding
+          - Hashtag search and discovery
+          - Trending hashtags calculation (24h window)
+          - Trending posts algorithm (engagement-based ranking)
+          - Reply threads (Twitter-style conversations)
+          - Post stats tracking (likes, quotes, reposts, replies)
+          - Notifications for quotes and replies
+          
+          NEEDS COMPREHENSIVE TESTING:
+          - Test quote post creation and original post enrichment
+          - Test hashtag extraction and search
+          - Test trending hashtags calculation
+          - Test trending posts algorithm and engagement scoring
+          - Test reply creation and thread structure
+          - Test reply counts and notifications
+          - Test stats updates (quotes count, replies count)
+
   - task: "Google Sheets Database Module"
     implemented: true
     working: true
