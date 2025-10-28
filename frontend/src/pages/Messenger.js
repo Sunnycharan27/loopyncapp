@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import { API, AuthContext } from "../App";
-import { ArrowLeft, Send, Image as ImageIcon, Users, Shield, Search, X, Sparkles, FileText, MapPin, Calendar, Phone, Video } from "lucide-react";
+import { ArrowLeft, Send, Image as ImageIcon, Users, Shield, Search, X, Sparkles, FileText, MapPin, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
 import { useWebSocket } from "../context/WebSocketContext";
-import AgoraCallModal from "../components/AgoraCallModal";
 
 const Messenger = () => {
   const { threadId } = useParams();
