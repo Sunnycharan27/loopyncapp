@@ -216,13 +216,16 @@ class FixedFeaturesTester:
                     
                     # Test commenting on post using singular form
                     comment_payload = {
-                        "authorId": self.demo_user_id,
                         "text": "Test comment from fixed features testing"
+                    }
+                    comment_params = {
+                        "authorId": self.demo_user_id
                     }
                     
                     comment_response = self.session.post(
                         f"{BACKEND_URL}/posts/{self.post_id}/comment",
                         json=comment_payload,
+                        params=comment_params,
                         headers=headers
                     )
                     
