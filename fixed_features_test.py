@@ -305,7 +305,7 @@ class FixedFeaturesTester:
         
         # Test event creation
         try:
-            event_payload = {
+            event_params = {
                 "name": "Test Event from Fixed Features Testing",
                 "description": "This is a test event created during backend testing",
                 "date": "2024-12-31T18:00:00Z",
@@ -313,7 +313,7 @@ class FixedFeaturesTester:
                 "creatorId": self.demo_user_id
             }
             
-            response = self.session.post(f"{BACKEND_URL}/events", json=event_payload, headers=headers)
+            response = self.session.post(f"{BACKEND_URL}/events", params=event_params, headers=headers)
             
             if response.status_code == 200:
                 event_data = response.json()
