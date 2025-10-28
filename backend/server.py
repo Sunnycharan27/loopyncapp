@@ -3834,6 +3834,42 @@ async def get_events(limit: int = 50):
     events = await db.events.find({}, {"_id": 0}).sort("date", 1).to_list(limit)
     return events
 
+
+@api_router.post("/events")
+async def create_event(
+    name: str,
+    description: str,
+    date: str,
+    location: str,
+    creatorId: str,
+    image: str = None,
+    price: float = 0.0,
+    totalSeats: int = 100
+):
+    """Create a new event"""
+    event = {
+        "id": str(uuid.uuid4()),
+        "name": name,
+        "description": description,
+        "date": date,
+        "location": location,
+        "creatorId": creatorId,
+        "image": image or "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400",
+        "price": price,
+        "totalSeats": totalSeats,
+        "bookedSeats": 0,
+        "attendees": [],
+        "tiers": [
+            {"name": "General", "price": price, "available": totalSeats}
+        ],
+        "createdAt": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.events.insert_one(event)
+    event.pop("_id", None)
+    
+    return event
+
 @api_router.get("/events/{eventId}")
 async def get_event(eventId: str):
     event = await db.events.find_one({"id": eventId}, {"_id": 0})
