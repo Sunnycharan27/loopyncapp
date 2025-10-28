@@ -107,16 +107,25 @@ class FixedFeaturesTester:
             
             if response.status_code == 200:
                 threads_data = response.json()
+                
+                # Handle different response formats
+                if isinstance(threads_data, dict) and 'items' in threads_data:
+                    threads = threads_data['items']
+                elif isinstance(threads_data, list):
+                    threads = threads_data
+                else:
+                    threads = []
+                
                 self.log_result(
                     "Get DM Threads", 
                     True, 
-                    f"Successfully retrieved DM threads (found {len(threads_data)} threads)",
+                    f"Successfully retrieved DM threads (found {len(threads)} threads)",
                     f"Endpoint: GET /api/dm/threads?userId={{demo_id}}"
                 )
                 
                 # If threads exist, test message sending
-                if len(threads_data) > 0:
-                    thread = threads_data[0]
+                if len(threads) > 0:
+                    thread = threads[0]
                     thread_id = thread.get('id')
                     if thread_id:
                         self.dm_thread_id = thread_id
