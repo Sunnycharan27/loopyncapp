@@ -148,6 +148,10 @@ class Post(BaseModel):
     likedBy: List[str] = Field(default_factory=list)
     repostedBy: List[str] = Field(default_factory=list)
     createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    # Twitter-style features
+    quotedPostId: Optional[str] = None
+    quotedPost: Optional[dict] = None
+    replyToPostId: Optional[str] = None
 
 class PostCreate(BaseModel):
     text: str
