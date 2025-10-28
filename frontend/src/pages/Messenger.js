@@ -737,18 +737,6 @@ const Messenger = () => {
           </form>
         </div>
       )}
-      
-      {/* Call Modal */}
-      {showCall && callData && (
-        <AgoraCallModal
-          callData={callData}
-          currentUserId={currentUser.id}
-          onClose={() => {
-            setShowCall(false);
-            setCallData(null);
-          }}
-        />
-      )}
     </div>
   );
 };
