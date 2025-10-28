@@ -8899,3 +8899,26 @@ agent_communication:
       
       🎯 NEXT STEP: Run backend testing agent again to verify fixes
 
+
+
+  - agent: "main"
+    message: |
+      WORKING ON: Events and Ticketing System - QR Code Display Fix
+      
+      USER REQUEST: Fix events and ticketing, tickets should show QR codes
+      
+      INVESTIGATION FINDINGS:
+      1. Backend QR code generation function exists and working (generate_qr_code_base64)
+      2. Events have proper tier structures in seed data
+      3. EventDetail.js booking flow exists and uses correct tier names
+      4. ProfileVibe.js already displays tickets with QR codes
+      5. Issue: Events may have different tier names than frontend expects
+      
+      PLANNED FIXES:
+      1. Ensure all events have consistent tier structure
+      2. Update ProfileVibe tickets tab to show full QR code prominently
+      3. Add ticket detail view with larger QR code
+      4. Test complete booking flow
+      
+      STATUS: Implementing fixes now...
+
