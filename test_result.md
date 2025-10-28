@@ -8764,3 +8764,33 @@ agent_communication:
       
       **RECOMMENDATION**: Fix Post model to include missing fields, then retest quote and reply functionality. Instagram features are ready for production use.
 
+
+  - agent: "main"
+    message: |
+      BACKEND FIX APPLIED: Post Model Updated to Support Quote and Reply Features
+      
+      🔧 CHANGES MADE:
+      1. Added optional fields to Post model in server.py (line 139):
+         - quotedPostId: Optional[str] = None
+         - quotedPost: Optional[dict] = None  
+         - replyToPostId: Optional[str] = None
+      
+      2. Fixed create_reply endpoint to use correct field name:
+         - Changed mediaUrl parameter to media (matches Post model)
+      
+      3. Backend restarted successfully - no startup errors
+      
+      📊 ROOT CAUSE RESOLUTION:
+      - Post model had `extra="ignore"` config, which was dropping fields not explicitly defined
+      - Quote and reply endpoints were creating posts with quotedPostId/quotedPost/replyToPostId fields
+      - These fields were being ignored by Pydantic validation
+      - Fix: Added fields explicitly to Post model as Optional fields
+      
+      ✅ TESTING NEEDED:
+      - Retest POST /api/posts/{postId}/quote (should now preserve quotedPostId and quotedPost)
+      - Retest POST /api/posts/{postId}/reply (should now preserve replyToPostId)
+      - Verify quote count and reply count increments work
+      - Verify notifications are created for quotes and replies
+      
+      🎯 NEXT STEP: Run backend testing agent again to verify fixes
+
