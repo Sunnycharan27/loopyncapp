@@ -118,11 +118,24 @@ class MessagingTester:
                 )
                 
                 if get_response.status_code == 200:
-                    messages = get_response.json()
+                    messages_data = get_response.json()
+                    
+                    # Handle different response formats
+                    if isinstance(messages_data, dict) and 'items' in messages_data:
+                        messages = messages_data['items']
+                    elif isinstance(messages_data, list):
+                        messages = messages_data
+                    else:
+                        messages = []
+                    
                     print(f"✅ Successfully retrieved {len(messages)} messages using simplified endpoint")
                     
                     # Look for our test message
-                    test_messages = [m for m in messages if m.get('text') == message_params['text']]
+                    test_messages = []
+                    for m in messages:
+                        if isinstance(m, dict) and m.get('text') == message_params['text']:
+                            test_messages.append(m)
+                    
                     if test_messages:
                         print("✅ Found our test message in the thread")
                         return True
