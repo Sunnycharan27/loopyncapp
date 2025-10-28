@@ -267,22 +267,24 @@ class VideoAudioCallingTester:
         try:
             # Test ending video call if available
             if hasattr(self, 'video_call_id') and self.video_call_id:
-                response = self.session.post(f"{BACKEND_URL}/calls/{self.video_call_id}/end")
+                # Call end endpoint requires userId parameter
+                params = {'userId': SUNNYCHARAN_ID}
+                response = self.session.post(f"{BACKEND_URL}/calls/{self.video_call_id}/end", params=params)
                 
                 if response.status_code == 200:
                     data = response.json()
-                    if data.get('success'):
+                    if 'message' in data and 'duration' in data:
                         self.log_result(
                             "Call End Functionality", 
                             True, 
                             f"✅ Video call ended successfully - Call ID: {self.video_call_id}",
-                            f"Response: {data}"
+                            f"Message: {data['message']}, Duration: {data['duration']} seconds"
                         )
                     else:
                         self.log_result(
                             "Call End Functionality", 
                             False, 
-                            "❌ Call end response missing success field",
+                            "❌ Call end response missing expected fields",
                             f"Response: {data}"
                         )
                 else:
