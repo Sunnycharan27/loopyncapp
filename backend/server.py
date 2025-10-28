@@ -1182,6 +1182,16 @@ async def login(req: LoginRequest):
     # Special handling for demo user - ensure they have friends for testing
     if user['email'] == 'demo@loopync.com':
         current_friends = mongo_user.get('friends', [])
+        current_balance = mongo_user.get('walletBalance', 0.0)
+        
+        # Give demo user initial wallet balance if they have zero or low balance
+        if current_balance < 5000:
+            await db.users.update_one(
+                {"id": user['user_id']},
+                {"$set": {"walletBalance": 10000.0}}  # ₹10,000 for testing
+            )
+            logger.info(f"💰 Demo user wallet topped up to ₹10,000 for testing")
+        
         # If demo user has no friends, add some seeded users as friends
         if len(current_friends) == 0:
             seeded_user_ids = ['u1', 'u2', 'u3']
