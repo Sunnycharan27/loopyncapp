@@ -62,10 +62,12 @@ function App() {
       const res = await axios.get(`${API}/users/${userId}/interests`);
       if (!res.data.onboardingComplete) {
         setNeedsOnboarding(true);
+      } else {
+        setNeedsOnboarding(false);
       }
     } catch (error) {
-      // If interests not found, user needs onboarding
-      setNeedsOnboarding(true);
+      // If interests endpoint fails, skip onboarding (user already exists)
+      setNeedsOnboarding(false);
     }
   };
 
