@@ -224,16 +224,72 @@ const ProfileVibe = () => {
           )}
 
           {activeTab === "tickets" && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {userTickets.length > 0 ? userTickets.map(ticket => (
-                <div key={ticket.id} className="p-4 rounded-xl bg-gray-900/30 border border-gray-800">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex-1"><h3 className="font-semibold text-white mb-1">{ticket.event?.name || 'Event'}</h3><p className="text-sm text-gray-500">{ticket.event?.date || 'Date TBD'}</p></div>
-                    {ticket.qrCodeImage && <div className="w-16 h-16 bg-white rounded-lg p-1"><img src={ticket.qrCodeImage} alt="QR" className="w-full h-full" /></div>}
+                <div key={ticket.id} className="p-5 rounded-2xl bg-gradient-to-br from-gray-900/50 to-gray-800/30 border border-gray-700/50 backdrop-blur-sm">
+                  {/* Event Info Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white text-lg mb-1">
+                        {ticket.eventName || ticket.event?.name || 'Event'}
+                      </h3>
+                      <p className="text-sm text-gray-400 mb-1">
+                        📅 {ticket.eventDate || ticket.event?.date || 'Date TBD'}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        📍 {ticket.eventLocation || ticket.event?.location || 'Location TBD'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 rounded-full bg-cyan-400/20 text-cyan-400 text-xs font-semibold">{ticket.tier}</span>
-                    <span className="px-2 py-1 rounded-full bg-green-400/20 text-green-400 text-xs font-semibold">{ticket.status}</span>
+                  
+                  {/* QR Code - Prominent Display */}
+                  {ticket.qrCodeImage && (
+                    <div className="flex justify-center mb-4">
+                      <div className="bg-white rounded-2xl p-4 shadow-lg">
+                        <img 
+                          src={ticket.qrCodeImage} 
+                          alt="Ticket QR Code" 
+                          className="w-48 h-48 object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Ticket Details */}
+                  <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-black/20 rounded-xl">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Ticket Type</p>
+                      <p className="text-sm font-semibold text-cyan-400">{ticket.tier || 'General'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Status</p>
+                      <p className="text-sm font-semibold text-green-400">{ticket.status || 'Active'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Price</p>
+                      <p className="text-sm font-semibold text-white">₹{ticket.price || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Ticket ID</p>
+                      <p className="text-xs font-mono text-gray-400">{ticket.id?.slice(0, 8)}...</p>
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <button className="flex-1 px-4 py-2.5 bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-400 rounded-xl font-semibold text-sm transition-all border border-cyan-400/20">
+                      View Event
+                    </button>
+                    <button className="flex-1 px-4 py-2.5 bg-purple-400/10 hover:bg-purple-400/20 text-purple-400 rounded-xl font-semibold text-sm transition-all border border-purple-400/20">
+                      Share Ticket
+                    </button>
+                  </div>
+                  
+                  {/* Scan Instructions */}
+                  <div className="mt-4 p-3 bg-cyan-400/5 border border-cyan-400/20 rounded-xl">
+                    <p className="text-xs text-center text-gray-400">
+                      📱 Show this QR code at the venue entrance for check-in
+                    </p>
                   </div>
                 </div>
               )) : (
