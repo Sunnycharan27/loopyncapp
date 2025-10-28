@@ -8498,3 +8498,55 @@ backend:
       5. **MEDIUM**: Implement event ticketing system
       
       **CONCLUSION**: Backend is 77.4% functional with core features working well. Main issues are in messaging, calling, and events systems. Authentication, user management, friend system, and basic social features are production-ready.
+
+
+agent_communication:
+  - agent: "main"
+    message: |
+      BACKEND UPDATE: New Social Media Features Added to server.py
+      
+      📋 IMPLEMENTATION COMPLETED:
+      - Added Instagram-style features: save posts, follow/unfollow, followers/following lists
+      - Added Twitter-style features: quote posts, replies, hashtags, trending
+      - All endpoints added after existing post-related endpoints in server.py
+      - Backend restarted successfully to apply changes
+      
+      🎯 TESTING REQUIRED:
+      Priority: HIGH - These are brand new endpoints that need comprehensive testing
+      
+      TEST SEQUENCE:
+      1. Instagram Features:
+         - Test POST /api/posts/{postId}/save (save/unsave toggle)
+         - Test GET /api/users/{userId}/saved-posts (saved collection)
+         - Test POST /api/users/{userId}/follow (follow/unfollow with notifications)
+         - Test GET /api/users/{userId}/followers (followers list)
+         - Test GET /api/users/{userId}/following (following list)
+      
+      2. Twitter Features:
+         - Test POST /api/posts/{postId}/quote (quote posts)
+         - Test GET /api/hashtags/{hashtag}/posts (hashtag search)
+         - Test GET /api/trending/hashtags (trending calculation)
+         - Test GET /api/trending/posts (viral content algorithm)
+         - Test POST /api/posts/{postId}/reply (reply threads)
+         - Test GET /api/posts/{postId}/replies (thread retrieval)
+      
+      ⚠️ CRITICAL TESTING NOTES:
+      - Use existing demo user (demo@loopync.com) for testing
+      - Test with existing posts in database
+      - Verify notifications are created correctly
+      - Check stats updates (quotes count, replies count)
+      - Test edge cases (user not found, post not found, self-follow)
+      
+      📊 EXPECTED RESULTS:
+      - All endpoints return proper responses with author enrichment
+      - Follow system creates bidirectional relationships
+      - Trending algorithms calculate correctly
+      - Notifications created for social interactions
+      - Stats tracking works for all post types
+      
+      🔄 NEXT STEPS:
+      1. Testing agent will run comprehensive backend tests
+      2. Fix any issues found during testing
+      3. Then proceed with frontend integration
+      4. Finally run E2E tests to ensure everything works together
+
