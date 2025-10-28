@@ -1249,7 +1249,8 @@ async def login(req: LoginRequest):
             "walletBalance": mongo_user.get('walletBalance', 0.0),
             "friends": mongo_user.get('friends', []),
             "friendRequestsSent": mongo_user.get('friendRequestsSent', []),
-            "friendRequestsReceived": mongo_user.get('friendRequestsReceived', [])
+            "friendRequestsReceived": mongo_user.get('friendRequestsReceived', []),
+            "onboardingComplete": mongo_user.get('onboardingComplete', False)  # Add onboarding status
         }
     }
 
