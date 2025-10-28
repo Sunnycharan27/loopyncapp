@@ -327,41 +327,6 @@ const Messenger = () => {
     }
   };
 
-  const initiateCall = async (callType) => {
-    try {
-      if (!selectedThread) return;
-
-      const res = await axios.post(`${API}/api/calls/initiate`, null, {
-        params: {
-          callerId: currentUser.id,
-          recipientId: selectedThread.peer.id,
-          callType // "voice" or "video"
-        }
-      });
-
-      setCallData({
-        callId: res.data.callId,
-        channelName: res.data.channelName,
-        appId: res.data.appId,
-        callerToken: res.data.callerToken,
-        callerUid: res.data.callerUid,
-        callType,
-        peerName: selectedThread.peer.name || selectedThread.peer.handle,
-        isInitiator: true
-      });
-      setShowCall(true);
-      
-      toast.success(`${callType === 'video' ? 'Video' : 'Voice'} call started`);
-    } catch (error) {
-      console.error("Error initiating call:", error);
-      if (error.response?.status === 403) {
-        toast.error("You can only call friends");
-      } else {
-        toast.error("Failed to start call");
-      }
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f021e' }}>
