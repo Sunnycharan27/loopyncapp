@@ -194,6 +194,22 @@ const ProfileVibe = () => {
             </div>
           )}
 
+          {activeTab === "friends" && (
+            <div className="space-y-3">
+              {currentUser.friends && currentUser.friends.length > 0 ? (
+                currentUser.friends.map(friendId => (
+                  <FriendListItem key={friendId} friendId={friendId} navigate={navigate} />
+                ))
+              ) : (
+                <div className="py-16 text-center">
+                  <Users size={48} className="mx-auto mb-4 text-gray-700" />
+                  <p className="text-gray-500 mb-4">No friends yet</p>
+                  <button onClick={() => navigate('/people')} className="px-6 py-2.5 bg-cyan-400 hover:bg-cyan-500 text-black rounded-xl font-semibold transition-all">Find Friends</button>
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === "tribes" && (
             <div className="space-y-3">
               {userTribes.length > 0 ? userTribes.map(tribe => (
