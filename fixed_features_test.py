@@ -186,6 +186,8 @@ class FixedFeaturesTester:
                 
         except Exception as e:
             self.log_result("Messaging System", False, f"Exception occurred: {str(e)}")
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")
     
     def test_post_commenting(self):
         """Test 2: POST COMMENTING TEST - Singular form alias"""
