@@ -4882,9 +4882,15 @@ async def update_user_interests(userId: str, interests: str, language: str = "en
 @api_router.get("/users/{userId}/interests")
 async def get_user_interests(userId: str):
     """Get user interests"""
+    # First check user_interests collection
     interests = await db.user_interests.find_one({"userId": userId}, {"_id": 0})
+    
+    # If no interests document, check user's onboardingComplete flag
     if not interests:
-        return {"interests": [], "language": "en", "onboardingComplete": False}
+        user = await db.users.find_one({"id": userId}, {"_id": 0, "onboardingComplete": 1})
+        onboarding_complete = user.get("onboardingComplete", False) if user else False
+        return {"interests": [], "language": "en", "onboardingComplete": onboarding_complete}
+    
     return interests
 
 # ===== CONSENT ROUTES =====
