@@ -1,57 +1,83 @@
 <analysis>
-The AI engineer's work involved an iterative process of debugging, feature implementation, and UI/UX refinements for the Loopync application. Initial tasks focused on addressing critical authentication issues: rectifying Invalid credentials errors, removing a defunct Try Demo Account button, and integrating phone number input into the signup flow. This required careful examination of frontend components () and corresponding backend (, models) modifications. Following successful authentication fixes, the engineer tackled the Forgot Password functionality, verifying its end-to-end operation across frontend and backend. Subsequently, significant effort was dedicated to making the real-time messaging and calling features fully functional. This involved debugging undefined functions (), implementing missing backend endpoints (), resolving MongoDB serialization issues, and correcting API endpoint paths ( to ) across various frontend pages (, , ) to ensure seamless friend interaction and call initiation. The work concluded after successfully fixing the DM thread creation.
+The AI engineer's work spanned multiple critical areas of the Loopync application, demonstrating an iterative problem-solving approach. Initially, efforts focused on resolving fundamental authentication and friend-calling issues, involving debugging , , and . Key fixes included implementing robust friend-status checks, auto-assigning friends for demo users, and correcting API endpoints (e.g., DM thread creation). Subsequent tasks addressed UI/UX issues, such as making Vibe Capsules (stories) and their upload modals visible using React Portals and z-index adjustments. A major integration involved replacing the existing calling system with Agora.io, requiring extensive backend changes for token generation and frontend modifications for  and  to achieve a WhatsApp-like experience. The engineer also refined the friend request system to ensure persistence and fixed various backend API inconsistencies (messaging, comments, events). Most recently, the focus shifted to enhancing social media features, including displaying friend lists on profiles and preparing the backend for Instagram/TikTok/Twitter-like functionalities, while ensuring overall system stability for an investor demo. Repeated debugging loops, often due to cached frontend states or subtle backend inconsistencies, were a recurring challenge, resolved through systematic checks and agent assistance.
 </analysis>
 
 <product_requirements>
-Loopync aims to be a Superapp with social, e-commerce, communication, and fintech features (Timeline, VibeZone, Tribes, LoopPay, Trust Circles, Notifications, Search, Agora.io-based VibeRooms, enhanced Profiles, universal sharing, dark/light themes, AI, Hyderabad venue data). Recent major requests addressed:
-1.  **Consistent application-wide color palette** matching the Discover section (implemented).
-2.  **Profile editing functionality** (picture, cover, username) on  (UI implemented, upload functionality was a known bug).
-3.  **Event Ticketing system** with QR-coded tickets (backend logic and QR generation implemented).
-4.  **Indian-style LoopPay wallet** (Money Balance, Loop Credits, UPI/card payments) with neon glass UI (implemented).
-5.  **Gen-Z Neon Glass UI profile redesign**, later simplified (implemented).
-6.  **Vibe Capsules** (24-hour stories, Cloudinary, MongoDB TTL, Redis) visible on upload (upload fixed).
-7.  **Comprehensive Friends, Messaging, and Calling (Full Stack v1)**: including friend graph, 1:1 text/image/voice, 1:1 audio/video calls via WebRTC, presence, read receipts, push notifications (significant progress, issues with friend checks and API endpoints addressed).
-8.  **Permanent User Accounts**: Removing demo accounts and Aadhaar (implemented).
-9.  **Marketplace tab** in profile (UI added, no functional integration).
+Loopync is envisioned as a Superapp integrating social, e-commerce, communication, and fintech functionalities. Recent development phases have focused on:
+1.  **Authentication & User Accounts:** Implementing permanent user accounts, removing demo accounts, and ensuring robust login/signup flows with phone number integration and forgot password functionality.
+2.  **Social & Communication (Full Stack v1):** Building a comprehensive friend graph, 1:1 text/image/voice messaging, 1:1 audio/video calls (initially WebRTC, then Agora.io), presence, read receipts, and push notifications. This includes fixing friend status checks, call initiation flows, and making friendships permanent.
+3.  **Content Sharing (Vibe Capsules):** Implementing 24-hour stories with Cloudinary uploads, MongoDB TTL, and Redis, ensuring visibility and proper upload modal functionality.
+4.  **Profile Enhancements:** Redesigning profiles to display friend counts and lists, and ensuring post author information (username, avatar) is correctly rendered.
+5.  **Location-Based Services (Venues):** Categorizing venues (cafes, temples, pubs, etc.) and displaying tailored information (timings, More Information button) instead of generic menus.
+6.  **Core API Stability:** Fixing various backend API endpoints (DM threads, post comments, event creation) and ensuring a clean database for demonstration.
+7.  **Future Social Media Features:** Expanding beyond current functionalities to integrate Instagram, TikTok, and Twitter-like features, excluding VibeRooms.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-Stack:** FastAPI (Python), React (JavaScript)
 -   **Database:** MongoDB (with TTL indices)
--   **Real-time:** Socket.IO, WebRTC (for calling)
+-   **Real-time:** Socket.IO, WebRTC (initially), Agora.io (for calling)
 -   **Authentication:** JWT
--   **UI/Styling:** Tailwind CSS, , custom UI
--   **Media:** Cloudinary (uploads),  (Python)
+-   **UI/Styling:** Tailwind CSS, React Portals
+-   **Media:** Cloudinary (uploads)
+-   **DevOps:** Kubernetes, Supervisor (for service management)
 </key_technical_concepts>
 
 <code_architecture>
-The application follows a standard full-stack architecture with a React frontend and a FastAPI backend, interacting via REST APIs and WebSockets (Socket.IO). MongoDB is used for data persistence.
+The application utilizes a React frontend and a FastAPI backend, communicating via REST APIs and WebSockets (Socket.IO), with MongoDB as the primary database.
 
 
--   **/app/backend/server.py**: Core FastAPI backend.
-    -   **Summary**: Centralizes API routes, database operations, and Socket.IO handlers.
-    -   **Changes**:  and  models updated to include . Signup endpoint modified to process .  model and  endpoints (GET, POST) added for friend circles. MongoDB serialization bug for  fixed.
--   **/app/backend/sheets_db.py**: Database interaction layer.
-    -   **Summary**: Abstracted Google Sheets database operations (though MongoDB is also used).
-    -   **Changes**:  method confirmed to be existing and functional for password resets.
--   **/app/frontend/src/pages/AuthComplete.js**: User authentication frontend.
-    -   **Summary**: Handles user login, signup, and password reset flows, currently the active auth page.
-    -   **Changes**: Try Demo Account button removed. Phone number input field added to the signup form, along with associated state and icon import.
--   **/app/frontend/src/pages/Messenger.js**: Messaging interface.
-    -   **Summary**: Displays chat conversations and handles real-time messaging.
-    -   **Changes**: Missing  state variable declared to resolve runtime errors. Logic for checking  updated to ensure it's not using stale data and accurately reflects friend status for call initiation.
--   **/app/frontend/src/pages/People.js**: Page for finding and interacting with other users.
-    -   **Summary**: Lists users and provides options to message or add friends.
-    -   **Changes**: API endpoint for DM thread creation corrected from  (plural) to  (singular) to match backend.
--   **/app/frontend/src/pages/Discover.js**: Discovery section for content and users.
-    -   **Summary**: Displays discoverable content and search results.
-    -   **Changes**: API endpoint for DM thread creation corrected from  to .
--   **/app/frontend/src/App.js**: Main application component.
-    -   **Summary**: Defines global routes and contexts.
-    -   **Changes**:  login function updated to fetch fresh user data upon login to avoid stale  information, specifically the  list.
--   **/app/frontend/src/utils/webrtc.js**: WebRTC utility functions.
-    -   **Summary**: Contains helper functions for WebRTC peer connections (e.g., ).
-    -   **Changes**: Confirmed existence and assumed correct integration with .
+-   ****: Core FastAPI backend.
+    -   **Summary**: Handles API routes, database ops, Socket.IO.
+    -   **Changes**:  models updated for .  model/endpoints added. Backend fixed for  serialization issues. Login endpoint modified to auto-assign friends for demo users. Agora token generation endpoints (, token refresh) replaced Daily.co logic. Friend request acceptance logic updated to explicitly add friends to user  arrays. Duplicate  endpoint removed. WebSocket event emission added for call notifications. Aliases for  and  added. New  endpoint created. Venue seed data updated with  and .
+-   ****: Environment variables for backend.
+    -   **Summary**: Stores sensitive keys like MongoDB URL and Agora credentials.
+    -   **Changes**:  and  updated with user-provided keys.
+-   ****: Main application component.
+    -   **Summary**: Defines global routes, contexts, and authentication logic.
+    -   **Changes**:  login function updated to fetch fresh user data.  component integrated to handle app-level call logic. Onboarding loop fixed by skipping for existing users.
+-   ****: User authentication frontend.
+    -   **Summary**: Manages user login, signup, password reset.
+    -   **Changes**: Try Demo Account button removed. Phone number input added to signup.
+-   ****: Messaging interface.
+    -   **Summary**: Displays chat, handles real-time messages and calling.
+    -   **Changes**:  state declared.  check logic refined. DM thread creation API corrected from  to . Call initiation logic updated to use Agora, removing direct frontend friend status checks. Call buttons, state, and rendering logic were removed, then re-added using Agora.js. Fixed syntax errors (missing brace, duplicate lines).
+-   ****: Page for user interaction.
+    -   **Summary**: Lists users, allows messaging and friend actions.
+    -   **Changes**: DM thread creation API corrected from  to .
+-   ****: Content and user discovery.
+    -   **Summary**: Displays discoverable content.
+    -   **Changes**: DM thread creation API corrected from  to .
+-   ****: Displays stories.
+    -   **Summary**: Renders 24-hour stories.
+    -   **Changes**: Updated to use React Portal for proper overlay rendering and improved z-index.
+-   ****: Uploads stories.
+    -   **Summary**: Handles story media uploads.
+    -   **Changes**: Updated to use React Portal and increased z-index for correct modal display.
+-   ****: Original WebRTC call modal.
+    -   **Summary**: Old component for peer-to-peer calls.
+    -   **Changes**: Largely deprecated in favor of Agora-based components.
+-   ** (NEW)**: Agora-based call modal.
+    -   **Summary**: New component for handling Agora.io video/audio calls.
+    -   **Changes**: Created from scratch to integrate Agora.io SDK. Fixed syntax error (missing closing bracket).
+-   ** (NEW)**: Handles incoming call UI.
+    -   **Summary**: Displays UI for incoming calls.
+    -   **Changes**: Created for WhatsApp-like incoming call experience.
+-   ** (NEW)**: Manages call states at app level.
+    -   **Summary**: Centralized component for managing call initiation, reception, and state.
+    -   **Changes**: Created to encapsulate call logic and integrate with WebSockets for WhatsApp-like call flow.
+-   ****: Displays venue information.
+    -   **Summary**: Lists and filters venues.
+    -   **Changes**: Updated to include category-based filtering and display logic for timings/information buttons instead of View Menu for all venues.  function removed.
+-   ****: User profile page.
+    -   **Summary**: Displays user profile information, posts, and now friends.
+    -   **Changes**: Added a Friends tab to display a list of friends and friends count.
+-   ****: Component for displaying posts.
+    -   **Summary**: Renders individual posts.
+    -   **Changes**: Confirmed it correctly uses  and  for author display, relying on backend data enrichment.
+-   ****: Manages WebSocket connection.
+    -   **Summary**: Provides WebSocket connection and events to the application.
+    -   **Changes**: Confirmed proper setup for handling real-time events.
 </code_architecture>
 
 <pending_tasks>
@@ -60,16 +86,21 @@ The application follows a standard full-stack architecture with a React frontend
 -   Build the Analytics panel UI.
 -   Configure guided demo tours.
 -   Integrate remaining advanced AI features and Discover page enhancements.
+-   Complete all Instagram, TikTok, and Twitter-like social media features.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary, the AI engineer was finalizing the comprehensive Friends, Messaging, and Calling feature. The user reported issues with initiating calls (You can only call friends error) and that the friends list wasn't updating correctly. The engineer performed extensive backend testing, confirming the friends system and calling API endpoints were robust. The primary remaining issue was a frontend discrepancy where  might contain stale data, and incorrect API endpoints for DM thread creation were being used. The engineer addressed these by:
-1.  Updating  to correctly check friend status, ensuring up-to-date  data.
-2.  Modifying the 's login function in  to always fetch fresh user data, preventing stale local storage issues.
-3.  Correcting the DM thread creation API endpoint from  to  in  and  to match the backend.
-The last action was awaiting hot reload completion after these fixes, and then preparing a comprehensive summary for the user.
+Immediately before this summary, the AI engineer was actively working on transforming Loopync into a comprehensive social media application, specifically focusing on integrating Instagram, TikTok, and Twitter-like features. The user explicitly requested to implement all the things except VibeRooms, which was confirmed to be working.
+
+The work currently involves:
+1.  **Profile Enhancements:** The engineer started by fixing the profile () to display friends count and a dedicated Friends tab showing the actual friend list. A  component was created for this.
+2.  **Post Display:** The engineer verified that  already uses  and , confirming that the frontend is ready to display author information provided by the backend. The backend's  endpoint was confirmed to enrich posts with author data.
+3.  **Stories Visibility:** The  component was checked, and its  prop was confirmed to handle refreshing stories after upload.
+4.  **Backend Social Media Endpoints:** The engineer created  and subsequently added new social media endpoints to  after the existing post-related endpoints. These new endpoints are intended to support the expanded Instagram, TikTok, and Twitter-like features.
+
+The very last action taken was restarting the backend to apply these newly added social media feature endpoints in . The system health was previously reported at 77.4% before initiating these new social media feature additions.
 </current_work>
 
 <optional_next_step>
-Provide the comprehensive summary of the messenger and calling feature fixes.
+Run comprehensive backend tests for the newly added social media endpoints.
 </optional_next_step>

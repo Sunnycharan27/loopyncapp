@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://chatvibes-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopconnect-1.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@loopync.com"
 DEMO_PASSWORD = "password123"
 EXPECTED_AGORA_APP_ID = "9d727260580f40d2ae8c131dbfd8ba08"

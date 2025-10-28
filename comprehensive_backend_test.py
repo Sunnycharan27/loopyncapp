@@ -14,7 +14,7 @@ from datetime import datetime
 from PIL import Image
 
 # Configuration
-BACKEND_URL = "https://chatvibes-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopconnect-1.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@loopync.com"
 DEMO_PASSWORD = "password123"
 

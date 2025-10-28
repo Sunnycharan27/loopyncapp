@@ -6,7 +6,7 @@ Debug test for Trust Circles endpoint to understand the backend issue
 import requests
 import json
 
-BACKEND_URL = "https://chatvibes-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopconnect-1.preview.emergentagent.com/api"
 DEMO_USER_ID = "demo_user"
 
 def test_trust_circles_debug():

@@ -13,7 +13,7 @@ from datetime import datetime
 from PIL import Image
 
 # Configuration
-BACKEND_URL = "https://chatvibes-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopconnect-1.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@loopync.com"
 DEMO_PASSWORD = "password123"
 
@@ -484,7 +484,7 @@ class BackendTester:
             
         try:
             # Construct the full URL for file retrieval
-            file_url = f"https://chatvibes-7.preview.emergentagent.com/api{self.uploaded_file_url}"
+            file_url = f"https://loopconnect-1.preview.emergentagent.com/api{self.uploaded_file_url}"
             
             response = self.session.get(file_url)
             

@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://chatvibes-7.preview.emergentagent.com/api"
+BACKEND_URL = "https://loopconnect-1.preview.emergentagent.com/api"
 
 # Real User IDs from Previous Tests
 SUNNYCHARAN_ID = "9b76bda7-ca16-4c33-9bc0-66d1b5ca86d0"
