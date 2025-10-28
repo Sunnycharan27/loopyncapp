@@ -207,11 +207,11 @@ backend:
 
   - task: "Twitter-Style Features (Quotes, Replies, Hashtags, Trending)"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -243,6 +243,85 @@ backend:
           - Test reply creation and thread structure
           - Test reply counts and notifications
           - Test stats updates (quotes count, replies count)
+      - working: false
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE TWITTER-STYLE FEATURES TESTING COMPLETED - CRITICAL BACKEND BUGS IDENTIFIED (4/6 TESTS PASSED - 66.7% SUCCESS)
+          
+          🎯 **TESTING SCOPE**: Complete Twitter-style social media features testing
+          **BACKEND URL**: https://loopconnect-1.preview.emergentagent.com/api
+          **TEST USER**: demo@loopync.com / password123
+          **TEST DATE**: October 28, 2025
+          
+          ✅ **WORKING TWITTER FEATURES**:
+          
+          **TEST 1: Hashtag Search** ✅ WORKING
+          - GET /api/hashtags/{hashtag}/posts successfully searches posts by hashtag
+          - Case-insensitive search working correctly
+          - Posts enriched with author data
+          - Empty results handled properly (no posts found for #test)
+          
+          **TEST 2: Trending Hashtags** ✅ WORKING
+          - GET /api/trending/hashtags returns trending hashtags from last 24h
+          - Correct format: [{"hashtag": "tag", "count": number}]
+          - Empty state handled correctly (no trending hashtags currently)
+          - Algorithm working based on post frequency
+          
+          **TEST 3: Trending Posts (For You Page)** ✅ WORKING
+          - GET /api/trending/posts returns posts sorted by engagement score
+          - Engagement calculation: likes + (replies * 2) + (reposts * 3)
+          - Posts from last 7 days correctly filtered
+          - Author enrichment working correctly (9/9 posts with author data)
+          - engagement_score properly removed from final response
+          
+          **TEST 4: Get Post Replies** ✅ WORKING
+          - GET /api/posts/{postId}/replies endpoint working correctly
+          - Returns empty array when no replies exist (expected behavior)
+          - Author enrichment ready for when replies exist
+          - Chronological sorting implemented
+          
+          ❌ **CRITICAL BACKEND BUGS IDENTIFIED**:
+          
+          **BUG 1: Quote Posts Feature Broken** ❌ CRITICAL
+          - POST /api/posts/{postId}/quote creates posts but missing quotedPostId and quotedPost fields
+          - Root Cause: Post model has `extra="ignore"` which drops quotedPostId and quotedPost fields
+          - Impact: Quote posts created as regular posts, no original post embedding
+          - Quote count stats not updating on original posts
+          - Quotes cannot be distinguished from regular posts
+          
+          **BUG 2: Reply Posts Feature Broken** ❌ CRITICAL  
+          - POST /api/posts/{postId}/reply creates posts but missing replyToPostId field
+          - Root Cause: Post model has `extra="ignore"` which drops replyToPostId field
+          - Impact: Replies created as regular posts, no thread structure
+          - GET /api/posts/{postId}/replies returns 0 replies (cannot find replies without replyToPostId)
+          - Reply count stats not updating on original posts
+          - Twitter-style threads completely broken
+          
+          🔧 **ROOT CAUSE ANALYSIS**:
+          **CRITICAL ISSUE**: Post model in server.py (lines 139-150) has `extra="ignore"` configuration:
+          ```python
+          class Post(BaseModel):
+              model_config = ConfigDict(extra="ignore")  # THIS DROPS REQUIRED FIELDS
+          ```
+          
+          **REQUIRED FIELDS MISSING FROM MODEL**:
+          - quotedPostId: Optional[str] = None
+          - quotedPost: Optional[dict] = None  
+          - replyToPostId: Optional[str] = None
+          
+          **VERIFICATION TESTS PERFORMED**:
+          - Created quote post: quotedPostId field not in response
+          - Created reply post: replyToPostId field not in response
+          - Verified replies endpoint returns 0 results due to missing replyToPostId in database
+          - Confirmed fields are being set in endpoint code but dropped by Pydantic model
+          
+          🚨 **IMMEDIATE FIXES REQUIRED**:
+          1. **HIGH PRIORITY**: Add missing fields to Post model or change `extra="ignore"` to `extra="allow"`
+          2. **HIGH PRIORITY**: Test quote and reply functionality after model fix
+          3. **MEDIUM PRIORITY**: Verify stats updates work correctly after fix
+          4. **MEDIUM PRIORITY**: Test notification creation for quotes and replies
+          
+          **TWITTER-STYLE FEATURES ARE 66.7% FUNCTIONAL - QUOTE AND REPLY FEATURES REQUIRE BACKEND MODEL FIX**
 
   - task: "Google Sheets Database Module"
     implemented: true
