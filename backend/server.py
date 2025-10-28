@@ -5578,6 +5578,20 @@ async def delete_message(messageId: str, userId: str):
     
     return {"success": True}
 
+# ===== SIMPLIFIED DM ENDPOINTS (Aliases for frontend compatibility) =====
+
+@api_router.post("/dm/{threadId}/messages")
+async def send_message_simple(threadId: str, senderId: str, text: str = None, mediaUrl: str = None):
+    """Simplified send message endpoint"""
+    payload = SendMessageInput(text=text, mediaUrl=mediaUrl)
+    return await send_message(threadId, senderId, payload)
+
+@api_router.get("/dm/{threadId}/messages")
+async def get_messages_simple(threadId: str, userId: str, limit: int = 50, before: str = None):
+    """Simplified get messages endpoint"""
+    return await get_messages(threadId, userId, limit, before)
+
+
 @api_router.get("/friends/{userId}")
 async def get_friends(userId: str):
     """Get user's friends list"""
