@@ -334,7 +334,7 @@ const Messenger = () => {
     try {
       if (!selectedThread) return;
 
-      const res = await axios.post(`${API}/api/calls/initiate`, null, {
+      const res = await axios.post(`${API}/calls/initiate`, null, {
         params: {
           callerId: currentUser.id,
           recipientId: selectedThread.peer.id,
