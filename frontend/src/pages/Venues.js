@@ -26,17 +26,6 @@ const Venues = () => {
     { id: "park", name: "Parks", icon: "🌳" },
   ];
 
-  // Check if venue is a spiritual/religious place (no menu)
-  const isSpiritualPlace = (venue) => {
-    const spiritualKeywords = ['temple', 'mosque', 'church', 'gurudwara', 'monastery', 'shrine', 'mandir', 'masjid'];
-    const venueName = venue.name.toLowerCase();
-    const venueCategory = venue.category?.toLowerCase() || '';
-    
-    return spiritualKeywords.some(keyword => 
-      venueName.includes(keyword) || venueCategory.includes(keyword)
-    );
-  };
-
   useEffect(() => {
     fetchVenues();
   }, []);
