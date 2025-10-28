@@ -586,8 +586,6 @@ class FriendRequestDebugTester:
 if __name__ == "__main__":
     tester = FriendRequestDebugTester()
     results = tester.run_all_tests()
-    
-    def test_seed_data(self):
         """Seed test data"""
         try:
             response = self.session.post(f"{BACKEND_URL}/seed")
