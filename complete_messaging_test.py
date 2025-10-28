@@ -111,9 +111,9 @@ class MessagingTester:
             if send_response.status_code == 200:
                 print("✅ Successfully sent message using simplified endpoint")
                 
-                # Test retrieving messages with simplified endpoint
+                # Test retrieving messages with correct endpoint
                 get_response = self.session.get(
-                    f"{BACKEND_URL}/dm/{self.dm_thread_id}/messages?userId={self.demo_user_id}",
+                    f"{BACKEND_URL}/dm/threads/{self.dm_thread_id}/messages?userId={self.demo_user_id}",
                     headers=headers
                 )
                 
