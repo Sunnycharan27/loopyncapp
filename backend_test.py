@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing Suite
-Tests all backend features for the Loopync app as requested in the comprehensive application check.
-Covers: Authentication, User Management, Friend System, Messaging, Social Feed, Venues, Tribes, Events, Notifications, Calling
+COMPREHENSIVE EVENTS AND TICKETING SYSTEM TEST - QR CODE VERIFICATION
+
+Testing complete event booking flow with QR code generation as specified in review request.
+
+Backend URL: https://loopconnect-1.preview.emergentagent.com/api
+Test User: demo@loopync.com / password123
 """
 
 import requests
 import json
-import uuid
-import io
+import sys
+import re
+import base64
 from datetime import datetime
-from PIL import Image
 
 # Configuration
 BACKEND_URL = "https://loopconnect-1.preview.emergentagent.com/api"
-DEMO_EMAIL = "demo@loopync.com"
-DEMO_PASSWORD = "password123"
+TEST_EMAIL = "demo@loopync.com"
+TEST_PASSWORD = "password123"
 
 class BackendTester:
     def __init__(self):
