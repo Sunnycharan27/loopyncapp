@@ -2008,6 +2008,279 @@ async def create_post_comment_alias(postId: str, comment: CommentCreate, authorI
     """Alias for creating comments (singular form)"""
     return await create_post_comment(postId, comment, authorId)
 
+
+# ===== INSTAGRAM-STYLE FEATURES =====
+
+@api_router.post("/posts/{postId}/save")
+async def save_post(postId: str, userId: str):
+    """Save/bookmark a post (Instagram-style)"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    saved_posts = user.get("savedPosts", [])
+    
+    if postId in saved_posts:
+        saved_posts.remove(postId)
+        await db.users.update_one({"id": userId}, {"$set": {"savedPosts": saved_posts}})
+        return {"action": "unsaved", "message": "Post removed from saved"}
+    else:
+        saved_posts.append(postId)
+        await db.users.update_one({"id": userId}, {"$set": {"savedPosts": saved_posts}})
+        return {"action": "saved", "message": "Post saved successfully"}
+
+@api_router.get("/users/{userId}/saved-posts")
+async def get_saved_posts(userId: str, limit: int = 50):
+    """Get user's saved posts"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    saved_post_ids = user.get("savedPosts", [])
+    posts = []
+    
+    for post_id in saved_post_ids[:limit]:
+        post = await db.posts.find_one({"id": post_id}, {"_id": 0})
+        if post:
+            author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+            post["author"] = author
+            posts.append(post)
+    
+    return posts
+
+@api_router.post("/users/{userId}/follow")
+async def follow_user(userId: str, targetUserId: str):
+    """Follow/unfollow a user (Instagram-style)"""
+    if userId == targetUserId:
+        raise HTTPException(status_code=400, detail="Cannot follow yourself")
+    
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    target = await db.users.find_one({"id": targetUserId}, {"_id": 0})
+    
+    if not user or not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    following = user.get("following", [])
+    followers = target.get("followers", [])
+    
+    if targetUserId in following:
+        # Unfollow
+        following.remove(targetUserId)
+        followers.remove(userId)
+        action = "unfollowed"
+    else:
+        # Follow
+        following.append(targetUserId)
+        followers.append(userId)
+        action = "followed"
+        
+        # Create notification
+        notification = Notification(
+            userId=targetUserId,
+            type="follow",
+            content=f"{user.get('name', 'Someone')} started following you",
+            link=f"/profile/{userId}"
+        )
+        await db.notifications.insert_one(notification.model_dump())
+    
+    await db.users.update_one({"id": userId}, {"$set": {"following": following}})
+    await db.users.update_one({"id": targetUserId}, {"$set": {"followers": followers}})
+    
+    return {"action": action, "followingCount": len(following), "followersCount": len(followers)}
+
+@api_router.get("/users/{userId}/followers")
+async def get_followers(userId: str, limit: int = 100):
+    """Get user's followers list"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    follower_ids = user.get("followers", [])
+    followers = []
+    
+    for follower_id in follower_ids[:limit]:
+        follower = await db.users.find_one({"id": follower_id}, {"_id": 0, "name": 1, "handle": 1, "avatar": 1, "id": 1})
+        if follower:
+            followers.append(follower)
+    
+    return followers
+
+@api_router.get("/users/{userId}/following")
+async def get_following(userId: str, limit: int = 100):
+    """Get users that this user is following"""
+    user = await db.users.find_one({"id": userId}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    following_ids = user.get("following", [])
+    following = []
+    
+    for following_id in following_ids[:limit]:
+        user_data = await db.users.find_one({"id": following_id}, {"_id": 0, "name": 1, "handle": 1, "avatar": 1, "id": 1})
+        if user_data:
+            following.append(user_data)
+    
+    return following
+
+# ===== TWITTER-STYLE FEATURES =====
+
+@api_router.post("/posts/{postId}/quote")
+async def create_quote_post(postId: str, authorId: str, text: str):
+    """Quote/retweet with comment (Twitter-style)"""
+    original_post = await db.posts.find_one({"id": postId}, {"_id": 0})
+    if not original_post:
+        raise HTTPException(status_code=404, detail="Original post not found")
+    
+    # Create new post with quote
+    quote_post = Post(
+        authorId=authorId,
+        text=text,
+        quotedPostId=postId,
+        quotedPost=original_post
+    )
+    
+    doc = quote_post.model_dump()
+    await db.posts.insert_one(doc)
+    doc.pop('_id', None)
+    
+    # Enrich with author
+    author = await db.users.find_one({"id": authorId}, {"_id": 0})
+    doc["author"] = author
+    
+    # Update quote count on original post
+    stats = original_post.get("stats", {"likes": 0, "quotes": 0, "reposts": 0, "replies": 0})
+    stats["quotes"] = stats["quotes"] + 1
+    await db.posts.update_one({"id": postId}, {"$set": {"stats": stats}})
+    
+    # Notify original author
+    if original_post["authorId"] != authorId:
+        notification = Notification(
+            userId=original_post["authorId"],
+            type="quote",
+            content=f"{author.get('name', 'Someone')} quoted your post",
+            link=f"/posts/{doc['id']}"
+        )
+        await db.notifications.insert_one(notification.model_dump())
+    
+    return doc
+
+@api_router.get("/hashtags/{hashtag}/posts")
+async def get_hashtag_posts(hashtag: str, limit: int = 50):
+    """Get posts containing a specific hashtag"""
+    # Search for posts containing the hashtag in text
+    posts = await db.posts.find(
+        {"text": {"$regex": f"#{hashtag}", "$options": "i"}},
+        {"_id": 0}
+    ).sort("createdAt", -1).to_list(limit)
+    
+    # Enrich with author data
+    for post in posts:
+        author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+        post["author"] = author
+    
+    return posts
+
+@api_router.get("/trending/hashtags")
+async def get_trending_hashtags(limit: int = 10):
+    """Get trending hashtags (Twitter/TikTok-style)"""
+    # Get recent posts (last 24 hours)
+    recent_posts = await db.posts.find({
+        "createdAt": {"$gte": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()}
+    }, {"_id": 0, "text": 1}).to_list(1000)
+    
+    # Extract hashtags and count
+    hashtag_counts = {}
+    for post in recent_posts:
+        text = post.get("text", "")
+        hashtags = [word[1:] for word in text.split() if word.startswith("#")]
+        for tag in hashtags:
+            hashtag_counts[tag] = hashtag_counts.get(tag, 0) + 1
+    
+    # Sort by count and return top hashtags
+    trending = sorted(hashtag_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
+    return [{"hashtag": tag, "count": count} for tag, count in trending]
+
+@api_router.get("/trending/posts")
+async def get_trending_posts(limit: int = 20):
+    """Get trending/viral posts (TikTok For You Page style)"""
+    # Get posts from last 7 days
+    recent_posts = await db.posts.find({
+        "createdAt": {"$gte": (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()}
+    }, {"_id": 0}).to_list(500)
+    
+    # Calculate engagement score (likes + comments * 2 + reposts * 3)
+    for post in recent_posts:
+        stats = post.get("stats", {"likes": 0, "quotes": 0, "reposts": 0, "replies": 0})
+        engagement = stats["likes"] + (stats["replies"] * 2) + (stats["reposts"] * 3)
+        post["_engagement_score"] = engagement
+    
+    # Sort by engagement and return top posts
+    trending = sorted(recent_posts, key=lambda x: x.get("_engagement_score", 0), reverse=True)[:limit]
+    
+    # Enrich with author data and remove engagement score
+    for post in trending:
+        author = await db.users.find_one({"id": post["authorId"]}, {"_id": 0})
+        post["author"] = author
+        post.pop("_engagement_score", None)
+    
+    return trending
+
+@api_router.post("/posts/{postId}/reply")
+async def create_reply(postId: str, authorId: str, text: str, mediaUrl: str = None):
+    """Create a reply to a post (Twitter-style thread)"""
+    original_post = await db.posts.find_one({"id": postId}, {"_id": 0})
+    if not original_post:
+        raise HTTPException(status_code=404, detail="Original post not found")
+    
+    # Create reply post
+    reply = Post(
+        authorId=authorId,
+        text=text,
+        mediaUrl=mediaUrl,
+        replyToPostId=postId
+    )
+    
+    doc = reply.model_dump()
+    await db.posts.insert_one(doc)
+    doc.pop('_id', None)
+    
+    # Enrich with author
+    author = await db.users.find_one({"id": authorId}, {"_id": 0})
+    doc["author"] = author
+    
+    # Update reply count on original post
+    stats = original_post.get("stats", {"likes": 0, "quotes": 0, "reposts": 0, "replies": 0})
+    stats["replies"] = stats["replies"] + 1
+    await db.posts.update_one({"id": postId}, {"$set": {"stats": stats}})
+    
+    # Notify original author
+    if original_post["authorId"] != authorId:
+        notification = Notification(
+            userId=original_post["authorId"],
+            type="reply",
+            content=f"{author.get('name', 'Someone')} replied to your post",
+            link=f"/posts/{postId}"
+        )
+        await db.notifications.insert_one(notification.model_dump())
+    
+    return doc
+
+@api_router.get("/posts/{postId}/replies")
+async def get_post_replies(postId: str, limit: int = 100):
+    """Get all replies to a post"""
+    replies = await db.posts.find(
+        {"replyToPostId": postId},
+        {"_id": 0}
+    ).sort("createdAt", 1).to_list(limit)
+    
+    # Enrich with author data
+    for reply in replies:
+        author = await db.users.find_one({"id": reply["authorId"]}, {"_id": 0})
+        reply["author"] = author
+    
+    return replies
+
+
 @api_router.delete("/comments/{commentId}")
 async def delete_comment(commentId: str, userId: str):
     """Delete a comment"""
