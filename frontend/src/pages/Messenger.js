@@ -624,6 +624,21 @@ const Messenger = () => {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Call Buttons */}
+              <button
+                onClick={() => initiateCall('audio')}
+                className="p-2 rounded-full hover:bg-green-400/10 text-green-400"
+                title="Audio call"
+              >
+                <Phone size={20} />
+              </button>
+              <button
+                onClick={() => initiateCall('video')}
+                className="p-2 rounded-full hover:bg-blue-400/10 text-blue-400"
+                title="Video call"
+              >
+                <Video size={20} />
+              </button>
               {/* Context Card Toggle */}
               <button
                 onClick={() => setShowCircles(!showCircles)}
