@@ -114,11 +114,11 @@ user_problem_statement: |
 backend:
   - task: "Instagram-Style Features (Save Posts, Follow/Unfollow)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -146,6 +146,64 @@ backend:
           - Test followers/following lists
           - Test notification generation on follow
           - Test edge cases (self-follow prevention, user not found)
+      - working: true
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE INSTAGRAM-STYLE FEATURES TESTING COMPLETED - ALL CORE FEATURES WORKING (6/6 TESTS PASSED)
+          
+          🎯 **TESTING SCOPE**: Complete Instagram-style social media features testing
+          **BACKEND URL**: https://loopconnect-1.preview.emergentagent.com/api
+          **TEST USER**: demo@loopync.com / password123
+          **TEST DATE**: October 28, 2025
+          
+          ✅ **ALL INSTAGRAM FEATURES VERIFIED WORKING**:
+          
+          **TEST 1: Save/Bookmark Posts** ✅ WORKING
+          - POST /api/posts/{postId}/save successfully saves posts to user's savedPosts array
+          - Toggle functionality working: save → unsave → save
+          - Response messages: "Post saved successfully" and "Post removed from saved"
+          - User's savedPosts array updated correctly in database
+          
+          **TEST 2: Get Saved Posts Collection** ✅ WORKING
+          - GET /api/users/{userId}/saved-posts returns array of saved posts
+          - Posts enriched with author data correctly
+          - Empty state handling working (returns empty array)
+          - Limit parameter working correctly (tested with limit=50)
+          
+          **TEST 3: Follow/Unfollow Users** ✅ WORKING
+          - POST /api/users/{userId}/follow successfully follows/unfollows users
+          - Toggle functionality working correctly (follow → unfollow → follow)
+          - Response includes action, followingCount, and followersCount
+          - Bidirectional relationship maintained (user.following and target.followers)
+          - Notifications created correctly on follow action (verified 2 follow notifications)
+          
+          **TEST 4: Self-Follow Prevention** ✅ WORKING
+          - Correctly prevents self-follow with 400 error status
+          - Security validation working as expected
+          - Proper error handling implemented
+          
+          **TEST 5: Get Followers List** ✅ WORKING
+          - GET /api/users/{userId}/followers returns array of follower user objects
+          - User data includes required fields: id, name, handle, avatar
+          - Empty state handling working correctly
+          - Limit parameter working (tested with limit=100)
+          
+          **TEST 6: Get Following List** ✅ WORKING
+          - GET /api/users/{userId}/following returns array of users being followed
+          - Complete user data structure returned
+          - Empty and populated states handled correctly
+          - Proper data enrichment working
+          
+          🔧 **TECHNICAL VERIFICATION**:
+          - ✅ All endpoints handle authentication correctly
+          - ✅ Database updates working (savedPosts, following, followers arrays)
+          - ✅ Notification system working (follow notifications created)
+          - ✅ Error handling working (404 for user not found, 400 for self-follow)
+          - ✅ Response format consistent across all endpoints
+          - ✅ Author enrichment working for saved posts
+          - ✅ Bidirectional relationships maintained correctly
+          
+          **INSTAGRAM-STYLE FEATURES ARE 100% FUNCTIONAL AND PRODUCTION-READY**
 
   - task: "Twitter-Style Features (Quotes, Replies, Hashtags, Trending)"
     implemented: true
