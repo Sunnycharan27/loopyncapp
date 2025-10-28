@@ -7229,6 +7229,114 @@ backend:
           ✅ All endpoints return expected data structures
           
           The system successfully handles the complete e-commerce flow for event ticket booking with wallet integration.
+      - working: true
+        agent: "testing"
+        comment: |
+          COMPREHENSIVE EVENTS AND TICKETING SYSTEM TEST COMPLETED - QR CODE VERIFICATION (11/11 TESTS PASSED - 100% SUCCESS)
+          
+          🎯 **TESTING SCOPE**: Complete event booking flow with QR code generation as specified in review request
+          **BACKEND URL**: https://loopconnect-1.preview.emergentagent.com/api
+          **TEST USER**: demo@loopync.com / password123
+          **TEST DATE**: October 28, 2025
+          
+          ✅ **ALL 10 REQUIRED TESTS COMPLETED SUCCESSFULLY**:
+          
+          **TEST 1: Login Demo User & Verify Wallet** ✅ WORKING
+          - ✅ Demo user login successful with credentials demo@loopync.com / password123
+          - ✅ User ID captured: 73c7ac7a-8020-4149-91a2-287c9adc61a6
+          - ✅ Wallet balance verified: ₹20,500.00 (sufficient for testing)
+          - ✅ JWT token generation and authentication working
+          
+          **TEST 2: Get Available Events** ✅ WORKING
+          - ✅ GET /api/events returns 7 events successfully
+          - ✅ T-Hub Innovation Summit (e4) found with tier structure:
+            * "Startup Pass" - ₹1,500
+            * "Investor Pass" - ₹5,000
+          - ✅ Event data structure complete with tiers, pricing, and metadata
+          
+          **TEST 3: Book Event Ticket** ✅ WORKING
+          - ✅ POST /api/events/{eventId}/book successful with userId, tier, quantity parameters
+          - ✅ Response includes all required fields: success, tickets, balance, creditsEarned
+          - ✅ Ticket object structure verified:
+            * id, eventId, userId ✅
+            * tier, qrCode, status ✅
+            * eventName, eventDate, eventLocation, eventImage ✅
+            * price ✅
+            * **qrCodeImage** (base64 QR code image) ✅
+          - ✅ QR code image format verified: "data:image/png;base64," prefix confirmed
+          
+          **TEST 4: Verify Wallet Deduction** ✅ WORKING
+          - ✅ GET /api/wallet?userId={userId} shows correct balance deduction
+          - ✅ Balance correctly updated: ₹20,500.00 → ₹19,000.00 (₹1,500.00 deducted)
+          - ✅ Transaction history includes ticket purchase record
+          - ✅ Transaction details: "Ticket purchase: T-Hub Innovation Summit (1x Startup Pass)"
+          
+          **TEST 5: Get User Tickets** ✅ WORKING
+          - ✅ GET /api/tickets/{userId} returns user's tickets successfully
+          - ✅ Booked ticket appears in list with complete event details
+          - ✅ Ticket includes QR code image (base64), active status, correct tier and price
+          - ✅ Event information enrichment working (eventName, eventDate, eventLocation)
+          
+          **TEST 6: Get Specific Ticket Details** ✅ WORKING
+          - ✅ GET /api/tickets/{userId}/{ticketId} returns full ticket details
+          - ✅ QR code format verified: "TICKET:{ticketId}:QR:{qrCode}:EVENT:{eventId}"
+          - ✅ QR code image present and valid base64 PNG format
+          - ✅ All ticket metadata correctly populated
+          
+          **TEST 7: Book Multiple Tickets** ✅ WORKING
+          - ✅ POST /api/events/{eventId}/book with quantity=2 creates 2 separate tickets
+          - ✅ Each ticket has unique ID and QR code (verified uniqueness)
+          - ✅ Credits earned correctly calculated: 40 credits (20 per ticket)
+          - ✅ Multiple ticket handling working perfectly
+          
+          **TEST 8: Insufficient Balance Test** ✅ WORKING
+          - ✅ Booking with insufficient balance correctly rejected with 400 error
+          - ✅ Error message: "Insufficient wallet balance" returned correctly
+          - ✅ Wallet protection and validation working as expected
+          
+          **TEST 9: Invalid Tier Test** ✅ WORKING
+          - ✅ Booking with non-existent tier correctly rejected with 400 error
+          - ✅ Error message: "Invalid tier" returned correctly
+          - ✅ Tier validation and error handling working properly
+          
+          **TEST 10: QR Code Image Validation** ✅ WORKING
+          - ✅ QR code image is valid base64 PNG format
+          - ✅ Data length: 1,416 characters, Decoded size: 1,060 bytes
+          - ✅ Image format verified: "data:image/png;base64," MIME type correct
+          - ✅ Base64 decoding successful, image data substantial for QR code
+          
+          🔧 **CRITICAL VALIDATION RESULTS**:
+          - ✅ Demo user has ₹20,500 wallet balance (sufficient for all tests)
+          - ✅ Events have proper tier structures with pricing
+          - ✅ Booking deducts correct amount from wallet
+          - ✅ QR codes are generated as base64 PNG images
+          - ✅ Tickets include all event information (name, date, location, image)
+          - ✅ Multiple tickets can be booked with unique QR codes
+          - ✅ Proper error handling for invalid tiers/insufficient funds
+          - ✅ Loop Credits awarded correctly (20 credits per ticket)
+          
+          📊 **SUCCESS CRITERIA VERIFICATION**:
+          ✅ All 10 tests pass (100% success rate)
+          ✅ QR code images generated and included in ticket response
+          ✅ Wallet transactions recorded correctly
+          ✅ Tickets retrievable via GET endpoints
+          ✅ No 500 errors (ObjectId serialization issue fixed)
+          ✅ Proper error messages for invalid requests
+          
+          🎯 **FOCUS AREAS CONFIRMED WORKING**:
+          1. **QR Code Generation**: Base64 PNG images generated and included in all ticket responses
+          2. **Event Info Enrichment**: Tickets include eventName, eventDate, eventLocation, eventImage
+          3. **Wallet Integration**: Balance deduction and transaction recording working perfectly
+          4. **Multiple Ticket Booking**: Each ticket unique with own QR code and proper credits calculation
+          
+          🔧 **BACKEND FIXES APPLIED DURING TESTING**:
+          - Fixed MongoDB ObjectId serialization issue in event booking endpoints
+          - Added proper ObjectId removal after database insertion to prevent JSON serialization errors
+          - Demo user wallet topped up to ₹20,500 for comprehensive testing
+          
+          **EVENTS AND TICKETING SYSTEM WITH QR CODE VERIFICATION IS 100% FUNCTIONAL AND PRODUCTION-READY**
+          
+          The complete booking flow works end-to-end with QR codes as specified in the review request. All critical functionality verified working including wallet integration, QR code generation, event information enrichment, and proper error handling.
 
 agent_communication:
   - agent: "testing"
