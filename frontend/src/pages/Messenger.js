@@ -25,8 +25,6 @@ const Messenger = () => {
   const [showCircles, setShowCircles] = useState(false);
   const [trustCircles, setTrustCircles] = useState([]);
   const [selectedCircle, setSelectedCircle] = useState(null);
-  const [showCall, setShowCall] = useState(false);
-  const [callData, setCallData] = useState(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
