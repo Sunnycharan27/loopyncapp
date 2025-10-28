@@ -1183,6 +1183,16 @@ async def login(req: LoginRequest):
     if user['email'] == 'demo@loopync.com':
         current_friends = mongo_user.get('friends', [])
         current_balance = mongo_user.get('walletBalance', 0.0)
+        onboarding_complete = mongo_user.get('onboardingComplete', False)
+        
+        # Mark onboarding as complete for demo user to skip onboarding flow
+        if not onboarding_complete:
+            await db.users.update_one(
+                {"id": user['user_id']},
+                {"$set": {"onboardingComplete": True}}
+            )
+            mongo_user['onboardingComplete'] = True
+            logger.info(f"✅ Demo user onboarding marked complete")
         
         # Give demo user initial wallet balance if they have zero or low balance
         if current_balance < 5000:
