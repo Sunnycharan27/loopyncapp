@@ -2670,19 +2670,14 @@ async def create_reel(reel: ReelCreate, authorId: str):
 
 @api_router.get("/capsules")
 async def get_active_capsules(userId: Optional[str] = None):
-    """Get all active (non-expired) Vibe Capsules"""
+    """Get all active (non-expired) Vibe Capsules - Public feed like Instagram Stories"""
     now = datetime.now(timezone.utc).isoformat()
     
-    # Query for non-expired capsules
+    # Query for non-expired capsules (PUBLIC FEED - show all stories)
     query = {"expiresAt": {"$gt": now}}
     
-    # If userId provided, get capsules from user's friends
-    if userId:
-        user = await db.users.find_one({"id": userId}, {"_id": 0})
-        if user and user.get("friends"):
-            # Get capsules from friends + user's own capsules
-            friend_ids = user["friends"] + [userId]
-            query["authorId"] = {"$in": friend_ids}
+    # NOTE: Not filtering by friends - showing ALL public stories like Instagram/Snapchat
+    # This makes the platform more engaging and discoverable
     
     capsules = await db.vibe_capsules.find(query, {"_id": 0}).sort("createdAt", -1).to_list(100)
     
