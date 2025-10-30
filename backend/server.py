@@ -2447,22 +2447,11 @@ async def create_story(authorId: str, media: str, type: str = "image"):
     return story
 
 @api_router.get("/stories")
-async def get_active_stories(userId: str):
-    """Get active stories from friends"""
-    # Get user's friends
-    friends_res = await db.friendships.find({
-        "$or": [{"userId1": userId}, {"userId2": userId}]
-    }, {"_id": 0}).to_list(None)
-    
-    friend_ids = set()
-    for f in friends_res:
-        friend_ids.add(f["userId1"] if f["userId1"] != userId else f["userId2"])
-    friend_ids.add(userId)  # Include own stories
-    
-    # Get non-expired stories
+async def get_active_stories(userId: Optional[str] = None):
+    """Get active stories - Public feed like Instagram Stories"""
+    # Get non-expired stories (PUBLIC FEED - show all stories)
     now = datetime.now(timezone.utc).isoformat()
     stories = await db.stories.find({
-        "authorId": {"$in": list(friend_ids)},
         "expiresAt": {"$gt": now}
     }, {"_id": 0}).sort("createdAt", -1).to_list(100)
     
@@ -2472,11 +2461,13 @@ async def get_active_stories(userId: str):
         author_id = story["authorId"]
         if author_id not in grouped:
             author = await db.users.find_one({"id": author_id}, {"_id": 0})
-            grouped[author_id] = {
-                "author": author,
-                "stories": []
-            }
-        grouped[author_id]["stories"].append(story)
+            if author:
+                grouped[author_id] = {
+                    "author": author,
+                    "stories": []
+                }
+        if author_id in grouped:
+            grouped[author_id]["stories"].append(story)
     
     return list(grouped.values())
 
