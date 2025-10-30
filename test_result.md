@@ -9494,3 +9494,43 @@ agent_communication:
       
       STATUS: Backend fixes complete, frontend should now work correctly
 
+
+
+  - agent: "main"
+    message: |
+      CRITICAL FIX APPLIED: Social Media Visibility - All Uploads Now Public
+      
+      🐛 ISSUE REPORTED:
+      - User uploads posts/stories but others cannot see them
+      - Platform not functioning like a proper social media app
+      - Friend-based filtering was hiding content from public feed
+      
+      ✅ ROOT CAUSE IDENTIFIED:
+      1. /api/capsules endpoint had friend-only filtering (lines 2680-2685)
+      2. /api/stories endpoint had friend-only filtering (lines 2453-2460)
+      3. When userId passed, content filtered to friends only
+      4. Public discovery feed was restricted
+      
+      ✅ FIXES APPLIED:
+      1. Updated /api/capsules to show ALL public stories (removed friend filter)
+      2. Updated /api/stories to show ALL public stories (removed friend filter)
+      3. Changed behavior to match Instagram/Snapchat/TikTok public feeds
+      4. Posts and reels were already public (no changes needed)
+      
+      📊 VERIFICATION COMPLETED:
+      ✅ Created test post - VISIBLE in public feed immediately
+      ✅ Created test story/capsule - VISIBLE in public feed immediately
+      ✅ Created test reel - VISIBLE in public feed immediately
+      ✅ Multiple authors visible (5 post authors, 1 story author, 4 reel authors)
+      ✅ No friend-based filtering applied
+      ✅ Platform now functions like proper social media
+      
+      🎯 DATABASE SEEDED:
+      - 6 demo users (u1-u5 + demo user)
+      - 5 posts from different authors
+      - 1 story/capsule from demo user
+      - 4 reels from different authors
+      - 7 events, 20 venues, 5 tribes
+      
+      STATUS: All uploads now PUBLIC and visible to everyone!
+
